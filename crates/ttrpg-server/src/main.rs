@@ -300,7 +300,7 @@ async fn process_client_message(
 
                     // Immediate tick for S2 integration (Finding #1)
                     let deltas = runtime.tick();
-                    
+
                     if !deltas.is_empty() {
                         let broadcast_msg = ServerMessage::SceneDelta { deltas };
                         let recipients = players_in_room_senders_locked(&locked, &room_id, None);
@@ -501,16 +501,29 @@ async fn handle_login(
         let active_campaign_id = locked.active_campaign.campaign_id.clone();
         let entry_scene_id = locked.active_campaign.entry_scene_id.clone();
 
-        let persisted = match locked
-            .persistence
-            .validate_character_join(&lookup_key, &active_campaign_id)
-        {
+        let persisted = match locked.persistence.validate_character_join(
+            &format!("local:{}", lookup_key),
+            &lookup_key,
+            &active_campaign_id,
+        ) {
             Ok(record) => record,
             Err(JoinCampaignError::CharacterNotFound) => {
                 send_to_client(
                     tx,
                     ServerMessage::Error {
                         text: "Character does not exist. Use /create to build one.".to_owned(),
+                    },
+                );
+                return;
+            }
+            Err(JoinCampaignError::AccountNotFound { .. })
+            | Err(JoinCampaignError::OwnershipMismatch { .. }) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text:
+                            "Character ownership verification failed. Ask an admin to inspect account bindings."
+                                .to_owned(),
                     },
                 );
                 return;
@@ -834,7 +847,7 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
         let mut snapshot = None;
         if let Some(room) = locked.rooms.get_mut(&new_room) {
             if let Some(runtime) = &mut room.scene_runtime {
-                // For V1, we join at (0,0) or nearest floor. 
+                // For V1, we join at (0,0) or nearest floor.
                 // Let's find first floor tile.
                 let mut join_pos = crate::scene::Position { x: 0, y: 0 };
                 for (pos, tile) in &runtime.scene.grid.tiles {

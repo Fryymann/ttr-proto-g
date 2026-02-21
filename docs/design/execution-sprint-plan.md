@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`, `STD-012`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -225,3 +225,4 @@ For each backlog item completed:
 - 2026-02-21: `BL-012` scope clarified: login must authenticate account first; character operations are account-scoped rather than name-derived.
 - 2026-02-21: Added `koad-os` scope separation gate; Koad/agent support files now route through `koad-os` and are blocked on non-`koad-os` PRs by `validate-koad-os-scope`.
 - 2026-02-21: Saveup protocol updated for multi-role operation with role/context ledger metadata and role-boundary mirror rules (`STD-011`).
+- 2026-02-21: Added root `PROJECT_PROGRESS.md` dashboard sync workflow with `koad progress-sync` and default `saveup` refresh path (`STD-012`).

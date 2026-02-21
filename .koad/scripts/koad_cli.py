@@ -75,6 +75,257 @@ def render_file_bullets(paths: list[str]) -> str:
     return "\n".join(f"- `{path}`" for path in paths)
 
 
+def parse_backlog_items(backlog_text: str) -> list[dict[str, str]]:
+    items: list[dict[str, str]] = []
+    for line in backlog_text.splitlines():
+        if not line.startswith("| BL-"):
+            continue
+        parts = [p.strip() for p in line.strip().strip("|").split("|")]
+        if len(parts) < 7:
+            continue
+        items.append(
+            {
+                "id": parts[0],
+                "priority": parts[1],
+                "team": parts[2],
+                "state": parts[3],
+                "milestone": parts[4],
+                "task": parts[5],
+            }
+        )
+    return items
+
+
+def parse_focus_window(backlog_text: str) -> dict[str, str]:
+    out = {"now": "n/a", "next": "n/a"}
+    for line in backlog_text.splitlines():
+        if line.startswith("- `Now`"):
+            out["now"] = line.split(":", 1)[1].strip() if ":" in line else line.strip()
+        if line.startswith("- `Next`"):
+            out["next"] = line.split(":", 1)[1].strip() if ":" in line else line.strip()
+    return out
+
+
+def parse_sprint_status_notes(plan_text: str) -> list[str]:
+    lines = plan_text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        if line.strip() == "## Sprint Status Notes":
+            start = i + 1
+            break
+    if start is None:
+        return []
+
+    notes: list[str] = []
+    for line in lines[start:]:
+        if line.startswith("## "):
+            break
+        if line.startswith("- "):
+            notes.append(line[2:].strip())
+    return notes
+
+
+def parse_packet_queue(prompts_text: str) -> list[dict[str, str]]:
+    lines = prompts_text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith("## Active Task Packet Queue"):
+            start = i + 1
+            break
+    if start is None:
+        return []
+
+    rows: list[dict[str, str]] = []
+    in_table = False
+    for line in lines[start:]:
+        if line.startswith("### "):
+            break
+        if line.startswith("| Packet ID |"):
+            in_table = True
+            continue
+        if not in_table:
+            continue
+        if line.startswith("| ---"):
+            continue
+        if not line.startswith("|"):
+            if rows:
+                break
+            continue
+        parts = [p.strip() for p in line.strip().strip("|").split("|")]
+        if len(parts) < 6:
+            continue
+        rows.append(
+            {
+                "packet_id": parts[0].strip("`"),
+                "role": parts[1],
+                "backlog_ids": parts[2],
+                "status": parts[3],
+                "dependency": parts[4],
+                "branch": parts[5].strip("`"),
+            }
+        )
+    return rows
+
+
+def parse_active_release_branch(prompts_text: str) -> str:
+    match = re.search(r"Active release base branch is `([^`]+)`", prompts_text)
+    if match:
+        return match.group(1)
+    return "v1"
+
+
+def pct(numerator: int, denominator: int) -> str:
+    if denominator <= 0:
+        return "0%"
+    return f"{round((numerator / denominator) * 100)}%"
+
+
+def build_progress_dashboard(root: Path) -> str:
+    backlog_path = root / ".agents/backlog.md"
+    plan_path = root / "docs/design/execution-sprint-plan.md"
+    roadmap_path = root / "docs/design/game-system-roadmap.md"
+    prompts_path = root / "CODEX_ROLE_PROMPTS.md"
+
+    backlog_text = backlog_path.read_text(encoding="utf-8")
+    plan_text = plan_path.read_text(encoding="utf-8")
+    roadmap_text = roadmap_path.read_text(encoding="utf-8")
+    prompts_text = prompts_path.read_text(encoding="utf-8")
+
+    items = parse_backlog_items(backlog_text)
+    focus = parse_focus_window(backlog_text)
+    sprint_notes = parse_sprint_status_notes(plan_text)
+    packets = parse_packet_queue(prompts_text)
+    release_branch = parse_active_release_branch(prompts_text)
+
+    total = len(items)
+    done = sum(1 for i in items if i["state"] == "done")
+    in_progress = sum(1 for i in items if i["state"] == "in_progress")
+    blocked = sum(1 for i in items if i["state"] == "blocked")
+    todo = sum(1 for i in items if i["state"] == "todo")
+    open_count = total - done
+
+    milestone_order = ["M1", "M2", "M3", "M4", "M5"]
+    milestone_rows: list[str] = []
+    m1_completed_flag = "M1 (Completed)" in roadmap_text
+    for ms in milestone_order:
+        ms_items = [i for i in items if i["milestone"] == ms]
+        ms_total = len(ms_items)
+        ms_done = sum(1 for i in ms_items if i["state"] == "done")
+        ms_ip = sum(1 for i in ms_items if i["state"] == "in_progress")
+        ms_todo = sum(1 for i in ms_items if i["state"] == "todo")
+        ms_blocked = sum(1 for i in ms_items if i["state"] == "blocked")
+        if ms_total == 0 and not (ms == "M1" and m1_completed_flag):
+            continue
+
+        status_hint = ""
+        if ms == "M1" and m1_completed_flag:
+            status_hint = "Completed (roadmap)"
+        elif ms_total == 0:
+            status_hint = "n/a"
+        elif ms_done == ms_total:
+            status_hint = "Complete"
+        elif ms_ip > 0:
+            status_hint = "In Progress"
+        else:
+            status_hint = "Queued"
+
+        milestone_rows.append(
+            f"| {ms} | {ms_total} | {ms_done} | {ms_ip} | {ms_todo} | {ms_blocked} | {pct(ms_done, ms_total)} | {status_hint} |"
+        )
+
+    active_items = [i for i in items if i["state"] in {"in_progress", "blocked"}]
+    active_rows = [
+        f"| {i['id']} | {i['team']} | {i['state']} | {i['milestone']} | {i['task']} |"
+        for i in active_items
+    ]
+    if not active_rows:
+        active_rows = ["| none | n/a | n/a | n/a | n/a |"]
+
+    packet_rows = []
+    for p in packets:
+        packet_rows.append(
+            f"| {p['packet_id']} | {p['role']} | {p['backlog_ids']} | {p['status']} | {p['dependency']} | {p['branch']} |"
+        )
+    if not packet_rows:
+        packet_rows = ["| none | n/a | n/a | n/a | n/a | n/a |"]
+
+    notes_render = sprint_notes[-8:] if sprint_notes else []
+    if notes_render:
+        notes_md = "\n".join(f"- {n}" for n in notes_render)
+    else:
+        notes_md = "- none"
+
+    generated = now_utc().strftime("%Y-%m-%d %H:%M:%SZ")
+    return f"""# Project Progress Dashboard
+
+Auto-generated snapshot aligned to roadmap and backlog.
+
+- Generated (UTC): {generated}
+- Source files:
+  - `.agents/backlog.md`
+  - `docs/design/game-system-roadmap.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `CODEX_ROLE_PROMPTS.md`
+
+## Snapshot
+
+- Active release branch: `{release_branch}`
+- Total backlog items: `{total}`
+- Done: `{done}`
+- In progress: `{in_progress}`
+- Blocked: `{blocked}`
+- Todo: `{todo}`
+- Open items remaining: `{open_count}`
+
+## Roadmap Alignment
+
+| Milestone | Backlog Items | Done | In Progress | Todo | Blocked | Completion | Status |
+|---|---:|---:|---:|---:|---:|---:|---|
+{chr(10).join(milestone_rows)}
+
+## Active Focus Window
+
+- Now: {focus["now"]}
+- Next: {focus["next"]}
+
+## Active Task Packet Queue
+
+| Packet ID | Role | Backlog IDs | Status | Dependency | Suggested Branch |
+|---|---|---|---|---|---|
+{chr(10).join(packet_rows)}
+
+## In-Progress / Blocked Items
+
+| Backlog ID | Team | State | Milestone | Task |
+|---|---|---|---|---|
+{chr(10).join(active_rows)}
+
+## Recent Sprint Status Notes
+
+{notes_md}
+
+## Update Command
+
+```bash
+bash .koad/scripts/koad progress-sync
+```
+"""
+
+
+def cmd_progress_sync(args: argparse.Namespace) -> int:
+    root = repo_root()
+    content = build_progress_dashboard(root)
+    out_path = root / args.output
+
+    if args.dry_run:
+        print(content)
+        return 0
+
+    out_path.write_text(content, encoding="utf-8")
+    print(f"Updated {out_path}")
+    return 0
+
+
 def cmd_lane_start(args: argparse.Namespace) -> int:
     root = repo_root()
     role = normalize_role(args.role)
@@ -323,9 +574,16 @@ def cmd_saveup(args: argparse.Namespace) -> int:
         risks=args.risk or [],
     )
 
+    if not args.no_progress_sync:
+        dashboard = build_progress_dashboard(root)
+        progress_path = root / args.progress_file
+        progress_path.write_text(dashboard, encoding="utf-8")
+
     print(f"saveup call id: {cid}")
     print(f"ledger: .koad/.agent-core/sessions/SAVEUP_CALLS.md")
     print(f"session log: .koad/.agent-core/sessions/LOG.md")
+    if not args.no_progress_sync:
+        print(f"progress: {args.progress_file}")
     return 0
 
 
@@ -382,8 +640,15 @@ def build_parser() -> argparse.ArgumentParser:
     save.add_argument("--action", action="append", help="Action line (repeatable)")
     save.add_argument("--artifact", action="append", help="Artifact path line (repeatable)")
     save.add_argument("--risk", action="append", help="Risk/unknown line (repeatable)")
+    save.add_argument("--progress-file", default="PROJECT_PROGRESS.md")
+    save.add_argument("--no-progress-sync", action="store_true")
     save.add_argument("--dry-run", action="store_true")
     save.set_defaults(func=cmd_saveup)
+
+    progress = sub.add_parser("progress-sync", help="Generate root project progress dashboard markdown")
+    progress.add_argument("--output", default="PROJECT_PROGRESS.md")
+    progress.add_argument("--dry-run", action="store_true")
+    progress.set_defaults(func=cmd_progress_sync)
 
     return p
 

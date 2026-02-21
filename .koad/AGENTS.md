@@ -27,6 +27,7 @@ Any coding agent instance started in this workspace must initialize context befo
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.
 - Log every saveup call in `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with role-aware metadata (`role` + `context_ref`).
+- Refresh root `PROJECT_PROGRESS.md` during `saveup` (default behavior in `.koad/scripts/koad saveup`) or via explicit `progress-sync`.
 
 ## Scope Rule
 - This workspace may contain multiple projects.

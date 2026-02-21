@@ -112,3 +112,12 @@ Purpose: codable representation of standards for this workspace.
   - Require saveup session summaries to include role + context metadata.
   - For `Koad (PM)` saveup scope, allow `.agents/*` mirrors when relevant.
   - For non-PM saveup scope, do not reprioritize PM artifacts directly; log proposed PM deltas in ops logs for PM review.
+
+### STD-012 - Project Progress Dashboard Continuity
+- Status: Active
+- Source: `.koad/scripts/koad_cli.py`
+- Intent: Keep one root-level progress view continuously aligned with roadmap + backlog execution state.
+- Local interpretation:
+  - Maintain root `PROJECT_PROGRESS.md` as generated artifact (not ad hoc notes).
+  - Regenerate dashboard via `koad progress-sync` after meaningful scope/status changes.
+  - Default `koad saveup` path should refresh `PROJECT_PROGRESS.md` unless explicitly skipped.

@@ -268,3 +268,15 @@
   - Scripted output aligns with existing branch/worktree and PR-governance rules.
 - Revisit trigger:
   - If team workflow adds merge-queue automation or expands command set beyond current three actions.
+
+## 2026-02-21 - Add continuously refreshed root progress dashboard
+- Decision:
+  - Maintain a root `PROJECT_PROGRESS.md` as a generated status dashboard aligned to roadmap + backlog + sprint/queue state.
+  - Add `koad progress-sync` command and wire `koad saveup` to refresh the dashboard by default.
+- Why:
+  - User needs a low-friction, always-available view of project progress against roadmap intent.
+- Impact:
+  - Repository now has one canonical quick-view progress artifact.
+  - `STD-012` codifies dashboard continuity and sourcing rules.
+- Revisit trigger:
+  - If dashboard generation should move to CI or external PM tooling instead of local script sync.

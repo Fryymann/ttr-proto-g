@@ -47,3 +47,10 @@ Last updated: 2026-02-21
   - Every `saveup` entry must include `role` and `context_ref`.
   - `saveup` operational mirror behavior must follow role boundaries (`Koad (PM)` may sync `.agents/*`; team roles log proposed PM deltas without reprioritizing directly).
   - `saveup` session summary must include role and context metadata.
+
+### STD-012 - Project Progress Dashboard Continuity
+- Intent: Keep a root-level, roadmap-aligned progress dashboard continuously available for fast status inspection.
+- Enforcement:
+  - Maintain `PROJECT_PROGRESS.md` in repo root.
+  - Regenerate dashboard after backlog/sprint/queue/merge state changes using `.koad/scripts/koad progress-sync` (or default `saveup` sync path).
+  - Dashboard content must be sourced from canonical planning artifacts (`.agents/backlog.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `CODEX_ROLE_PROMPTS.md`).

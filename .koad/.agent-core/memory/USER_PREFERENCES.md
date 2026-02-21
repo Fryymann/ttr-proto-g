@@ -20,6 +20,7 @@
 - Keep `koad-os` lightweight enough for occasional manual maintainer commits, then sync those updates into release line by PR.
 - Include explicit persona/role signature in governance PRs for Koad-OS updates.
 - Keep `saveup` role-aware across all Koad OS roles with explicit role/context metadata.
+- Keep a root `PROJECT_PROGRESS.md` file continuously updated to compare roadmap intent against current execution progress.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

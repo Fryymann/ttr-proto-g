@@ -64,6 +64,18 @@ Example:
   --artifact ".koad/.agent-core/sessions/LOG.md"
 ```
 
+By default, `saveup` also refreshes `PROJECT_PROGRESS.md`. Use `--no-progress-sync` to skip.
+
+### `progress-sync`
+
+Generate/update a root project progress dashboard against backlog + roadmap + sprint references.
+
+Example:
+
+```bash
+.koad/scripts/koad progress-sync
+```
+
 ## Notes
 
 - `pr-open` uses `gh pr create`; ensure GitHub CLI is authenticated.

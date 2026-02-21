@@ -264,3 +264,15 @@
     - `.koad/scripts/koad pr-open --help`
     - `.koad/scripts/koad saveup --help`
     - dry-run calls for each command.
+
+## 2026-02-21 - Root project progress dashboard automation
+- Scope:
+  - Provide an easy, continuously refreshed roadmap-vs-progress view in repo root.
+- Changes:
+  - Added `koad progress-sync` command to generate `PROJECT_PROGRESS.md` from canonical planning sources.
+  - Wired `koad saveup` to refresh `PROJECT_PROGRESS.md` by default (`--no-progress-sync` to skip).
+  - Added script docs and propagated continuity rules into AGENTS/standards/sprint-plan artifacts.
+  - Added standards entry `STD-012` for dashboard continuity.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Generated `PROJECT_PROGRESS.md` via `koad progress-sync`.

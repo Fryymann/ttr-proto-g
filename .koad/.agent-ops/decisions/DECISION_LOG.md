@@ -78,3 +78,58 @@
   - Handoff artifacts must include Antigravity prompt id/lane for traceability.
 - Revisit trigger:
   - If execution platform changes or parallel-lane merge overhead outweighs throughput gains.
+
+## 2026-02-21 - Campaign startup and lock-validation contract for M2 bootstrap
+- Decision:
+  - Server startup now requires explicit active campaign selection from a manifest (`--campaign`, `TTRPG_CAMPAIGN_ID`, or interactive selection prompt).
+  - Character create/login path is mediated by persistence-layer campaign-lock validation; first join applies lock metadata, mismatched campaign joins are rejected.
+- Why:
+  - Enforces one-active-campaign runtime policy and creates a clean seam for later durable persistence/admin unlock implementation.
+- Impact:
+  - Startup behavior is now campaign-context-aware and blocks ambiguous default campaign boot.
+  - Account/character/campaign-lock scaffolding exists in code and can be replaced by a durable storage backend without rewriting auth command flow.
+- Revisit trigger:
+  - When implementing audited admin unlock tooling and non-volatile persistence in Sprint S4.
+
+## 2026-02-21 - Sprint execution authorization guardrail
+- Decision:
+  - Add a hard operating guardrail: the PM agent must not execute sprint implementation work unless the user explicitly requests sprint execution in the current thread.
+- Why:
+  - Sprints are intended for development lanes/teams, and unrequested PM sprint execution can bypass the intended delegation model.
+- Impact:
+  - Sprint activity defaults to planning/delegation/review only.
+  - Any sprint execution now requires explicit user authorization before implementation begins.
+- Revisit trigger:
+  - If user changes execution policy and explicitly allows autonomous PM sprint execution by default.
+
+## 2026-02-21 - Antigravity path convention uses Windows workspace paths
+- Decision:
+  - Antigravity lane prompts must use Windows-native workspace paths (for this repo: `C:\data\ttrpg`) instead of WSL paths (`/mnt/c/data/ttrpg`).
+- Why:
+  - Antigravity executes at the Windows layer and WSL paths can misroute agent context.
+- Impact:
+  - Prompt packets and delegation docs should emit `C:\...` path form for Antigravity agents.
+- Revisit trigger:
+  - If Antigravity runtime changes to Linux/WSL-native path resolution.
+
+## 2026-02-21 - Antigravity onboarding evidence gate for lane alignment
+- Decision:
+  - Add a mandatory onboarding evidence gate for every Antigravity lane before code edits.
+  - Require lane handoffs to include acceptance criteria `PASS`/`FAIL` evidence and explicit out-of-scope modification disclosure.
+- Why:
+  - Shared branch/worktree execution can drift without explicit context verification and acceptance mapping.
+- Impact:
+  - Lane kickoff now must prove workspace path, branch, base commit, and backlog acceptance scope.
+  - Lane closure quality is stricter; incomplete artifacts or unverified criteria cannot be treated as complete.
+- Revisit trigger:
+  - If Antigravity platform introduces native enforced lane templates/checklists.
+
+## 2026-02-21 - S1 gameplay lane completion requires crate-integrated test evidence
+- Decision:
+  - Do not treat S1 gameplay lane work as complete unless `scene` primitives are integrated into crate compilation paths and occupancy tests run under standard server test commands.
+- Why:
+  - Unreferenced modules can contain passing local tests that never execute in CI/default lane verification.
+- Impact:
+  - Future lane reviews must verify artifact existence and execution-path integration, not only file presence.
+- Revisit trigger:
+  - If crate test architecture changes to auto-discover and run isolated module tests.

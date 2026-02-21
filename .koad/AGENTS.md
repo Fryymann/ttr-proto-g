@@ -16,6 +16,8 @@ Any coding agent instance started in this workspace must initialize context befo
 - Use `.koad/.agent-core` for identity and memory.
 - Use `.koad/.agent-ops` for operational standards and logs.
 - Never store secrets in `.koad/.agent-core` or `.koad/.agent-ops`.
+- Sprint execution guardrail: do not perform sprint implementation work unless the user explicitly asks for sprint execution in the current thread.
+- For Antigravity delegation, enforce onboarding evidence before edits (path/branch/commit/scope) and acceptance-evidence handoff before lane closure.
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.

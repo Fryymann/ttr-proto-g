@@ -22,3 +22,18 @@ Append-only record of durable lessons.
 - Observation: Explicitly mirroring durable PM updates into both `.agents/` and Koad ops logs prevents split-brain project state.
 - Why it matters: Future agents can recover both planning context and operational rationale without guessing.
 - Behavior update: For substantial PM updates, always write to `.agents` artifacts and `.koad/.agent-ops` logs in the same session.
+
+### Governance
+- Observation: Without an explicit authorization gate, PM agents can drift from delegation into direct sprint execution.
+- Why it matters: This blurs team boundaries and can violate intended sprint ownership.
+- Behavior update: Treat sprint implementation as blocked by default unless user explicitly authorizes sprint execution in-thread.
+
+### Integration
+- Observation: Antigravity lane execution in this workspace resolves Windows paths, not WSL mount paths.
+- Why it matters: Prompt packets using `/mnt/c/...` can target the wrong filesystem context.
+- Behavior update: Emit `C:\...` workspace paths in Antigravity prompts and delegation docs.
+
+### Execution Quality
+- Observation: Shared-branch lane execution can diverge without explicit onboarding proof and acceptance mapping.
+- Why it matters: Agents may report completion with missing artifacts or out-of-scope edits.
+- Behavior update: Require pre-edit onboarding evidence (path/branch/commit/scope) and pass/fail acceptance evidence in lane handoffs.

@@ -63,3 +63,65 @@
   - Updated memory and decision logs for durable workflow continuity.
 - Evidence:
   - Updated `ANTIGRAVITY_SPRINT_PROMPTS.md`, `.agents/roles/project-manager.md`, `.agents/teams.md`, `docs/design/execution-sprint-plan.md`, and Koad memory/ops logs.
+
+## 2026-02-21 - Sprint S1-P1 campaign bootstrap and lock seam scaffold
+- Scope:
+  - Resume execution from planning into Sprint S1-P1 implementation for campaign startup and persistence/account scaffolding.
+- Changes:
+  - Added campaign manifest loader and explicit active-campaign selection flow (`--campaign` / `TTRPG_CAMPAIGN_ID` / interactive prompt).
+  - Added in-memory account/character persistence scaffolding with campaign-lock metadata and join-time lock enforcement seam.
+  - Integrated create/login path with persistence validation and updated operator docs + sample campaign manifest.
+- Evidence:
+  - Updated `crates/ttrpg-server/src/main.rs`, `crates/ttrpg-server/src/campaign/mod.rs`, `crates/ttrpg-server/src/account/mod.rs`, `crates/ttrpg-server/src/persistence/mod.rs`, `campaigns/manifest.json`, and `README.md`.
+  - Verified with `cargo check` and `cargo test -p ttrpg-server` (6 tests passing).
+
+## 2026-02-21 - Operating guardrail for sprint execution authorization
+- Scope:
+  - Enforce a Koad operating-system guardrail that blocks PM sprint implementation unless explicitly requested by user.
+- Changes:
+  - Added `STD-005` sprint execution authorization gate to standards registry.
+  - Added explicit sprint-authorization requirements to bootstrap/startup, identity, PM role, and kit README guidance.
+  - Updated user preference memory to reflect sprint execution ownership boundary.
+- Evidence:
+  - Updated `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/AGENTS.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/IDENTITY.md`, `.agents/roles/project-manager.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/README.md`.
+
+## 2026-02-21 - Documentation update for S1-P1 completion
+- Scope:
+  - Update planning artifacts to reflect completion status of Sprint S1 lane `S1-P1`.
+- Changes:
+  - Marked `BL-011` as `done` and removed it from `Now` active focus.
+  - Added explicit `S1-P1` completion status note in execution sprint plan with remaining scope callout for `BL-012`.
+  - Annotated `ANTIGRAVITY_SPRINT_PROMPTS.md` `S1-P1` block with completion status and follow-up boundaries.
+- Evidence:
+  - Updated `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, and `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+
+## 2026-02-21 - Antigravity Windows path alignment
+- Scope:
+  - Align Antigravity prompt and PM guidance with Windows-layer path resolution.
+- Changes:
+  - Updated sprint prompt pack to use `C:\data\ttrpg` workspace paths and added explicit path-translation guidance.
+  - Updated PM role workflow and user preference memory to enforce Windows path form for Antigravity delegation packets.
+- Evidence:
+  - Updated `ANTIGRAVITY_SPRINT_PROMPTS.md`, `.agents/roles/project-manager.md`, and `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+
+## 2026-02-21 - Antigravity onboarding tightening for lane alignment
+- Scope:
+  - Strengthen Antigravity coder-lane onboarding and completion criteria to reduce scope drift on shared branch/worktree execution.
+- Changes:
+  - Added lane context contract, mandatory onboarding command/evidence gate, and required handoff quality gate to prompt pack.
+  - Updated PM role workflow to require onboarding acknowledgement and acceptance checklist evidence before lane closure.
+  - Added new standards entry (`STD-006`) and AGENTS operational rule for Antigravity onboarding enforcement.
+- Evidence:
+  - Updated `ANTIGRAVITY_SPRINT_PROMPTS.md`, `.agents/roles/project-manager.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, and `.koad/AGENTS.md`.
+
+## 2026-02-21 - S1-G1 review remediation and closure sync
+- Scope:
+  - Remediate S1-G1 review findings and align tracker/docs to actual completed gameplay-lane deliverables.
+- Changes:
+  - Wired `scene` module into server crate so occupancy unit tests compile/run with normal server test commands.
+  - Replaced SRD checklist content with evidence-oriented mapping gate tied to mechanics matrix source columns.
+  - Updated sprint/backlog/prompt status to mark `BL-001` and `BL-019` done and annotate `S1-G1` as completed.
+  - Removed stray `mod.pdb` artifact from workspace root.
+- Evidence:
+  - Updated `crates/ttrpg-server/src/main.rs`, `docs/design/srd-compliance-checklist-v1.md`, `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, and `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+  - Verified with `cargo test -p ttrpg-server` (9 passing, includes `scene::*` tests) and filtered `test_occupancy_rules` run.

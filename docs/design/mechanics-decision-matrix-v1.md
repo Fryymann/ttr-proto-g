@@ -25,53 +25,53 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 
 ## Decision Matrix
 
-| System | Baseline Intent | Decision | V1 Implementation Direction | Why |
-| --- | --- | --- | --- | --- |
-| d20 tests (checks/attacks/saves) | Core resolution mechanic | KEEP | Server rolls and validates all outcomes | Familiar and deterministic |
-| Ability scores + modifiers | Character math base | KEEP | Standard modifiers and derived bonuses | Required for class/skill identity |
-| Proficiency bonus scaling | Competency progression | KEEP | Global progression table in rules module | Clean and compact |
-| Advantage/disadvantage | Binary roll modifier | KEEP | Single source of truth for stacking rules | Fast to compute and explain |
-| Initiative | Turn order entry point | ADAPT | Roll once per encounter, stable tie-breakers, turn timer | Needed for online pacing |
-| Surprise | Opening advantage/disruption | ADAPT | Apply initiative penalties/bonuses; avoid skip-turn feel-bad | Better multiplayer UX |
-| Action/bonus/reaction economy | Tactical turn limits | KEEP | Hard-enforced action slots each turn/round | Strong tactical clarity |
-| Movement on 5-ft grid | Tactical positioning | KEEP | Tile movement with speed budget per turn | Aligns with scene model |
-| Diagonal movement | Grid distance edge case | ADAPT | Use 5/5 diagonals in V1 | Simpler for terminal play |
-| Reach and range | Melee/ranged constraints | KEEP | Manhattan/Chebyshev policy fixed in rules core | Required for weapon/spell identity |
-| Opportunity attacks | Threat zones | KEEP | Trigger on hostile reach exit unless exempt | Core tactical depth |
-| Cover | Positional defense | ADAPT | Tile/object tags grant half/three-quarters cover | Works with text maps |
-| Conditions | Status effects | KEEP | Implement common combat conditions first | Reusable across systems |
-| Exhaustion | Long-term fatigue | ADAPT | Use simplified track in V1 | Full detail is heavy early |
-| HP/temp HP/death saves | Survival model | KEEP | Standard damage pipeline and death saves | Critical to D&D feel |
-| Grapple/shove | Battlefield control | ADAPT | Keep with constrained deterministic checks | Useful but rules-heavy |
-| Ready action | Tactical planning | KEEP | Queue trigger + stored action intent | Important for turn play |
-| Dodge/disengage/dash/help/use object | Action set staples | KEEP | Already aligned with combat framework outline | Low risk, high value |
-| Spell slots + spellcasting | Class identity | ADAPT | Start with curated spell list + strict validators | Complexity control |
-| Concentration | Ongoing spell balance | KEEP | Single concentration effect per actor | Essential for spell balance |
-| Components/material tracking | Spell friction realism | ADAPT | Ignore most material tracking except costly components | Reduce bookkeeping |
-| Ammunition tracking | Resource realism | ADAPT | Optional toggle; default light tracking in V1 | Reduce friction |
-| Encumbrance | Inventory realism | DROP | No weight simulation in V1 | High overhead, low fun early |
-| Short/long rests | Recovery cadence | ADAPT | Server-timed, interruption-aware rest states | Persistent world needs explicit timing |
-| Passive perception/insight | Background awareness | ADAPT | Derived passive values used by server checks | Reduces hidden GM logic |
-| Stealth/hiding | Visibility gameplay | ADAPT | Deterministic visibility + contested checks | Must work without GM ad hoc |
-| Social influence | Structured social play | ADAPT | Turn-based social actions + NPC attitude states | Supports party social gameplay goal |
-| Exploration travel pace | Overland procedure | DEFER | Scene-level movement first; world travel later | Not needed for early vertical slice |
-| Mounted combat | Specialized subsystem | DROP | Excluded from V1 | Too large for early scope |
-| Legendary/lair actions | Boss complexity | DEFER | Add after core encounter loop stabilizes | Advanced content layer |
-| Multiattack/monster actions | NPC combat variety | KEEP | Per-NPC action profiles in data | Needed for encounter variety |
+| System | Baseline Intent | Decision | Source | V1 Implementation Direction | Why |
+| --- | --- | --- | --- | --- | --- |
+| d20 tests (checks/attacks/saves) | Core resolution mechanic | KEEP | SRD | Server rolls and validates all outcomes | Familiar and deterministic |
+| Ability scores + modifiers | Character math base | KEEP | SRD | Standard modifiers and derived bonuses | Required for class/skill identity |
+| Proficiency bonus scaling | Competency progression | KEEP | SRD | Global progression table in rules module | Clean and compact |
+| Advantage/disadvantage | Binary roll modifier | KEEP | SRD | Single source of truth for stacking rules | Fast to compute and explain |
+| Initiative | Turn order entry point | ADAPT | SRD | Roll once per encounter, stable tie-breakers, turn timer | Needed for online pacing |
+| Surprise | Opening advantage/disruption | ADAPT | SRD | Apply initiative penalties/bonuses; avoid skip-turn feel-bad | Better multiplayer UX |
+| Action/bonus/reaction economy | Tactical turn limits | KEEP | SRD | Hard-enforced action slots each turn/round | Strong tactical clarity |
+| Movement on 5-ft grid | Tactical positioning | KEEP | SRD | Tile movement with speed budget per turn | Aligns with scene model |
+| Diagonal movement | Grid distance edge case | ADAPT | Original | Use 5/5 diagonals in V1 | Simpler for terminal play |
+| Reach and range | Melee/ranged constraints | KEEP | SRD | Manhattan/Chebyshev policy fixed in rules core | Required for weapon/spell identity |
+| Opportunity attacks | Threat zones | KEEP | SRD | Trigger on hostile reach exit unless exempt | Core tactical depth |
+| Cover | Positional defense | ADAPT | SRD | Tile/object tags grant half/three-quarters cover | Works with text maps |
+| Conditions | Status effects | KEEP | SRD | Implement common combat conditions first | Reusable across systems |
+| Exhaustion | Long-term fatigue | ADAPT | SRD | Use simplified track in V1 | Full detail is heavy early |
+| HP/temp HP/death saves | Survival model | KEEP | SRD | Standard damage pipeline and death saves | Critical to D&D feel |
+| Grapple/shove | Battlefield control | ADAPT | SRD | Keep with constrained deterministic checks | Useful but rules-heavy |
+| Ready action | Tactical planning | KEEP | SRD | Queue trigger + stored action intent | Important for turn play |
+| Dodge/disengage/dash/help/use object | Action set staples | KEEP | SRD | Already aligned with combat framework outline | Low risk, high value |
+| Spell slots + spellcasting | Class identity | ADAPT | SRD | Start with curated spell list + strict validators | Complexity control |
+| Concentration | Ongoing spell balance | KEEP | SRD | Single concentration effect per actor | Essential for spell balance |
+| Components/material tracking | Spell friction realism | ADAPT | SRD | Ignore most material tracking except costly components | Reduce bookkeeping |
+| Ammunition tracking | Resource realism | ADAPT | SRD | Optional toggle; default light tracking in V1 | Reduce friction |
+| Encumbrance | Inventory realism | DROP | - | No weight simulation in V1 | High overhead, low fun early |
+| Short/long rests | Recovery cadence | ADAPT | SRD | Server-timed, interruption-aware rest states | Persistent world needs explicit timing |
+| Passive perception/insight | Background awareness | ADAPT | SRD | Derived passive values used by server checks | Reduces hidden GM logic |
+| Stealth/hiding | Visibility gameplay | ADAPT | SRD | Deterministic visibility + contested checks | Must work without GM ad hoc |
+| Social influence | Structured social play | ADAPT | Original | Turn-based social actions + NPC attitude states | Supports party social gameplay goal |
+| Exploration travel pace | Overland procedure | DEFER | - | Scene-level movement first; world travel later | Not needed for early vertical slice |
+| Mounted combat | Specialized subsystem | DROP | - | Excluded from V1 | Too large for early scope |
+| Legendary/lair actions | Boss complexity | DEFER | - | Add after core encounter loop stabilizes | Advanced content layer |
+| Multiattack/monster actions | NPC combat variety | KEEP | SRD | Per-NPC action profiles in data | Needed for encounter variety |
 
 ## Campaign and Session Operations
 
-| System | Baseline Intent | Decision | V1 Implementation Direction | Why |
-| --- | --- | --- | --- | --- |
-| Server campaign selection | Choose world/campaign at startup | KEEP | One active campaign chosen from prebuilt manifest at server boot | Clear operational model |
-| Campaign save model | Persist ongoing progress | ADAPT | Single save slot per campaign on server (no branches) | Simpler state management |
-| Account ownership | Persistent player identity | KEEP | Server accounts own character roster | Supports long-term progression |
-| Character-to-campaign binding | Prevent cross-campaign leakage | KEEP | Character becomes campaign-locked at join time; audited admin unlock path is allowed by policy | Preserves campaign continuity with operational recovery |
-| Character export | Portability/backups | KEEP | Export character snapshots as standardized JSON | User control and tooling support |
-| Quit/disconnect in encounter | Session resilience | ADAPT | Treat quit as disconnect; strictly defensive actions for N rounds, then limited AI behavior until reconnect/safe resolution | Prevent exploit and broken turns while preserving fairness |
-| Encounter participation scope | Bring participants into combat | ADAPT | V1 party-based participation; non-party actors are not auto-pulled by location | Supports distraction/sneak play and deterministic scope |
-| DM-agent authority | Add dynamic NPC support without losing control | ADAPT | DM-agent output is advisory only; scripted/rules layers decide authoritative outcomes | Preserves deterministic rule authority |
-| Client presentation | Keep terminal feel with richer UX | ADAPT | Terminal-first baseline with optional split-feed client surfaces | Better usability without forcing GUI |
+| System | Baseline Intent | Decision | Source | V1 Implementation Direction | Why |
+| --- | --- | --- | --- | --- | --- |
+| Server campaign selection | Choose world/campaign at startup | KEEP | Original | One active campaign chosen from prebuilt manifest at server boot | Clear operational model |
+| Campaign save model | Persist ongoing progress | ADAPT | Original | Single save slot per campaign on server (no branches) | Simpler state management |
+| Account ownership | Persistent player identity | KEEP | Original | Server accounts own character roster | Supports long-term progression |
+| Character-to-campaign binding | Prevent cross-campaign leakage | KEEP | Original | Character becomes campaign-locked at join time; audited admin unlock path is allowed by policy | Preserves campaign continuity with operational recovery |
+| Character export | Portability/backups | KEEP | Original | Export character snapshots as standardized JSON | User control and tooling support |
+| Quit/disconnect in encounter | Session resilience | ADAPT | Original | Treat quit as disconnect; strictly defensive actions for N rounds, then limited AI behavior until reconnect/safe resolution | Prevent exploit and broken turns while preserving fairness |
+| Encounter participation scope | Bring participants into combat | ADAPT | Original | V1 party-based participation; non-party actors are not auto-pulled by location | Supports distraction/sneak play and deterministic scope |
+| DM-agent authority | Add dynamic NPC support without losing control | ADAPT | Original | DM-agent output is advisory only; scripted/rules layers decide authoritative outcomes | Preserves deterministic rule authority |
+| Client presentation | Keep terminal feel with richer UX | ADAPT | Original | Terminal-first baseline with optional split-feed client surfaces | Better usability without forcing GUI |
 
 ## What Will Not Work Unchanged
 

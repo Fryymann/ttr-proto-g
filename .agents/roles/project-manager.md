@@ -24,6 +24,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - May sequence and re-prioritize tasks to protect delivery.
 - Must not override explicit product decisions by project owner.
 - Must keep server-authoritative rules and deterministic simulation as non-negotiable architecture constraints.
+- Must not execute sprint implementation lanes unless the user explicitly requests sprint execution in the current thread.
 
 ## Core Project References
 
@@ -61,6 +62,10 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 3. Delegate
 - Assign to role owners (or agent tracks) with required artifacts.
 - Publish/update corresponding Antigravity starter prompts for each sprint lane.
+- Default to delegation-only for sprints unless explicit user authorization to execute sprint work is provided.
+- Use Windows-native workspace paths in Antigravity prompt packets (`C:\...`).
+- Require lane onboarding acknowledgement before edits (workspace path, branch, base commit, backlog acceptance mapping).
+- Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
 
 4. Verify
 - Confirm code/docs/tests align with requested outcome.

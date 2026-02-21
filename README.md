@@ -15,6 +15,7 @@ This repository contains a minimal multiplayer text RPG scaffold:
 
 - Multi-client server
 - Character create/login with interactive editor
+- Campaign manifest loading + explicit active campaign selection at server boot
 - Commands: `look`, `go`, `say`, `who`, `sheet`, `help`
 - Shared room state and room chat
 - Line-delimited JSON protocol
@@ -37,7 +38,7 @@ source "$HOME/.cargo/env"
 3. Run server:
 
 ```bash
-cargo run -p ttrpg-server
+cargo run -p ttrpg-server -- --campaign greenhollow
 ```
 
 4. In two terminals, run clients:
@@ -60,8 +61,16 @@ go north
 ## Notes
 
 - Default server address: `127.0.0.1:7000`
+- Default campaign manifest: `campaigns/manifest.json`
+- If `--campaign` is not provided, the server prompts for selection from the manifest.
 - Override with environment variable:
 
 ```bash
 TTRPG_SERVER_ADDR=127.0.0.1:7001 cargo run -p ttrpg-server
+```
+
+- Non-interactive campaign selection:
+
+```bash
+TTRPG_CAMPAIGN_ID=greenhollow cargo run -p ttrpg-server
 ```

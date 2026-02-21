@@ -41,3 +41,21 @@ Purpose: codable representation of standards for this workspace.
   - Update `.agents/backlog.md` when new work is identified or reprioritized.
   - Update `.agents/risk-register.md` when new risks or mitigations are identified.
   - Update `.agents/teams.md` when ownership boundaries change.
+
+### STD-005 - Sprint Execution Authorization Gate
+- Status: Active
+- Source: `.koad/AGENTS.md`
+- Intent: Prevent PM agent from self-initiating sprint execution work intended for development lanes.
+- Local interpretation:
+  - Treat sprint implementation/execution as blocked by default.
+  - Only run sprint implementation when the user explicitly requests sprint execution in the current thread.
+  - Without explicit user authorization, limit sprint activity to planning, delegation packets, review, and coordination artifacts.
+
+### STD-006 - Antigravity Lane Onboarding Evidence Gate
+- Status: Active
+- Source: `ANTIGRAVITY_SPRINT_PROMPTS.md`
+- Intent: Ensure coder lanes are aligned on workspace, branch, scope, and acceptance evidence before implementation.
+- Local interpretation:
+  - Require onboarding acknowledgement for each lane before edits (workspace path, branch, base commit, backlog acceptance mapping, planned files/tests).
+  - Require lane handoffs to include acceptance checklist evidence and explicit out-of-scope modification disclosure.
+  - Do not mark lane complete when required artifacts are missing or acceptance criteria are unverified.

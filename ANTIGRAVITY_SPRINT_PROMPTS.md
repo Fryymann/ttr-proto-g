@@ -11,6 +11,9 @@ Owner: Koad (Project Manager)
 3. Paste the full prompt block into that agent.
 4. Collect handoff output from each lane and merge in review order.
 
+Path note for Antigravity agents:
+- Antigravity runs with Windows-native paths. Treat `/mnt/c/...` as `C:\...` and prefer Windows path form directly in lane prompts.
+
 Global constraints for all prompts:
 
 - Keep server-authoritative and deterministic behavior.
@@ -26,14 +29,59 @@ Standard handoff format expected from each agent:
 4. Risks or deferred work
 5. Recommended next lane dependency updates
 
+## Lane Context Contract (Default)
+
+- Workspace root for Antigravity lanes: `C:\data\ttrpg`.
+- Branch/worktree policy: use the current shared branch/worktree unless PM explicitly assigns a different one.
+- Do not change branch history (`rebase`, `reset --hard`) or switch branches unless explicitly directed.
+- Assume unrelated uncommitted changes may exist; do not edit files outside lane scope.
+
+## Mandatory Onboarding Gate (Run Before Any Edits)
+
+Each lane must run and report:
+
+1. `pwd`
+2. `git rev-parse --abbrev-ref HEAD`
+3. `git rev-parse --short HEAD`
+4. `git status --short`
+5. `rg -n "<PROMPT_ID>|BL-XXX" ANTIGRAVITY_SPRINT_PROMPTS.md .agents/backlog.md docs/design/execution-sprint-plan.md`
+
+Required "Onboarding Acknowledgement" (before coding):
+
+1. Prompt id
+2. Workspace path + branch + base commit
+3. Backlog IDs in scope and copied acceptance criteria
+4. Planned file targets
+5. Explicit out-of-scope files/modules
+6. Planned verification commands
+
+Do not begin code edits until this onboarding acknowledgement is complete.
+
+## Required Handoff Quality Gate
+
+In addition to the standard handoff format, include:
+
+1. Onboarding command evidence summary (path/branch/commit/status)
+2. Acceptance criteria checklist with `PASS`/`FAIL` and file/test evidence for each criterion
+3. Explicit statement: `No out-of-scope files modified` (or list exceptions with reason)
+4. Blockers that prevent lane closure (if any)
+
+Lane completion rule:
+- A lane is not complete if any required artifact/file from scope is missing or any acceptance criterion is unverified.
+
 ---
 
 ## Sprint S1
 
-### Prompt `S1-P1` (Platform: Campaign + Persistence Bootstrap)
+### Prompt `S1-P1` (Platform: Campaign + Persistence Bootstrap) - Completed 2026-02-21
+
+Status note:
+- Completed for M2 bootstrap scope.
+- Landed campaign manifest selection flow and account/character campaign-lock scaffolding.
+- Follow-up remains under `BL-012`/`BL-018` for durable persistence and audited admin unlock path.
 
 ```text
-You are Antigravity coder agent lane S1-P1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S1-P1 for C:\data\ttrpg.
 
 Objective:
 - Implement campaign manifest selection and persistence scaffolding for account/character/campaign-lock metadata.
@@ -72,10 +120,15 @@ Deliverable handoff:
 5) Suggested follow-up for S2-P1
 ```
 
-### Prompt `S1-G1` (Gameplay: Scene Contract + SRD Checklist)
+### Prompt `S1-G1` (Gameplay: Scene Contract + SRD Checklist) - Completed 2026-02-21
+
+Status note:
+- Completed for S1 gameplay scope.
+- Landed scene contract primitives with occupancy validation tests.
+- Added SRD compliance checklist and mechanics matrix source-mapping pass.
 
 ```text
-You are Antigravity coder agent lane S1-G1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S1-G1 for C:\data\ttrpg.
 
 Objective:
 - Define scene contract primitives and produce SRD compliance checklist artifact.
@@ -118,7 +171,7 @@ Deliverable handoff:
 ### Prompt `S2-P1` (Platform: Deterministic Queue + Scene Protocol)
 
 ```text
-You are Antigravity coder agent lane S2-P1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S2-P1 for C:\data\ttrpg.
 
 Objective:
 - Implement deterministic scene command queue and scene snapshot/delta protocol extensions.
@@ -157,7 +210,7 @@ Deliverable handoff:
 ### Prompt `S2-E1` (Experience: CLI Scene Rendering)
 
 ```text
-You are Antigravity coder agent lane S2-E1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S2-E1 for C:\data\ttrpg.
 
 Objective:
 - Add CLI scene rendering and clear movement/occupancy feedback.
@@ -199,7 +252,7 @@ Deliverable handoff:
 ### Prompt `S3-G1` (Gameplay: Party Encounter Skeleton)
 
 ```text
-You are Antigravity coder agent lane S3-G1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S3-G1 for C:\data\ttrpg.
 
 Objective:
 - Implement party-based encounter participant capture and encounter state machine basics.
@@ -237,7 +290,7 @@ Deliverable handoff:
 ### Prompt `S3-P1` (Platform: Turn Timer + Fallback)
 
 ```text
-You are Antigravity coder agent lane S3-P1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S3-P1 for C:\data\ttrpg.
 
 Objective:
 - Add turn timing infrastructure and deterministic timeout fallback.
@@ -274,7 +327,7 @@ Deliverable handoff:
 ### Prompt `S3-E1` (Experience: Turn Tracker UX)
 
 ```text
-You are Antigravity coder agent lane S3-E1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S3-E1 for C:\data\ttrpg.
 
 Objective:
 - Render turn tracker and active actor indicators in CLI.
@@ -313,7 +366,7 @@ Deliverable handoff:
 ### Prompt `S4-P1` (Platform: Snapshot Safety + Admin Audit)
 
 ```text
-You are Antigravity coder agent lane S4-P1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S4-P1 for C:\data\ttrpg.
 
 Objective:
 - Implement rollback-safe snapshot flow and audited admin unlock tooling.
@@ -350,7 +403,7 @@ Deliverable handoff:
 ### Prompt `S4-G1` (Gameplay: Disconnect Policy + DM Advisory Boundaries)
 
 ```text
-You are Antigravity coder agent lane S4-G1 for /mnt/c/data/ttrpg.
+You are Antigravity coder agent lane S4-G1 for C:\data\ttrpg.
 
 Objective:
 - Implement staged disconnect fallback and advisory-only DM-agent acceptance boundaries.

@@ -24,3 +24,4 @@
 5. Before substantial work:
 - State applicable standards IDs.
 - State risk level (`Low|Medium|High`).
+- If work resembles sprint implementation, verify explicit user authorization first; otherwise remain in planning/delegation mode.

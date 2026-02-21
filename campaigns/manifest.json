@@ -1,0 +1,18 @@
+{
+  "campaigns": [
+    {
+      "campaign_id": "greenhollow",
+      "name": "Greenhollow: Emberwake",
+      "content_version": "v1",
+      "entry_scene_id": "town_square",
+      "save_path": "saves/greenhollow.json"
+    },
+    {
+      "campaign_id": "ashfall",
+      "name": "Ashfall Frontier",
+      "content_version": "v1",
+      "entry_scene_id": "town_square",
+      "save_path": "saves/ashfall.json"
+    }
+  ]
+}

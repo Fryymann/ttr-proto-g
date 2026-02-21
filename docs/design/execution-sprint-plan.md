@@ -206,3 +206,5 @@ For each backlog item completed:
 ## Sprint Status Notes
 
 - 2026-02-21: Initial execution plan created. S1 planning ready to begin.
+- 2026-02-21: `S1-P1` completed. Campaign manifest selection flow and account/character campaign-lock scaffolding landed (`BL-011` done; `BL-012` remains in progress pending durable persistence and audited admin unlock integration).
+- 2026-02-21: `S1-G1` completed. Scene contract/occupancy module and SRD compliance checklist + source mapping pass landed (`BL-001` and `BL-019` done).

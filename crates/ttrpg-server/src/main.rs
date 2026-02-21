@@ -1,5 +1,12 @@
+mod account;
+mod campaign;
+mod persistence;
+#[allow(dead_code)]
+mod scene;
+
 use std::collections::HashMap;
 use std::env;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
@@ -7,6 +14,8 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
+use campaign::{CampaignCatalog, CampaignManifestEntry};
+use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
 use ttrpg_protocol::{to_json_line, CharacterDraft, ClientMessage, ServerMessage};
 
 type ClientTx = mpsc::UnboundedSender<ServerMessage>;
@@ -23,6 +32,7 @@ struct Room {
 #[derive(Clone)]
 struct Player {
     id: u64,
+    account_id: String,
     character: CharacterDraft,
     room_id: String,
 }
@@ -39,16 +49,20 @@ struct ServerState {
     player_name_index: HashMap<String, u64>,
     sessions: HashMap<u64, ClientTx>,
     rooms: HashMap<String, Room>,
+    persistence: Box<dyn Persistence>,
+    active_campaign: CampaignManifestEntry,
 }
 
 impl ServerState {
-    fn new() -> Self {
+    fn new(active_campaign: CampaignManifestEntry) -> Self {
         Self {
             next_player_id: 1,
             players: HashMap::new(),
             player_name_index: HashMap::new(),
             sessions: HashMap::new(),
             rooms: build_world(),
+            persistence: Box::new(InMemoryPersistence::default()),
+            active_campaign,
         }
     }
 }
@@ -56,6 +70,13 @@ impl ServerState {
 #[derive(Default)]
 struct SessionContext {
     player_id: Option<u64>,
+}
+
+#[derive(Debug)]
+struct StartupConfig {
+    addr: String,
+    manifest_path: PathBuf,
+    campaign_id: Option<String>,
 }
 
 #[tokio::main]
@@ -66,11 +87,20 @@ async fn main() -> io::Result<()> {
         )
         .init();
 
-    let addr = env::var("TTRPG_SERVER_ADDR").unwrap_or_else(|_| "127.0.0.1:7000".to_owned());
-    let listener = TcpListener::bind(&addr).await?;
-    let state = Arc::new(Mutex::new(ServerState::new()));
+    let startup_config = parse_startup_config()?;
+    let campaign_catalog = CampaignCatalog::load_from_path(&startup_config.manifest_path)
+        .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err.to_string()))?;
+    let active_campaign =
+        campaign_catalog.resolve_active_campaign(startup_config.campaign_id.as_deref())?;
 
-    info!("server listening on {}", addr);
+    let listener = TcpListener::bind(&startup_config.addr).await?;
+    let state = Arc::new(Mutex::new(ServerState::new(active_campaign.clone())));
+
+    info!(
+        "active campaign: {} ({})",
+        active_campaign.name, active_campaign.campaign_id
+    );
+    info!("server listening on {}", startup_config.addr);
 
     loop {
         let (socket, peer_addr) = listener.accept().await?;
@@ -83,9 +113,60 @@ async fn main() -> io::Result<()> {
     }
 }
 
+fn parse_startup_config() -> io::Result<StartupConfig> {
+    let mut addr = env::var("TTRPG_SERVER_ADDR").unwrap_or_else(|_| "127.0.0.1:7000".to_owned());
+    let mut manifest_path = env::var("TTRPG_CAMPAIGN_MANIFEST")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("campaigns/manifest.json"));
+    let mut campaign_id = env::var("TTRPG_CAMPAIGN_ID").ok();
+
+    let mut args = env::args().skip(1);
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--addr" => {
+                addr = next_cli_value(&mut args, "--addr")?;
+            }
+            "--manifest" => {
+                manifest_path = PathBuf::from(next_cli_value(&mut args, "--manifest")?);
+            }
+            "--campaign" => {
+                campaign_id = Some(next_cli_value(&mut args, "--campaign")?);
+            }
+            unknown => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    format!(
+                        "unknown argument '{}'. Supported: --addr, --manifest, --campaign",
+                        unknown
+                    ),
+                ));
+            }
+        }
+    }
+
+    Ok(StartupConfig {
+        addr,
+        manifest_path,
+        campaign_id,
+    })
+}
+
+fn next_cli_value(args: &mut impl Iterator<Item = String>, flag: &str) -> io::Result<String> {
+    args.next().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("missing value for {}", flag),
+        )
+    })
+}
+
 async fn handle_connection(socket: TcpStream, state: SharedState) -> io::Result<()> {
     let (reader, mut writer) = socket.into_split();
     let (tx, mut rx) = mpsc::unbounded_channel::<ServerMessage>();
+    let campaign_name = {
+        let locked = state.lock().await;
+        locked.active_campaign.name.clone()
+    };
 
     let writer_task = tokio::spawn(async move {
         while let Some(message) = rx.recv().await {
@@ -106,7 +187,10 @@ async fn handle_connection(socket: TcpStream, state: SharedState) -> io::Result<
     send_to_client(
         &tx,
         ServerMessage::Info {
-            text: "Welcome to TTRPG M1. Use /create (editor) or /login <name>.".to_owned(),
+            text: format!(
+                "Welcome to TTRPG M1. Active campaign: {}. Use /create (editor) or /login <name>.",
+                campaign_name
+            ),
         },
     );
     send_prompt(&tx, false);
@@ -201,6 +285,7 @@ async fn handle_create_character(
     };
 
     let name_key = name_key(&character.name);
+    let account_handle = format!("local:{}", name_key);
     let mut join_recipients: Vec<ClientTx> = Vec::new();
     let player_id: u64;
     let room_id: String;
@@ -209,31 +294,42 @@ async fn handle_create_character(
 
     {
         let mut locked = state.lock().await;
+        let active_campaign_id = locked.active_campaign.campaign_id.clone();
+        let entry_scene_id = locked.active_campaign.entry_scene_id.clone();
 
-        if locked.player_name_index.contains_key(&name_key) {
-            send_to_client(
-                tx,
-                ServerMessage::Error {
-                    text: "Character already exists. Use /login <name>.".to_owned(),
-                },
-            );
-            return;
-        }
+        let persisted = match locked.persistence.create_character(
+            &account_handle,
+            character,
+            &name_key,
+            &active_campaign_id,
+        ) {
+            Ok(record) => record,
+            Err(CreateCharacterError::CharacterNameExists) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Character already exists. Use /login <name>.".to_owned(),
+                    },
+                );
+                return;
+            }
+        };
 
         player_id = locked.next_player_id;
         locked.next_player_id += 1;
 
-        room_id = "town_square".to_owned();
-        player_name = character.name.clone();
+        room_id = resolve_entry_room_id(&locked.rooms, &entry_scene_id);
+        player_name = persisted.character.name.clone();
 
         let player = Player {
             id: player_id,
-            character: character.clone(),
+            account_id: persisted.account_id,
+            character: persisted.character,
             room_id: room_id.clone(),
         };
 
         locked.players.insert(player_id, player);
-        locked.player_name_index.insert(name_key, player_id);
+        locked.player_name_index.insert(name_key.clone(), player_id);
         locked.sessions.insert(player_id, tx.clone());
 
         room_state = room_state_for_player_locked(&locked, player_id);
@@ -289,6 +385,16 @@ async fn handle_login(
     }
 
     let clean_name = name.trim();
+    if clean_name.is_empty() {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Usage: /login <name>".to_owned(),
+            },
+        );
+        return;
+    }
+
     let lookup_key = name_key(clean_name);
     let mut join_recipients: Vec<ClientTx> = Vec::new();
     let player_id: u64;
@@ -298,14 +404,47 @@ async fn handle_login(
 
     {
         let mut locked = state.lock().await;
-        let Some(found_id) = locked.player_name_index.get(&lookup_key).copied() else {
-            send_to_client(
-                tx,
-                ServerMessage::Error {
-                    text: "Character does not exist. Use /create to build one.".to_owned(),
-                },
-            );
-            return;
+        let active_campaign_id = locked.active_campaign.campaign_id.clone();
+        let entry_scene_id = locked.active_campaign.entry_scene_id.clone();
+
+        let persisted = match locked
+            .persistence
+            .validate_character_join(&lookup_key, &active_campaign_id)
+        {
+            Ok(record) => record,
+            Err(JoinCampaignError::CharacterNotFound) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Character does not exist. Use /create to build one.".to_owned(),
+                    },
+                );
+                return;
+            }
+            Err(JoinCampaignError::LockedToOtherCampaign { locked_campaign_id }) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: format!(
+                            "Character is locked to campaign '{}'. Ask an admin to unlock.",
+                            locked_campaign_id
+                        ),
+                    },
+                );
+                return;
+            }
+        };
+
+        let found_id = match locked.player_name_index.get(&lookup_key).copied() {
+            Some(existing_id) => existing_id,
+            None => {
+                let new_player_id = locked.next_player_id;
+                locked.next_player_id += 1;
+                locked
+                    .player_name_index
+                    .insert(lookup_key.clone(), new_player_id);
+                new_player_id
+            }
         };
 
         if locked.sessions.contains_key(&found_id) {
@@ -320,17 +459,13 @@ async fn handle_login(
 
         player_id = found_id;
         locked.sessions.insert(player_id, tx.clone());
-
-        let Some(player) = locked.players.get(&player_id).cloned() else {
-            send_to_client(
-                tx,
-                ServerMessage::Error {
-                    text: "Character data is missing.".to_owned(),
-                },
-            );
-            locked.sessions.remove(&player_id);
-            return;
-        };
+        let default_room_id = resolve_entry_room_id(&locked.rooms, &entry_scene_id);
+        let player = locked.players.entry(player_id).or_insert_with(|| Player {
+            id: player_id,
+            account_id: persisted.account_id.clone(),
+            character: persisted.character.clone(),
+            room_id: default_room_id.clone(),
+        });
 
         room_id = player.room_id.clone();
         player_name = player.display_name().to_owned();
@@ -486,7 +621,8 @@ async fn show_sheet(player_id: u64, tx: &ClientTx, state: &SharedState) {
         let locked = state.lock().await;
         if let Some(player) = locked.players.get(&player_id) {
             format!(
-                "Character Sheet\nName: {}\nAncestry: {}\nClass: {}\nBackground: {}\nPronouns: {}\nMotto: {}",
+                "Character Sheet\nAccount: {}\nName: {}\nAncestry: {}\nClass: {}\nBackground: {}\nPronouns: {}\nMotto: {}",
+                player.account_id.as_str(),
                 player.character.name.as_str(),
                 player.character.ancestry.as_str(),
                 player.character.class_name.as_str(),
@@ -740,6 +876,14 @@ fn build_world() -> HashMap<String, Room> {
     );
 
     rooms
+}
+
+fn resolve_entry_room_id(rooms: &HashMap<String, Room>, preferred_room_id: &str) -> String {
+    if rooms.contains_key(preferred_room_id) {
+        return preferred_room_id.to_owned();
+    }
+
+    "town_square".to_owned()
 }
 
 fn normalize_character(character: CharacterDraft) -> Result<CharacterDraft, String> {

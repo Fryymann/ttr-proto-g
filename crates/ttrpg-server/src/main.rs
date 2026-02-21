@@ -14,8 +14,6 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
-use std::time::SystemTime;
-
 use campaign::{CampaignCatalog, CampaignManifestEntry};
 use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
 use scene::queue::CommandEnvelope;
@@ -291,15 +289,11 @@ async fn process_client_message(
 
             if let Some(room) = locked.rooms.get_mut(&room_id) {
                 if let Some(runtime) = &mut room.scene_runtime {
-                    let timestamp_ms = SystemTime::now()
-                        .duration_since(SystemTime::UNIX_EPOCH)
-                        .unwrap_or_default()
-                        .as_millis() as u64;
-
                     runtime.queue.push(CommandEnvelope {
                         actor_id: actor_id.clone(),
                         command,
-                        timestamp_ms,
+                        // Deterministic tie-breaking is actor_id + queue sequence for S2.
+                        timestamp_ms: 0,
                         sequence_id: 0, // Assigned by push
                     });
 
@@ -1234,5 +1228,156 @@ fn opposite_direction(direction: &str) -> &'static str {
         "east" => "west",
         "west" => "east",
         _ => "unknown direction",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::sync::mpsc;
+    use ttrpg_protocol::{SceneCommand, SceneDelta, ScenePosition};
+
+    fn test_campaign() -> CampaignManifestEntry {
+        CampaignManifestEntry {
+            campaign_id: "test-campaign".to_owned(),
+            name: "Test Campaign".to_owned(),
+            content_version: "v1".to_owned(),
+            entry_scene_id: "town_square".to_owned(),
+            save_path: "saves/test.json".to_owned(),
+        }
+    }
+
+    fn test_character(name: &str) -> CharacterDraft {
+        CharacterDraft {
+            name: name.to_owned(),
+            ancestry: "Human".to_owned(),
+            class_name: "Fighter".to_owned(),
+            background: "Soldier".to_owned(),
+            pronouns: "they/them".to_owned(),
+            motto: "Hold the line".to_owned(),
+        }
+    }
+
+    fn collect_messages(rx: &mut mpsc::UnboundedReceiver<ServerMessage>) -> Vec<ServerMessage> {
+        let mut out = Vec::new();
+        while let Ok(message) = rx.try_recv() {
+            out.push(message);
+        }
+        out
+    }
+
+    fn has_actor_moved_delta(
+        messages: &[ServerMessage],
+        actor_id: &str,
+        from: Option<(i32, i32)>,
+        to: (i32, i32),
+    ) -> bool {
+        messages.iter().any(|message| {
+            let ServerMessage::SceneDelta { deltas } = message else {
+                return false;
+            };
+
+            deltas.iter().any(|delta| {
+                let SceneDelta::ActorMoved {
+                    actor_id: delta_actor_id,
+                    from: delta_from,
+                    to: delta_to,
+                } = delta
+                else {
+                    return false;
+                };
+
+                delta_actor_id == actor_id
+                    && delta_from.as_ref().map(|p| (p.x, p.y)) == from
+                    && (delta_to.x, delta_to.y) == to
+            })
+        })
+    }
+
+    #[tokio::test]
+    async fn scene_action_emits_delta_to_players_in_room() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_actor, mut rx_actor) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_peer, mut rx_peer) = mpsc::unbounded_channel::<ServerMessage>();
+
+        {
+            let mut locked = state.lock().await;
+            locked.players.insert(
+                1,
+                Player {
+                    id: 1,
+                    account_id: "acct:alpha".to_owned(),
+                    character: test_character("Alpha"),
+                    room_id: "town_square".to_owned(),
+                },
+            );
+            locked.players.insert(
+                2,
+                Player {
+                    id: 2,
+                    account_id: "acct:bravo".to_owned(),
+                    character: test_character("Bravo"),
+                    room_id: "town_square".to_owned(),
+                },
+            );
+            locked.sessions.insert(1, tx_actor.clone());
+            locked.sessions.insert(2, tx_peer.clone());
+
+            let room = locked
+                .rooms
+                .get_mut("town_square")
+                .expect("town_square room should exist");
+            let runtime = room
+                .scene_runtime
+                .as_mut()
+                .expect("town_square should have scene runtime");
+            runtime
+                .scene
+                .move_actor("Alpha", Position { x: 0, y: 0 })
+                .expect("initial actor placement should succeed");
+            runtime
+                .scene
+                .move_actor("Bravo", Position { x: 1, y: 0 })
+                .expect("initial peer placement should succeed");
+        }
+
+        let mut session = SessionContext {
+            account_handle: Some("acct:alpha".to_owned()),
+            player_id: Some(1),
+        };
+
+        process_client_message(
+            ClientMessage::SceneAction {
+                command: SceneCommand::Move {
+                    target_pos: ScenePosition { x: 0, y: 1 },
+                },
+            },
+            &tx_actor,
+            &state,
+            &mut session,
+        )
+        .await;
+
+        let actor_messages = collect_messages(&mut rx_actor);
+        let peer_messages = collect_messages(&mut rx_peer);
+
+        assert!(has_actor_moved_delta(
+            &actor_messages,
+            "Alpha",
+            Some((0, 0)),
+            (0, 1)
+        ));
+        assert!(has_actor_moved_delta(
+            &peer_messages,
+            "Alpha",
+            Some((0, 0)),
+            (0, 1)
+        ));
+        assert!(actor_messages.iter().any(|message| {
+            matches!(
+                message,
+                ServerMessage::Info { text } if text == "Scene action processed."
+            )
+        }));
     }
 }

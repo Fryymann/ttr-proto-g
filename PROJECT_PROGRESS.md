@@ -2,7 +2,7 @@
 
 Auto-generated snapshot aligned to roadmap and backlog.
 
-- Generated (UTC): 2026-02-21 22:25:33Z
+- Generated (UTC): 2026-02-21 22:29:42Z
 - Source files:
   - `.agents/backlog.md`
   - `docs/design/game-system-roadmap.md`

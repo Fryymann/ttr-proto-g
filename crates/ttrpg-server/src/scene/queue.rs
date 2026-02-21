@@ -77,22 +77,28 @@ mod tests {
     #[test]
     fn test_deterministic_ordering() {
         let mut queue = SceneCommandQueue::new();
-        
+
         let cmd1 = CommandEnvelope {
             actor_id: "actor-b".to_owned(),
-            command: SceneCommand::Move { target_pos: ScenePosition { x: 1, y: 1 } },
+            command: SceneCommand::Move {
+                target_pos: ScenePosition { x: 1, y: 1 },
+            },
             timestamp_ms: 100,
             sequence_id: 0,
         };
         let cmd2 = CommandEnvelope {
             actor_id: "actor-a".to_owned(),
-            command: SceneCommand::Move { target_pos: ScenePosition { x: 2, y: 2 } },
+            command: SceneCommand::Move {
+                target_pos: ScenePosition { x: 2, y: 2 },
+            },
             timestamp_ms: 100,
             sequence_id: 0,
         };
         let cmd3 = CommandEnvelope {
             actor_id: "actor-c".to_owned(),
-            command: SceneCommand::Move { target_pos: ScenePosition { x: 3, y: 3 } },
+            command: SceneCommand::Move {
+                target_pos: ScenePosition { x: 3, y: 3 },
+            },
             timestamp_ms: 50,
             sequence_id: 0,
         };
@@ -110,5 +116,56 @@ mod tests {
         // Then by actor_id for same timestamp
         assert_eq!(drained[1].actor_id, "actor-a");
         assert_eq!(drained[2].actor_id, "actor-b");
+    }
+
+    #[test]
+    fn replayed_stream_produces_identical_order() {
+        let commands = vec![
+            CommandEnvelope {
+                actor_id: "actor-b".to_owned(),
+                command: SceneCommand::Move {
+                    target_pos: ScenePosition { x: 3, y: 3 },
+                },
+                timestamp_ms: 0,
+                sequence_id: 0,
+            },
+            CommandEnvelope {
+                actor_id: "actor-a".to_owned(),
+                command: SceneCommand::Move {
+                    target_pos: ScenePosition { x: 2, y: 2 },
+                },
+                timestamp_ms: 0,
+                sequence_id: 0,
+            },
+            CommandEnvelope {
+                actor_id: "actor-a".to_owned(),
+                command: SceneCommand::Move {
+                    target_pos: ScenePosition { x: 1, y: 1 },
+                },
+                timestamp_ms: 0,
+                sequence_id: 0,
+            },
+        ];
+
+        let mut first = SceneCommandQueue::new();
+        let mut second = SceneCommandQueue::new();
+        for envelope in &commands {
+            first.push(envelope.clone());
+            second.push(envelope.clone());
+        }
+
+        let first_order = first
+            .drain_deterministic()
+            .into_iter()
+            .map(|envelope| envelope.actor_id)
+            .collect::<Vec<_>>();
+        let second_order = second
+            .drain_deterministic()
+            .into_iter()
+            .map(|envelope| envelope.actor_id)
+            .collect::<Vec<_>>();
+
+        assert_eq!(first_order, second_order);
+        assert_eq!(first_order, vec!["actor-a", "actor-a", "actor-b"]);
     }
 }

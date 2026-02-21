@@ -76,13 +76,12 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | Packet ID | Role | Backlog IDs | Status | Dependency | Suggested branch |
 | --- | --- | --- | --- | --- | --- |
 | `S1-P2` | Platform | `BL-012` | Done (merged to `v1`) | none | `lane/Platform/s1-p2-persistence-lock-audit` |
-| `S2-P1` | Platform | `BL-004`, `BL-002` | Active Next (dispatch now) | `S1-P2` merged to `v1` | `lane/Platform/s2-p1-scene-queue-protocol` |
-| `S2-E1` | Experience | `BL-003` | Queued (blocked on `S2-P1` merge) | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
+| `S2-P1` | Platform | `BL-004`, `BL-002` | Done (merged to `v1`) | `S1-P2` merged to `v1` | `lane/Platform/s2-p1-scene-queue-protocol` |
+| `S2-E1` | Experience | `BL-003` | Active Next (dispatch now) | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
 
 ### Operator Dispatch Shortcut
 
-- Platform Agent: `Your next task is S2-P1.`
-- Experience Agent (after `S2-P1` merge): `Your next task is S2-E1.`
+- Experience Agent: `Your next task is S2-E1.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 

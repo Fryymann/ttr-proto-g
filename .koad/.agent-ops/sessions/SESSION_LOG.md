@@ -308,3 +308,14 @@
   - Logged durable queue decision in decision log.
 - Evidence:
   - Updated `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Post-S2-P1 merge queue + backlog progression
+- Scope:
+  - Reflect S2-P1 completion and activate S2-E1 as the next dispatch lane.
+- Changes:
+  - Updated packet queue statuses in `CODEX_ROLE_PROMPTS.md` (`S2-P1` done, `S2-E1` active next).
+  - Updated operator dispatch shortcut to `Your next task is S2-E1.`
+  - Updated backlog states (`BL-002` + `BL-004` to `done`) and re-ranked focus window.
+  - Added sprint status note and durable queue decision log entry.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

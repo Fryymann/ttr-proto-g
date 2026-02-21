@@ -11,9 +11,10 @@ Last updated: 2026-02-21
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.
 - AI action whitelist after defensive rounds.
-- Pull-radius default profiles for scene size classes.
+- Party-membership edge rules for encounter entry (temporary allies, summons, cross-party assist actions).
 
 ## Risk Watch
 - Single-save campaign data safety and rollback behavior.
 - Campaign-lock admin unlock guardrails and audit requirements.
-- Pull-radius misconfiguration causing wrong encounter participants.
+- SRD-only compliance drift in V1 content implementation.
+- Advisory DM-agent boundary leakage into authoritative NPC actions.

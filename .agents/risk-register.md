@@ -24,7 +24,9 @@ Owner: Project Manager
 | R-009 | Campaign-lock and account binding errors can orphan characters | Medium | High | Platform | Explicit lock-state schema, validation on join, and permission-gated audited admin unlock tools | Player cannot join despite valid character or wrong campaign binding | Open |
 | R-010 | Combat quit/disconnect policy can be exploited or feel unfair | Medium | High | Gameplay | Define staged deterministic fallback (defensive rounds -> limited AI), reconnect windows, and abuse playtests | Players intentionally disconnect to avoid consequences | Open |
 | R-011 | Split-feed client mode increases UX scope and maintenance burden | Medium | Medium | Experience | Keep terminal-first baseline as default; feature-flag richer client surfaces | UI regressions or delayed milestones due to client complexity | Open |
-| R-012 | Pull-radius misconfiguration causes missing or over-inclusive encounter participants | Medium | Medium | Gameplay | Provide validated scene profile defaults, config linting, and encounter pull diagnostics in logs | Unexpected participant lists in combat start events | Open |
+| R-012 | Party membership/rule errors cause wrong encounter participants | Medium | Medium | Gameplay | Implement deterministic party-based encounter inclusion rules, membership validation, and encounter-start diagnostics | Unexpected participant lists in combat start events | Open |
+| R-013 | Non-SRD mechanics/content enters V1 and creates licensing risk | Medium | High | PM | Maintain SRD-only compliance checklist and require source mapping in design/code reviews | V1 features ship with rules/content lacking SRD or original-source mapping | Open |
+| R-014 | DM-agent advice is executed as authoritative behavior and breaks intended control boundaries | Medium | High | Gameplay | Enforce advisory-only AI interface with explicit script/human acceptance and audit traces | NPC behavior changes occur directly from AI output without authoritative policy approval | Open |
 
 ## Closed Risks
 

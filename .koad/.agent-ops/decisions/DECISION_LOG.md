@@ -29,3 +29,16 @@
   - Startup/ops instructions are internally consistent for this repository layout.
 - Revisit trigger:
   - If standards governance expands beyond current PM scope or repository structure changes.
+
+## 2026-02-21 - V1 scope constraints for rules, DM authority, and encounter participation
+- Decision:
+  - V1 rules/mechanics content scope is SRD-only (plus original project-authored content).
+  - DM-agent is advisory by default; story flow and semi-scripted NPC policy remain authoritative.
+  - V1 encounter participation uses party-based rules; non-party actors are not auto-pulled by scene-wide proximity.
+- Why:
+  - Reduces licensing risk in early delivery, preserves deterministic control boundaries, and enables distraction/sneak scenarios without forced full-scene combat joins.
+- Impact:
+  - Backlog priorities now include SRD compliance gating and advisory DM-agent behavior contracts.
+  - Encounter design shifts from pull-radius policy to party-membership policy and related validation tests.
+- Revisit trigger:
+  - After first full playable loop and initial social-encounter design pass.

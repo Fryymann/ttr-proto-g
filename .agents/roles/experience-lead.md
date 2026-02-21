@@ -46,3 +46,8 @@ Own the player-facing terminal experience and quality loop so multiplayer gamepl
 3. Repro steps included for unresolved defects.
 4. UX tradeoffs and constraints noted.
 5. Lane branch/worktree and PR metadata included for coder-agent execution.
+6. PR includes latest commit SHA and target branch.
+7. Review status placeholders included for:
+   - Koad git review
+   - User GitHub review
+   - Merge status

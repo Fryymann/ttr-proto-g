@@ -155,3 +155,25 @@
   - Updated Koad memory artifacts to reflect the execution-model pivot and role-selection requirements.
 - Evidence:
   - Updated `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/IDENTITY.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.agents/roles/*.md`, `.agents/teams.md`, `.agents/README.md`, `README.md`, and memory ledgers under `.koad/.agent-core/memory/`.
+
+## 2026-02-21 - PR-required dual-review merge workflow activation
+- Scope:
+  - Configure coder-lane workflow so tasks close only after reviewed and merged PRs.
+- Changes:
+  - Updated Codex role prompt pack, PM role definition, team handoff contracts, and sprint execution plan to enforce PR-required dual review (`Koad git review` + `user GitHub review`) before closure.
+  - Added standards entry `STD-009` and boot-rule references for merged-PR completion gating.
+  - Updated user preference memory and Koad ops decision log for durable continuity.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md`, `.agents/teams.md`, `.agents/roles/project-manager.md`, `.agents/roles/gameplay-lead.md`, `.agents/roles/platform-lead.md`, `.agents/roles/experience-lead.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/AGENTS.md`, `AGENTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - PR governance template and branch-protection enforcement pack
+- Scope:
+  - Add enforceable PR governance artifacts for dual-review merge workflow.
+- Changes:
+  - Added `.github/pull_request_template.md` with required handoff metadata and review-gate checkboxes.
+  - Added `.github/workflows/pr-template-gate.yml` (`validate-pr-governance`) to validate PR body structure and review gates.
+  - Added `docs/ops/github-branch-protection.md` with exact GitHub branch protection settings for `master`.
+  - Updated PM/standards docs to reference template, workflow check, and branch-protection runbook.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Added `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`.

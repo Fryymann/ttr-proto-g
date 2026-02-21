@@ -68,8 +68,8 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - Require one coding lane per dedicated git worktree and lane branch (`lane/<ROLE>/<task-slug>`).
   - Require onboarding evidence to include worktree path, branch, and base commit before edits.
-  - Require lane handoff to include PR metadata (branch, title, merge dependency order or no-PR reason).
-  - Default to one PR per code lane; allow docs/chore batching and post-lane integration PR only when scope risk is low.
+  - Require lane handoff to include PR metadata (URL, base/head, title, latest commit, merge dependency order).
+  - Default to one PR per lane; allow docs/chore batching and post-lane integration PR only when scope risk is low.
 
 ### STD-008 - Team-Agent Familiarization Gate
 - Status: Active
@@ -78,3 +78,15 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - For Gameplay/Platform/Experience roles, load `.agents/teams.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `.agents/backlog.md`, and `.agents/risk-register.md` before substantial work.
   - Require role declaration and planned scope statement before edits.
+
+### STD-009 - Dual Review + Merge Completion Gate
+- Status: Active
+- Source: `CODEX_ROLE_PROMPTS.md`
+- Intent: Ensure every lane is reviewed and merged through PR workflow before being treated as complete.
+- Local interpretation:
+  - Require one PR for every execution lane (code/docs/chore), with clear base/head and latest commit metadata.
+  - Require `.github/pull_request_template.md` usage for lane PRs.
+  - Require `validate-pr-governance` status check to pass before merge.
+  - Require Koad git-side review disposition and user GitHub review disposition before approval.
+  - If either review requests changes, keep lane state `in_progress`.
+  - Mark lane/backlog task complete only after PR merge confirmation.

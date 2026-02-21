@@ -40,3 +40,4 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 - If local instructions conflict, prioritize the stricter startup requirement and then continue with task-specific instructions.
 - Antigravity usage is paused unless explicitly re-enabled by the user in-thread.
 - For Codex team-role delegation, use `CODEX_ROLE_PROMPTS.md` and its worktree/branch/PR policy.
+- Treat lane tasks as complete only after dual review approval (Koad git review + user GitHub review) and merged PR.

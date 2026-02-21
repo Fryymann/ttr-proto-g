@@ -52,3 +52,13 @@ Append-only record of durable lessons.
 - Observation: Multi-instance Codex execution works best when role selection is explicit at boot, not inferred from prior thread context.
 - Why it matters: Implicit role assumptions cause PM/team boundary drift and inconsistent onboarding quality.
 - Behavior update: Require role question at startup and route to PM or team-role context before substantial work.
+
+### Review Governance
+- Observation: Lane closure quality improves when GitHub user review and local git review are both required before merge.
+- Why it matters: Prevents handoff-only completion claims and keeps merge as the hard completion checkpoint.
+- Behavior update: Enforce PR-required dual review gates and mark tasks complete only after merged PR confirmation.
+
+### Policy Enforcement
+- Observation: Review policy is more reliable when branch protection uses a concrete required status check tied to PR template governance.
+- Why it matters: Process-only guidance can drift; required checks make merge gates auditable and consistent.
+- Behavior update: Keep PR template + `validate-pr-governance` workflow aligned with branch protection settings.

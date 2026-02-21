@@ -21,6 +21,7 @@ Any coding agent instance started in this workspace must initialize context befo
 - Antigravity execution is paused unless the user explicitly re-enables it.
 - For Codex team-role lanes, enforce onboarding evidence before edits and acceptance-evidence handoff before lane closure.
 - For parallel team-role lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
+- Enforce PR completion gate: Koad git review + user GitHub review + merged PR before marking lane task complete.
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.

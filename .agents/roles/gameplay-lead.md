@@ -48,3 +48,8 @@ Own mechanical correctness, encounter depth, and content-facing rule behavior fo
 3. Protocol/client implications documented.
 4. Balance risks identified.
 5. Lane branch/worktree and PR metadata included for coder-agent execution.
+6. PR includes latest commit SHA and target branch.
+7. Review status placeholders included for:
+   - Koad git review
+   - User GitHub review
+   - Merge status

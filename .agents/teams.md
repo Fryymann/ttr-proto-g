@@ -5,7 +5,7 @@ Last updated: 2026-02-21
 
 ## Objective
 
-Run development with 3 core teams plus Project Manager oversight, minimizing handoff overhead while preserving clear ownership and safe parallelism via lane-isolated git worktrees across Codex role instances.
+Run development with 3 core teams plus Project Manager oversight, minimizing handoff overhead while preserving clear ownership and safe parallelism via lane-isolated git worktrees across Codex role instances and PR-mediated merge gates.
 
 ## Team Structure
 
@@ -72,7 +72,17 @@ Every handoff must include:
 4. Open risks or deferred work
 5. Codex role instance + task packet reference (if agent-executed)
 6. Lane worktree path + branch name
-7. PR link/id and merge dependency notes (or explicit no-PR reason)
+7. PR URL/id + base/head + latest commit + merge dependency notes
+8. Review state for both gates:
+   - Koad git review status
+   - User GitHub review status
+   - Merge status
+
+## Task Closure Gate
+
+- A lane task is not complete until its PR is merged.
+- Required approvals: Koad git review + user GitHub review.
+- If either review requests changes, task state returns to `in_progress` until updated and re-approved.
 
 ## Current Near-Term Focus
 

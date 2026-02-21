@@ -28,9 +28,20 @@ Each Codex instance must:
 
 - One active task lane uses one dedicated worktree and one branch.
 - Branch naming pattern: `lane/<ROLE>/<task-slug>`.
-- Default PR shape: one PR per code lane.
-- Low-risk docs/chore work may be batched by Koad.
+- Every lane must ship through a PR before it can be marked complete.
+- Default PR shape: one PR per lane.
+- Koad may batch low-risk docs/chore updates only when they still flow through a single reviewable PR.
 - Cross-lane wiring can use one integration PR after dependency lanes land.
+
+## Review + Merge Gate
+
+1. Lane agent opens PR and posts handoff evidence.
+2. Koad performs local git review (`git diff`, tests, acceptance check).
+3. User performs GitHub PR review.
+4. Lane is approved only when both Koad and user reviews are approved.
+5. Task is complete only after PR merge to the target branch.
+6. Lane PR must use `.github/pull_request_template.md`.
+7. Keep PR review-gate checkboxes current so governance checks can pass.
 
 ## Required Team-Agent Onboarding Evidence
 
@@ -48,7 +59,7 @@ Each Codex instance must:
 3. Tests/verification run
 4. Acceptance checklist with `PASS`/`FAIL` evidence
 5. Out-of-scope files touched (or `none`)
-6. Branch/worktree and PR metadata (title + dependency order)
+6. Branch/worktree and PR metadata (URL, title, base/head, latest commit, dependency order)
 7. Risks/deferred work
 
 ## Role Prompt: Gameplay Instance

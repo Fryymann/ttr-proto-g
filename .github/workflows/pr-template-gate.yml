@@ -1,0 +1,55 @@
+name: PR Template Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-pr-governance:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate required PR body fields and review gates
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PR_BODY:-}" ]; then
+            echo "PR body is empty. Use .github/pull_request_template.md."
+            exit 1
+          fi
+
+          missing=0
+          require_section() {
+            section="$1"
+            if ! printf '%s\n' "$PR_BODY" | grep -Fq "$section"; then
+              echo "Missing required section: $section"
+              missing=1
+            fi
+          }
+
+          require_section "## Role + Task Packet"
+          require_section "## Scope + Acceptance Criteria"
+          require_section "## Verification"
+          require_section "## Files Changed"
+          require_section "## Lane Metadata"
+          require_section "## Review Gates"
+
+          require_checked_gate() {
+            gate="$1"
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- \\[[xX]\\] ${gate}$"; then
+              echo "Unchecked review gate: ${gate}"
+              missing=1
+            fi
+          }
+
+          require_checked_gate "Koad git review approved"
+          require_checked_gate "User GitHub review approved"
+
+          if [ "$missing" -ne 0 ]; then
+            echo "PR governance validation failed."
+            exit 1
+          fi
+
+          echo "PR governance validation passed."

@@ -46,3 +46,8 @@ Own server authority, reliability, data integrity, and operational stability for
 3. Performance impact measured.
 4. Monitoring hooks added/updated.
 5. Lane branch/worktree and PR metadata included for coder-agent execution.
+6. PR includes latest commit SHA and target branch.
+7. Review status placeholders included for:
+   - Koad git review
+   - User GitHub review
+   - Merge status

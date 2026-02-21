@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -41,14 +41,16 @@ Koad (PM) owns sprint orchestration and publishes starter prompts in `CODEX_ROLE
 - One active task lane maps to one dedicated git worktree and one lane branch (`lane/<ROLE>/<task-slug>`).
 - Lanes in the same sprint can run in parallel when file overlap is low.
 - Shared-file hotspots (protocol core, main server runtime) should be sequenced or split by explicit boundaries.
-- Default PR shape is one PR per code lane; docs/chore lanes may be batched when low-risk.
+- Every lane flows through a PR and remains open until both review gates pass.
+- Default PR shape is one PR per lane; docs/chore lanes may be batched only when still reviewable as one PR.
 - Cross-lane wiring is merged via an integration PR after dependency lanes complete.
 - Every lane must return:
   - changed files
   - tests/verification evidence
   - known risks/deferred items
   - role instance + task packet id
-  - branch/worktree evidence and PR metadata recommendation
+  - branch/worktree evidence and PR metadata (URL, base/head, latest commit, dependency order)
+  - review state for Koad git review and user GitHub review
 
 ### Suggested parallel role lanes by sprint
 
@@ -198,8 +200,10 @@ For each backlog item completed:
 
 1. Acceptance criteria in `.agents/backlog.md` are met.
 2. Verification evidence (test or manual) is recorded in PR/handoff notes.
-3. Relevant design docs are updated if behavior/contract changed.
-4. `.agents/risk-register.md` is updated for new or retired risks.
+3. Koad git review and user GitHub review are both approved on the lane PR.
+4. Lane PR is merged to the target branch.
+5. Relevant design docs are updated if behavior/contract changed.
+6. `.agents/risk-register.md` is updated for new or retired risks.
 
 ## Weekly PM Update Protocol
 
@@ -214,3 +218,4 @@ For each backlog item completed:
 - 2026-02-21: `S1-P1` completed. Campaign manifest selection flow and account/character campaign-lock scaffolding landed (`BL-011` done; `BL-012` remains in progress pending durable persistence and audited admin unlock integration).
 - 2026-02-21: `S1-G1` completed. Scene contract/occupancy module and SRD compliance checklist + source mapping pass landed (`BL-001` and `BL-019` done).
 - 2026-02-21: Execution model pivoted from Antigravity to Codex multi-instance role lanes (`Koad PM` + Gameplay/Platform/Experience agents). Antigravity prompts paused.
+- 2026-02-21: Workflow updated to PR-required merge gating with dual approval lanes (Koad git review + user GitHub review) before task closure.

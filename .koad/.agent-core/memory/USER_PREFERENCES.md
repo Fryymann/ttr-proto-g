@@ -11,6 +11,8 @@
 - Keep sprint execution reserved for development teams unless the user explicitly asks the PM agent to execute a sprint.
 - For team-agent lane prompts, use Windows-native workspace paths (`C:\...`) instead of WSL `/mnt/c/...`.
 - Use git worktrees for parallel coder-agent lanes (one lane per worktree/branch) with pragmatic PR count control.
+- Use PR-gated lane closure: user reviews on GitHub, Koad reviews via local git, and tasks close only after merge.
+- Use standardized PR bodies and enforce governance through required `validate-pr-governance` check.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 - Require Codex boot to run Koad OS first, then ask which role to personify.
 

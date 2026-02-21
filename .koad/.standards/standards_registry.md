@@ -28,3 +28,7 @@ Last updated: 2026-02-21
 
 ### STD-008 - Team-Agent Familiarization Gate
 - Intent: Require non-PM team-role agents to load roadmap + project state artifacts before implementation.
+
+### STD-009 - Dual Review + Merge Completion Gate
+- Intent: Require PR-based dual review (Koad git review + user GitHub review) and merged PR confirmation before task closure.
+- Enforcement: Use PR template and required `validate-pr-governance` status check under branch protection.

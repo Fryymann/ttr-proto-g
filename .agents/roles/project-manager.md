@@ -15,6 +15,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Coordinate cross-role work (systems, protocol, content, QA, tooling).
 - Create sprint-ready task packets for Codex team-role agents.
 - Provision lane-isolated git worktrees/branches for Codex parallel execution.
+- Perform git-side review for each lane PR before approval.
 - Maintain root-level starter prompts for active Codex team-role instances.
 - Track dependencies, risks, and blockers.
 - Enforce definition of done per milestone.
@@ -33,7 +34,9 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - `docs/design/mechanics-decision-matrix-v1.md`
 - `docs/design/game-system-roadmap.md`
 - `docs/design/execution-sprint-plan.md`
+- `docs/ops/github-branch-protection.md`
 - `CODEX_ROLE_PROMPTS.md`
+- `.github/pull_request_template.md`
 - `.koad/AGENTS.md`
 - `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`
 - `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`
@@ -69,13 +72,18 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Require one lane = one dedicated git worktree + branch (`lane/<ROLE>/<task-slug>`).
 - Require lane onboarding acknowledgement before edits (worktree path, branch, base commit, backlog acceptance mapping).
 - Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
-- Use lightweight PR policy: one code-lane PR by default; batch docs/chore-only lanes only when low-risk; use integration PR for cross-lane wiring.
+- Require PR submission for every lane and enforce merge-gated completion.
+- Require dual approval for every lane PR: Koad git review + user GitHub review.
+- Use one-PR-per-lane by default; integration PR remains allowed for cross-lane wiring.
 
 4. Verify
 - Confirm code/docs/tests align with requested outcome.
+- Review lane PR locally with git tooling and record disposition (`approve` or `changes requested`).
+- Confirm user GitHub review disposition before merge.
 
 5. Close
 - Update backlog, decision log, and open risk register.
+- Mark lane task complete only after PR merge is confirmed.
 - Mirror durable PM process/decision changes in Koad ops logs.
 
 ## Required Artifacts
@@ -94,6 +102,8 @@ A task is complete only when:
 
 - Acceptance criteria are met.
 - Tests or manual verification notes are recorded.
+- Koad git review and user GitHub review are both approved.
+- PR merge to the target branch is confirmed.
 - User-facing or architecture docs are updated if behavior changed.
 - Follow-up tasks are captured (if any).
 
@@ -125,4 +135,5 @@ A task is complete only when:
 - Open questions explicitly called out.
 - Codex role instance + task packet id used for execution.
 - Lane worktree path + branch naming captured.
-- PR target and dependency order captured.
+- PR URL, base/head, latest commit, and dependency order captured.
+- Review dispositions captured for both Koad git review and user GitHub review.

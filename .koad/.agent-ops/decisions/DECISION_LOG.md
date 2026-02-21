@@ -160,3 +160,31 @@
   - Standards now include role boot gate and team-agent familiarization gate for non-PM roles.
 - Revisit trigger:
   - If user explicitly requests reactivation of Antigravity as primary execution model.
+
+## 2026-02-21 - PR-required dual-review merge gate for lane completion
+- Decision:
+  - Require every coder lane to submit a PR before completion.
+  - Use dual review gates: user performs GitHub review and Koad performs local git review.
+  - Treat lane/backlog task as complete only after merged PR confirmation.
+- Why:
+  - Centralizes review authority with the user in GitHub while preserving local deterministic verification through Koad git review.
+  - Prevents premature task closure before integration.
+- Impact:
+  - Handoff artifacts must now include PR URL/base/head/latest commit plus both review dispositions.
+  - PM/task closure now requires merged-PR evidence, not just handoff claims.
+  - Standards and role docs now encode this gate for future sessions.
+- Revisit trigger:
+  - If repository governance changes to a different approval/merge model.
+
+## 2026-02-21 - Enforce PR governance via template + required status check
+- Decision:
+  - Add a standard PR template for lane handoff metadata and review gates.
+  - Add GitHub workflow check `validate-pr-governance` to validate required PR sections and checked review-gate boxes.
+  - Use branch protection on `master` to require PR approval and `validate-pr-governance` before merge.
+- Why:
+  - Converts process-only review requirements into enforceable GitHub merge controls.
+- Impact:
+  - Lane PRs now have a consistent structure and machine-validated governance gate.
+  - Branch protection setup has a concrete required check for repository configuration.
+- Revisit trigger:
+  - If branch strategy changes from `master` or governance checks migrate to a different CI/policy system.

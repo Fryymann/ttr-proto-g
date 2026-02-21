@@ -10,6 +10,8 @@ use crate::account::{
 };
 
 pub trait Persistence: Send + Sync {
+    fn ensure_account_session(&mut self, account_handle: &str) -> AccountRecord;
+
     fn create_character(
         &mut self,
         account_handle: &str,
@@ -60,6 +62,10 @@ pub struct InMemoryPersistence {
 }
 
 impl Persistence for InMemoryPersistence {
+    fn ensure_account_session(&mut self, account_handle: &str) -> AccountRecord {
+        self.ensure_account(account_handle).clone()
+    }
+
     fn create_character(
         &mut self,
         account_handle: &str,
@@ -352,28 +358,25 @@ mod tests {
         store
             .create_character("acct:ada", build_character("Ada"), "ada", "greenhollow")
             .expect("ada should create");
-        store
-            .create_character("acct:eve", build_character("Eve"), "eve", "greenhollow")
-            .expect("eve should create");
+        store.ensure_account_session("acct:eve");
 
-        let eve_account_id = store
-            .accounts_by_handle
-            .get("acct:eve")
-            .expect("eve account should exist")
-            .account_id
-            .clone();
-        let ada_record = store
-            .characters_by_name_key
-            .get_mut("ada")
-            .expect("ada character should exist");
-        ada_record.account_id = eve_account_id;
-
-        let result = store.validate_character_join("acct:ada", "ada", "greenhollow");
+        let result = store.validate_character_join("acct:eve", "ada", "greenhollow");
         assert!(matches!(
             result,
             Err(JoinCampaignError::OwnershipMismatch { character_id, .. })
             if character_id == "char-ada"
         ));
+    }
+
+    #[test]
+    fn join_succeeds_for_valid_same_account_character() {
+        let mut store = InMemoryPersistence::default();
+        store
+            .create_character("acct:ada", build_character("Ada"), "ada", "greenhollow")
+            .expect("character should create");
+
+        let join = store.validate_character_join("acct:ada", "ada", "greenhollow");
+        assert!(join.is_ok());
     }
 
     #[test]

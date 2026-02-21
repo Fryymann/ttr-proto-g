@@ -70,8 +70,8 @@ Use these packets for the immediate development queue. Respect packet dependenci
 
 | Packet ID | Role | Backlog IDs | Status | Dependency | Suggested branch |
 | --- | --- | --- | --- | --- | --- |
-| `S1-P2` | Platform | `BL-012` | In review | none | `lane/Platform/s1-p2-persistence-lock-audit` |
-| `S2-P1` | Platform | `BL-004`, `BL-002` | Queued | `S1-P2` merged to `v1` | `lane/Platform/s2-p1-scene-queue-protocol` |
+| `S1-P2` | Platform | `BL-012` | Done (merged to `v1`) | none | `lane/Platform/s1-p2-persistence-lock-audit` |
+| `S2-P1` | Platform | `BL-004`, `BL-002` | Ready | `S1-P2` merged to `v1` | `lane/Platform/s2-p1-scene-queue-protocol` |
 | `S2-E1` | Experience | `BL-003` | Queued | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)

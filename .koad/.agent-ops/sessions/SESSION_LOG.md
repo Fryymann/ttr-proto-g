@@ -187,3 +187,24 @@
   - Updated standards, preferences, and learnings with release-line branching behavior.
 - Evidence:
   - Updated `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `docs/design/execution-sprint-plan.md`, `docs/ops/github-branch-protection.md`, `.github/pull_request_template.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/LEARNINGS.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Codex lane task packets published for immediate queue
+- Scope:
+  - Prepare actionable developer-agent handoff packets for the current `Now`/`Next` queue on `v1`.
+- Changes:
+  - Added active packet queue in `CODEX_ROLE_PROMPTS.md` with packet IDs, ownership, dependencies, and suggested lane branches.
+  - Published detailed packet briefs for `S1-P2` (`BL-012`), `S2-P1` (`BL-004` + `BL-002`), and `S2-E1` (`BL-003`).
+  - Updated sprint-plan status notes to record packet publication and dependency order.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md` and `docs/design/execution-sprint-plan.md`.
+
+## 2026-02-21 - BL-012 scope correction to account-first login semantics
+- Scope:
+  - Clarify active Platform lane requirements after review finding on ownership enforcement bypass risk.
+- Changes:
+  - Updated `BL-012` to require account-authenticated login before character operations.
+  - Updated `S1-P2` task packet objective/scope/acceptance to enforce account-scoped character management.
+  - Updated sprint-plan S1 platform validation gate and status notes to reflect account-first auth requirement.
+  - Logged durable PM decision for account-first authentication policy.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.

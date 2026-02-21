@@ -55,6 +55,10 @@ async fn main() -> io::Result<()> {
             ClientMessage::CreateCharacter {
                 character: quick_character_from_name(name),
             }
+        } else if let Some(name) = trimmed.strip_prefix("/play ") {
+            ClientMessage::SelectCharacter {
+                name: name.trim().to_owned(),
+            }
         } else if let Some(name) = trimmed.strip_prefix("/login ") {
             ClientMessage::Login {
                 name: name.trim().to_owned(),
@@ -280,7 +284,10 @@ fn render_welcome_screen(addr: &str) {
         "\x1b[1;36m║\x1b[0m  Quick create:  /create <name>                      \x1b[1;36m║\x1b[0m"
     );
     println!(
-        "\x1b[1;36m║\x1b[0m  Login:        /login <name>                        \x1b[1;36m║\x1b[0m"
+        "\x1b[1;36m║\x1b[0m  Account:      /login <account>                     \x1b[1;36m║\x1b[0m"
+    );
+    println!(
+        "\x1b[1;36m║\x1b[0m  Play hero:    /play <name>                         \x1b[1;36m║\x1b[0m"
     );
     println!(
         "\x1b[1;36m║\x1b[0m  In game:      look, go <dir>, say <msg>, who       \x1b[1;36m║\x1b[0m"

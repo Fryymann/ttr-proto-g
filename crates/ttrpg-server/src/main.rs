@@ -75,6 +75,7 @@ impl ServerState {
 
 #[derive(Default)]
 struct SessionContext {
+    account_handle: Option<String>,
     player_id: Option<u64>,
 }
 
@@ -194,7 +195,7 @@ async fn handle_connection(socket: TcpStream, state: SharedState) -> io::Result<
         &tx,
         ServerMessage::Info {
             text: format!(
-                "Welcome to TTRPG M1. Active campaign: {}. Use /create (editor) or /login <name>.",
+                "Welcome to TTRPG M1. Active campaign: {}. First login with /login <account>, then use /create or /play <name>.",
                 campaign_name
             ),
         },
@@ -249,14 +250,18 @@ async fn process_client_message(
             handle_create_character(character, tx, state, session).await;
         }
         ClientMessage::Login { name } => {
-            handle_login(name, tx, state, session).await;
+            handle_account_login(name, tx, state, session).await;
+        }
+        ClientMessage::SelectCharacter { name } => {
+            handle_select_character(name, tx, state, session).await;
         }
         ClientMessage::CommandText { command } => {
             let Some(player_id) = session.player_id else {
                 send_to_client(
                     tx,
                     ServerMessage::Error {
-                        text: "Authenticate first with /create or /login.".to_owned(),
+                        text: "Authenticate first with /login <account>, then /play <name>."
+                            .to_owned(),
                     },
                 );
                 return;
@@ -300,7 +305,7 @@ async fn process_client_message(
 
                     // Immediate tick for S2 integration (Finding #1)
                     let deltas = runtime.tick();
-                    
+
                     if !deltas.is_empty() {
                         let broadcast_msg = ServerMessage::SceneDelta { deltas };
                         let recipients = players_in_room_senders_locked(&locked, &room_id, None);
@@ -344,6 +349,16 @@ async fn handle_create_character(
         return;
     }
 
+    let Some(account_handle) = session.account_handle.as_deref() else {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Login to an account first with /login <account>.".to_owned(),
+            },
+        );
+        return;
+    };
+
     let character = match normalize_character(character) {
         Ok(character) => character,
         Err(error_text) => {
@@ -353,7 +368,6 @@ async fn handle_create_character(
     };
 
     let name_key = name_key(&character.name);
-    let account_handle = format!("local:{}", name_key);
     let mut join_recipients: Vec<ClientTx> = Vec::new();
     let player_id: u64;
     let room_id: String;
@@ -367,7 +381,7 @@ async fn handle_create_character(
         let entry_scene_id = locked.active_campaign.entry_scene_id.clone();
 
         let persisted = match locked.persistence.create_character(
-            &account_handle,
+            account_handle,
             character,
             &name_key,
             &active_campaign_id,
@@ -377,7 +391,7 @@ async fn handle_create_character(
                 send_to_client(
                     tx,
                     ServerMessage::Error {
-                        text: "Character already exists. Use /login <name>.".to_owned(),
+                        text: "Character already exists. Use /play <name>.".to_owned(),
                     },
                 );
                 return;
@@ -461,7 +475,60 @@ async fn handle_create_character(
     }
 }
 
-async fn handle_login(
+async fn handle_account_login(
+    account_name: String,
+    tx: &ClientTx,
+    state: &SharedState,
+    session: &mut SessionContext,
+) {
+    if session.account_handle.is_some() {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Account already authenticated for this connection.".to_owned(),
+            },
+        );
+        return;
+    }
+
+    let clean_name = account_name.trim();
+    if clean_name.is_empty() {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Usage: /login <account>".to_owned(),
+            },
+        );
+        return;
+    }
+
+    if !is_valid_account_name(clean_name) {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Account must be 3-20 chars and use letters, numbers, _ or -.".to_owned(),
+            },
+        );
+        return;
+    }
+
+    let account_handle = account_handle(clean_name);
+    {
+        let mut locked = state.lock().await;
+        let _ = locked.persistence.ensure_account_session(&account_handle);
+    }
+
+    session.account_handle = Some(account_handle);
+    send_to_client(
+        tx,
+        ServerMessage::Info {
+            text: "Account authenticated. Use /create to make a character or /play <name>."
+                .to_owned(),
+        },
+    );
+}
+
+async fn handle_select_character(
     name: String,
     tx: &ClientTx,
     state: &SharedState,
@@ -471,18 +538,28 @@ async fn handle_login(
         send_to_client(
             tx,
             ServerMessage::Error {
-                text: "Already authenticated for this connection.".to_owned(),
+                text: "Character already authenticated for this connection.".to_owned(),
             },
         );
         return;
     }
+
+    let Some(account_handle) = session.account_handle.clone() else {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Login to an account first with /login <account>.".to_owned(),
+            },
+        );
+        return;
+    };
 
     let clean_name = name.trim();
     if clean_name.is_empty() {
         send_to_client(
             tx,
             ServerMessage::Error {
-                text: "Usage: /login <name>".to_owned(),
+                text: "Usage: /play <name>".to_owned(),
             },
         );
         return;
@@ -501,16 +578,38 @@ async fn handle_login(
         let active_campaign_id = locked.active_campaign.campaign_id.clone();
         let entry_scene_id = locked.active_campaign.entry_scene_id.clone();
 
-        let persisted = match locked
-            .persistence
-            .validate_character_join(&lookup_key, &active_campaign_id)
-        {
+        let persisted = match locked.persistence.validate_character_join(
+            &account_handle,
+            &lookup_key,
+            &active_campaign_id,
+        ) {
             Ok(record) => record,
             Err(JoinCampaignError::CharacterNotFound) => {
                 send_to_client(
                     tx,
                     ServerMessage::Error {
-                        text: "Character does not exist. Use /create to build one.".to_owned(),
+                        text:
+                            "Character does not exist for this account. Use /create to build one."
+                                .to_owned(),
+                    },
+                );
+                return;
+            }
+            Err(JoinCampaignError::AccountNotFound { .. }) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Account session is invalid. Re-login with /login <account>."
+                            .to_owned(),
+                    },
+                );
+                return;
+            }
+            Err(JoinCampaignError::OwnershipMismatch { .. }) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Character does not belong to the authenticated account.".to_owned(),
                     },
                 );
                 return;
@@ -834,7 +933,7 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
         let mut snapshot = None;
         if let Some(room) = locked.rooms.get_mut(&new_room) {
             if let Some(runtime) = &mut room.scene_runtime {
-                // For V1, we join at (0,0) or nearest floor. 
+                // For V1, we join at (0,0) or nearest floor.
                 // Let's find first floor tile.
                 let mut join_pos = crate::scene::Position { x: 0, y: 0 };
                 for (pos, tile) in &runtime.scene.grid.tiles {
@@ -898,6 +997,8 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
 }
 
 async fn disconnect_player(state: &SharedState, session: &mut SessionContext) {
+    session.account_handle.take();
+
     let Some(player_id) = session.player_id.take() else {
         return;
     };
@@ -1112,6 +1213,14 @@ fn is_valid_name(name: &str) -> bool {
 
     name.chars()
         .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
+}
+
+fn is_valid_account_name(name: &str) -> bool {
+    is_valid_name(name)
+}
+
+fn account_handle(name: &str) -> String {
+    format!("acct:{}", name_key(name))
 }
 
 fn name_key(name: &str) -> String {

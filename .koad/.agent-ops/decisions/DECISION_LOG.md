@@ -316,3 +316,16 @@
   - Queue docs and sprint status notes are aligned to current dispatch order.
 - Revisit trigger:
   - If urgent defects or branch constraints force reordering ahead of `S2-P1`.
+
+## 2026-02-21 - Advance queue to S2-E1 after S2-P1 merge
+- Decision:
+  - Mark `S2-P1` complete and merged to `v1`.
+  - Promote `S2-E1` to active next dispatch packet.
+- Why:
+  - `S2-P1` dependency is satisfied, so `S2-E1` is now the immediate M2 follow-on lane.
+- Impact:
+  - Operator dispatch shortcut is now:
+    - `Your next task is S2-E1.`
+  - Backlog and progress dashboard now reflect completed `BL-002`/`BL-004` and updated focus window.
+- Revisit trigger:
+  - If regression/production defects from S2-P1 require hotfix reprioritization before S2-E1 starts.

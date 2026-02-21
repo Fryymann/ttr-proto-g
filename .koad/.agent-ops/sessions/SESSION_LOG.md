@@ -244,3 +244,23 @@
   - Updated startup/bootstrap/readme and preference memory to encode role-aware saveup usage.
 - Evidence:
   - Updated `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/README.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+## 2026-02-21 - Shared Koad workflow CLI scaffold
+- Scope:
+  - Implement shared scripts for frequently repeated Koad OS actions.
+- Changes:
+  - Added `.koad/scripts/koad` wrapper and `.koad/scripts/koad_cli.py` command implementation.
+  - Implemented commands:
+    - `lane-start`: create lane branch/worktree and emit onboarding evidence.
+    - `pr-open`: generate governance-template PR body and call `gh pr create`.
+    - `saveup`: append role-aware saveup ledger row and session log entry.
+  - Added usage guide `.koad/scripts/README.md` and linked script purpose in `.koad/README.md`.
+  - Ran smoke checks for command help and dry-run paths.
+- Evidence:
+  - Added `.koad/scripts/koad_cli.py`, `.koad/scripts/koad`, `.koad/scripts/README.md`.
+  - Updated `.koad/README.md`.
+  - Verified with:
+    - `.koad/scripts/koad --help`
+    - `.koad/scripts/koad lane-start --help`
+    - `.koad/scripts/koad pr-open --help`
+    - `.koad/scripts/koad saveup --help`
+    - dry-run calls for each command.

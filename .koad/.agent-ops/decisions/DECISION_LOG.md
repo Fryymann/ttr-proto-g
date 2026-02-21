@@ -257,3 +257,14 @@
   - Standards registries include `STD-011` to keep role-aware saveup behavior durable.
 - Revisit trigger:
   - If saveup automation is introduced with explicit runtime role/session context capture.
+## 2026-02-21 - Add shared Koad OS workflow CLI (`.koad/scripts/koad`)
+- Decision:
+  - Add one shared CLI entrypoint for high-frequency Koad OS operations.
+  - Initial commands are `lane-start`, `pr-open`, and role-aware `saveup`.
+- Why:
+  - These actions are repeated across PM and team-role lanes and benefit from consistent, non-interactive automation.
+- Impact:
+  - Lane/worktree setup, PR template population, and saveup logging become faster and more standardized.
+  - Scripted output aligns with existing branch/worktree and PR-governance rules.
+- Revisit trigger:
+  - If team workflow adds merge-queue automation or expands command set beyond current three actions.

@@ -14,6 +14,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Maintain prioritized backlog with clear acceptance criteria.
 - Coordinate cross-role work (systems, protocol, content, QA, tooling).
 - Create sprint-ready task packets for Antigravity coder agents.
+- Provision lane-isolated git worktrees/branches for Antigravity execution.
 - Maintain root-level starter prompts for each active sprint lane.
 - Track dependencies, risks, and blockers.
 - Enforce definition of done per milestone.
@@ -64,8 +65,10 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Publish/update corresponding Antigravity starter prompts for each sprint lane.
 - Default to delegation-only for sprints unless explicit user authorization to execute sprint work is provided.
 - Use Windows-native workspace paths in Antigravity prompt packets (`C:\...`).
-- Require lane onboarding acknowledgement before edits (workspace path, branch, base commit, backlog acceptance mapping).
+- Require one lane = one dedicated git worktree + branch (`lane/<PROMPT_ID>/<scope-slug>`).
+- Require lane onboarding acknowledgement before edits (worktree path, branch, base commit, backlog acceptance mapping).
 - Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
+- Use lightweight PR policy: one code-lane PR by default; batch docs/chore-only lanes only when low-risk; use integration PR for cross-lane wiring.
 
 4. Verify
 - Confirm code/docs/tests align with requested outcome.
@@ -120,3 +123,5 @@ A task is complete only when:
 - Validation method listed.
 - Open questions explicitly called out.
 - Antigravity prompt id/label used for execution.
+- Lane worktree path + branch naming captured.
+- PR target and dependency order captured.

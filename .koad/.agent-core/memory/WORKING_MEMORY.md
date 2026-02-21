@@ -10,6 +10,7 @@ Last updated: 2026-02-21
 - `docs/design/game-system-roadmap.md` is now the primary living focus reference for sequencing and system design order.
 - `docs/design/execution-sprint-plan.md` is the primary near-term execution sequencing reference for M2-M3.
 - Parallel implementation execution is delegated to Antigravity coder agents via root prompt pack `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+- Antigravity coder-lane workflow now defaults to one lane per dedicated git worktree/branch with lightweight PR policy.
 
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.

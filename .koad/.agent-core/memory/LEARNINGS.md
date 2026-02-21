@@ -37,3 +37,13 @@ Append-only record of durable lessons.
 - Observation: Shared-branch lane execution can diverge without explicit onboarding proof and acceptance mapping.
 - Why it matters: Agents may report completion with missing artifacts or out-of-scope edits.
 - Behavior update: Require pre-edit onboarding evidence (path/branch/commit/scope) and pass/fail acceptance evidence in lane handoffs.
+
+### Parallel Delivery
+- Observation: Parallel coder lanes are safer and easier to review when each lane runs in its own git worktree/branch with explicit PR dependency notes.
+- Why it matters: Shared worktrees increase accidental overlap, hidden conflicts, and ambiguous merge order.
+- Behavior update: Enforce one lane per dedicated worktree/branch and require PR metadata in lane handoffs.
+
+### Policy Propagation
+- Observation: Workflow policies drift when they are documented only in sprint prompts and not mirrored into standards/startup/role artifacts.
+- Why it matters: Later agents may follow incomplete guidance and bypass intended guardrails.
+- Behavior update: Treat policy rollout as complete only after synchronized updates across prompt pack, Koad standards/startup, and role handoff docs.

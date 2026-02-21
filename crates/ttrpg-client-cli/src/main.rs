@@ -345,5 +345,12 @@ fn render_server_message(message: ServerMessage) {
         ServerMessage::Pong => {
             println!("🏓 pong");
         }
+        ServerMessage::SceneSnapshot { snapshot } => {
+            println!("\n🖼️ [Scene Snapshot] id={}, {}x{}", snapshot.scene_id, snapshot.width, snapshot.height);
+            println!("Occupants: {:?}", snapshot.occupants);
+        }
+        ServerMessage::SceneDelta { deltas } => {
+            println!("\n✨ [Scene Delta] {} updates received", deltas.len());
+        }
     }
 }

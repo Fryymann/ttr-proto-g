@@ -1,3 +1,6 @@
+pub mod queue;
+pub mod runtime;
+
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -78,7 +81,12 @@ impl Scene {
             return Err("Cannot occupy target position".to_owned());
         }
 
-        // Find current position of actor
+        self.remove_actor(actor_id);
+        self.occupants.insert(new_pos, actor_id.to_owned());
+        Ok(())
+    }
+
+    pub fn remove_actor(&mut self, actor_id: &str) {
         let old_pos = self
             .occupants
             .iter()
@@ -88,9 +96,6 @@ impl Scene {
         if let Some(old) = old_pos {
             self.occupants.remove(&old);
         }
-
-        self.occupants.insert(new_pos, actor_id.to_owned());
-        Ok(())
     }
 }
 

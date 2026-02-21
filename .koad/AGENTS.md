@@ -18,6 +18,7 @@ Any coding agent instance started in this workspace must initialize context befo
 - Never store secrets in `.koad/.agent-core` or `.koad/.agent-ops`.
 - Sprint execution guardrail: do not perform sprint implementation work unless the user explicitly asks for sprint execution in the current thread.
 - For Antigravity delegation, enforce onboarding evidence before edits (path/branch/commit/scope) and acceptance-evidence handoff before lane closure.
+- For Antigravity parallel lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.

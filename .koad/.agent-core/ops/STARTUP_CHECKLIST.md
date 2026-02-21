@@ -25,3 +25,4 @@
 - State applicable standards IDs.
 - State risk level (`Low|Medium|High`).
 - If work resembles sprint implementation, verify explicit user authorization first; otherwise remain in planning/delegation mode.
+- For Antigravity delegation, require one lane per dedicated worktree/branch and a defined PR strategy before launch.

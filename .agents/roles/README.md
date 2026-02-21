@@ -17,3 +17,4 @@ Each role file should include:
 4. Standard workflow
 5. Required artifacts
 6. Handoff checklist
+7. Coder-lane worktree/branch/PR handoff requirements

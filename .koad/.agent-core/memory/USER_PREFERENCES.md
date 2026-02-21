@@ -9,6 +9,8 @@
 - Keep a root-level sprint prompt pack for launching agent lanes.
 - Keep sprint execution reserved for development teams unless the user explicitly asks the PM agent to execute a sprint.
 - For Antigravity lane prompts, use Windows-native workspace paths (`C:\...`) instead of WSL `/mnt/c/...`.
+- Use git worktrees for parallel coder-agent lanes (one lane per worktree/branch) with pragmatic PR count control.
+- Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

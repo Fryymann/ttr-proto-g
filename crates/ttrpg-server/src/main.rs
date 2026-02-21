@@ -14,8 +14,13 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
+use std::time::SystemTime;
+
 use campaign::{CampaignCatalog, CampaignManifestEntry};
 use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
+use scene::queue::CommandEnvelope;
+use scene::runtime::SceneRuntime;
+use scene::{Grid, Position, Scene, Tile, TileType};
 use ttrpg_protocol::{to_json_line, CharacterDraft, ClientMessage, ServerMessage};
 
 type ClientTx = mpsc::UnboundedSender<ServerMessage>;
@@ -27,6 +32,7 @@ struct Room {
     name: String,
     description: String,
     exits: HashMap<String, String>,
+    scene_runtime: Option<SceneRuntime>,
 }
 
 #[derive(Clone)]
@@ -257,6 +263,68 @@ async fn process_client_message(
             };
             run_command(command, player_id, tx, state).await;
         }
+        ClientMessage::SceneAction { command } => {
+            let player_id = match session.player_id {
+                Some(id) => id,
+                None => {
+                    send_to_client(
+                        tx,
+                        ServerMessage::Error {
+                            text: "Authenticate first.".to_owned(),
+                        },
+                    );
+                    return;
+                }
+            };
+
+            let mut locked = state.lock().await;
+            let (room_id, actor_id) = if let Some(player) = locked.players.get(&player_id) {
+                (player.room_id.clone(), player.display_name().to_owned())
+            } else {
+                return;
+            };
+
+            if let Some(room) = locked.rooms.get_mut(&room_id) {
+                if let Some(runtime) = &mut room.scene_runtime {
+                    let timestamp_ms = SystemTime::now()
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .unwrap_or_default()
+                        .as_millis() as u64;
+
+                    runtime.queue.push(CommandEnvelope {
+                        actor_id: actor_id.clone(),
+                        command,
+                        timestamp_ms,
+                        sequence_id: 0, // Assigned by push
+                    });
+
+                    // Immediate tick for S2 integration (Finding #1)
+                    let deltas = runtime.tick();
+                    
+                    if !deltas.is_empty() {
+                        let broadcast_msg = ServerMessage::SceneDelta { deltas };
+                        let recipients = players_in_room_senders_locked(&locked, &room_id, None);
+                        for recipient in recipients {
+                            send_to_client(&recipient, broadcast_msg.clone());
+                        }
+                    }
+
+                    send_to_client(
+                        tx,
+                        ServerMessage::Info {
+                            text: "Scene action processed.".to_owned(),
+                        },
+                    );
+                } else {
+                    send_to_client(
+                        tx,
+                        ServerMessage::Error {
+                            text: "Current room has no scene.".to_owned(),
+                        },
+                    );
+                }
+            }
+        }
     }
 }
 
@@ -291,6 +359,7 @@ async fn handle_create_character(
     let room_id: String;
     let player_name: String;
     let room_state: Option<ServerMessage>;
+    let snapshot: Option<ttrpg_protocol::SceneSnapshot>;
 
     {
         let mut locked = state.lock().await;
@@ -332,6 +401,26 @@ async fn handle_create_character(
         locked.player_name_index.insert(name_key.clone(), player_id);
         locked.sessions.insert(player_id, tx.clone());
 
+        // Scene Occupancy Join
+        if let Some(room) = locked.rooms.get_mut(&room_id) {
+            if let Some(runtime) = &mut room.scene_runtime {
+                let mut join_pos = crate::scene::Position { x: 0, y: 0 };
+                for (pos, tile) in &runtime.scene.grid.tiles {
+                    if tile.tile_type == crate::scene::TileType::Floor {
+                        join_pos = *pos;
+                        break;
+                    }
+                }
+                let actor_id = player_name.clone();
+                let _ = runtime.scene.move_actor(&actor_id, join_pos);
+                snapshot = Some(runtime.generate_snapshot());
+            } else {
+                snapshot = None;
+            }
+        } else {
+            snapshot = None;
+        }
+
         room_state = room_state_for_player_locked(&locked, player_id);
 
         join_recipients.extend(
@@ -339,6 +428,10 @@ async fn handle_create_character(
                 .into_iter()
                 .collect::<Vec<_>>(),
         );
+    };
+
+    if let Some(snap) = snapshot {
+        send_to_client(tx, ServerMessage::SceneSnapshot { snapshot: snap });
     }
 
     session.player_id = Some(player_id);
@@ -401,6 +494,7 @@ async fn handle_login(
     let room_id: String;
     let player_name: String;
     let room_state: Option<ServerMessage>;
+    let snapshot: Option<ttrpg_protocol::SceneSnapshot>;
 
     {
         let mut locked = state.lock().await;
@@ -470,12 +564,36 @@ async fn handle_login(
         room_id = player.room_id.clone();
         player_name = player.display_name().to_owned();
 
+        // Scene Occupancy Join
+        if let Some(room) = locked.rooms.get_mut(&room_id) {
+            if let Some(runtime) = &mut room.scene_runtime {
+                let mut join_pos = crate::scene::Position { x: 0, y: 0 };
+                for (pos, tile) in &runtime.scene.grid.tiles {
+                    if tile.tile_type == crate::scene::TileType::Floor {
+                        join_pos = *pos;
+                        break;
+                    }
+                }
+                let actor_id = player_name.clone();
+                let _ = runtime.scene.move_actor(&actor_id, join_pos);
+                snapshot = Some(runtime.generate_snapshot());
+            } else {
+                snapshot = None;
+            }
+        } else {
+            snapshot = None;
+        }
+
         room_state = room_state_for_player_locked(&locked, player_id);
         join_recipients.extend(
             players_in_room_senders_locked(&locked, &room_id, Some(player_id))
                 .into_iter()
                 .collect::<Vec<_>>(),
         );
+    };
+
+    if let Some(snap) = snapshot {
+        send_to_client(tx, ServerMessage::SceneSnapshot { snapshot: snap });
     }
 
     session.player_id = Some(player_id);
@@ -666,7 +784,7 @@ async fn say_to_room(player_id: u64, text: String, state: &SharedState) {
 async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &SharedState) {
     let direction_key = direction.trim().to_lowercase();
 
-    let (player_name, old_room, new_room, leave_recipients, join_recipients, room_view) = {
+    let (player_name, old_room, new_room, leave_recipients, join_recipients, room_view, snapshot) = {
         let mut locked = state.lock().await;
 
         let Some(player_snapshot) = locked.players.get(&player_id).cloned() else {
@@ -705,6 +823,32 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
             player_mut.room_id = new_room.clone();
         }
 
+        // Scene Occupancy Cleanup (Old Room)
+        if let Some(room) = locked.rooms.get_mut(&old_room) {
+            if let Some(runtime) = &mut room.scene_runtime {
+                runtime.scene.remove_actor(&player_snapshot.display_name());
+            }
+        }
+
+        // Scene Occupancy Join (New Room)
+        let mut snapshot = None;
+        if let Some(room) = locked.rooms.get_mut(&new_room) {
+            if let Some(runtime) = &mut room.scene_runtime {
+                // For V1, we join at (0,0) or nearest floor. 
+                // Let's find first floor tile.
+                let mut join_pos = crate::scene::Position { x: 0, y: 0 };
+                for (pos, tile) in &runtime.scene.grid.tiles {
+                    if tile.tile_type == crate::scene::TileType::Floor {
+                        join_pos = *pos;
+                        break;
+                    }
+                }
+                let actor_id = player_snapshot.display_name().to_owned();
+                let _ = runtime.scene.move_actor(&actor_id, join_pos);
+                snapshot = Some(runtime.generate_snapshot());
+            }
+        }
+
         let leave_recipients = players_in_room_senders_locked(&locked, &old_room, Some(player_id));
         let join_recipients = players_in_room_senders_locked(&locked, &new_room, Some(player_id));
         let room_view = room_state_for_player_locked(&locked, player_id);
@@ -716,8 +860,13 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
             leave_recipients,
             join_recipients,
             room_view,
+            snapshot,
         )
     };
+
+    if let Some(snap) = snapshot {
+        send_to_client(tx, ServerMessage::SceneSnapshot { snapshot: snap });
+    }
 
     let leave_message = ServerMessage::ChatMsg {
         from: "system".to_owned(),
@@ -839,6 +988,32 @@ fn build_world() -> HashMap<String, Room> {
     town_square_exits.insert("north".to_owned(), "tavern".to_owned());
     town_square_exits.insert("east".to_owned(), "forest_edge".to_owned());
 
+    let mut town_square_tiles = HashMap::new();
+    for x in 0..10 {
+        for y in 0..10 {
+            town_square_tiles.insert(
+                Position { x, y },
+                Tile {
+                    tile_type: if (x == 5 && y == 5) || (x == 4 && y == 5) {
+                        TileType::Wall
+                    } else {
+                        TileType::Floor
+                    },
+                },
+            );
+        }
+    }
+
+    let town_square_scene = Scene {
+        id: "town_square_scene".to_owned(),
+        grid: Grid {
+            width: 10,
+            height: 10,
+            tiles: town_square_tiles,
+        },
+        occupants: HashMap::new(),
+    };
+
     rooms.insert(
         "town_square".to_owned(),
         Room {
@@ -846,6 +1021,7 @@ fn build_world() -> HashMap<String, Room> {
             name: "Town Square".to_owned(),
             description: "A busy square with a fountain and a quest board.".to_owned(),
             exits: town_square_exits,
+            scene_runtime: Some(SceneRuntime::new(town_square_scene)),
         },
     );
 
@@ -859,6 +1035,7 @@ fn build_world() -> HashMap<String, Room> {
             name: "Copper Cup Tavern".to_owned(),
             description: "Warm light, noisy patrons, and rumors at every table.".to_owned(),
             exits: tavern_exits,
+            scene_runtime: None,
         },
     );
 
@@ -872,6 +1049,7 @@ fn build_world() -> HashMap<String, Room> {
             name: "Forest Edge".to_owned(),
             description: "Dark trees sway at the boundary of civilization.".to_owned(),
             exits: forest_edge_exits,
+            scene_runtime: None,
         },
     );
 

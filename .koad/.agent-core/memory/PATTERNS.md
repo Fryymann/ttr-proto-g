@@ -34,3 +34,15 @@ Track recurring workflows and known effective approaches.
   - Log process changes in Koad session/decision logs.
 - Validation:
   - Antigravity agents can be launched directly from prompt ids with clear handoff requirements.
+
+## Pattern: Lane-Isolated Worktree Launch
+- Trigger:
+  - User asks for parallel coder-agent execution or lane kickoff.
+- Steps:
+  - Define PM integration base ref for the sprint.
+  - Create one worktree/branch per lane using `lane/<PROMPT_ID>/<scope-slug>`.
+  - Assign one agent to each worktree and require onboarding evidence (`pwd`, toplevel, branch, commit, status).
+  - Require handoff PR metadata (branch, title, dependency order) before lane closure.
+- Validation:
+  - No active coder lanes share a worktree.
+  - Each lane handoff includes branch/worktree evidence plus PR dependency notes.

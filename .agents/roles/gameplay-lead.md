@@ -37,3 +37,4 @@ Own mechanical correctness, encounter depth, and content-facing rule behavior fo
 2. Determinism impact assessed.
 3. Protocol/client implications documented.
 4. Balance risks identified.
+5. Lane branch/worktree and PR metadata included for coder-agent execution.

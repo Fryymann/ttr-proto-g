@@ -7,9 +7,10 @@ Owner: Koad (Project Manager)
 ## How To Use
 
 1. Pick the prompt id(s) for the sprint lanes you want to run.
-2. Start one Antigravity agent per prompt id.
-3. Paste the full prompt block into that agent.
-4. Collect handoff output from each lane and merge in review order.
+2. For each prompt id, create a dedicated git worktree + branch using the policy below.
+3. Start one Antigravity agent per prompt id in its assigned worktree.
+4. Paste the full prompt block into that agent.
+5. Collect handoff output from each lane and merge in review order.
 
 Path note for Antigravity agents:
 - Antigravity runs with Windows-native paths. Treat `/mnt/c/...` as `C:\...` and prefer Windows path form directly in lane prompts.
@@ -28,11 +29,32 @@ Standard handoff format expected from each agent:
 3. Tests/verification run
 4. Risks or deferred work
 5. Recommended next lane dependency updates
+6. PR metadata recommendation (branch name, PR title, and merge dependency order)
+
+## Git Worktree Lane Policy (Required)
+
+- One lane must use one dedicated branch and one dedicated worktree.
+- Antigravity lane worktrees should be created under `C:\data\ttrpg-worktrees\<PROMPT_ID>`.
+- Branch naming pattern: `lane/<PROMPT_ID>/<scope-slug>`.
+- Base each lane branch from the active integration base ref chosen by PM (default: current `HEAD` of `C:\data\ttrpg`).
+- Do not run multiple coder lanes in the same worktree.
+- Do not reuse one lane branch for a different prompt id.
+- PR strategy stays lightweight:
+  - Default: one PR per code lane.
+  - Docs/chore-only lanes may be batched into one sprint PR.
+  - Cross-lane wiring may use one integration PR after dependency lanes complete.
+
+Worktree bootstrap template (run from `C:\data\ttrpg`):
+
+```text
+git fetch --all --prune
+git worktree add -b lane/<PROMPT_ID>/<scope-slug> C:\data\ttrpg-worktrees\<PROMPT_ID> HEAD
+```
 
 ## Lane Context Contract (Default)
 
-- Workspace root for Antigravity lanes: `C:\data\ttrpg`.
-- Branch/worktree policy: use the current shared branch/worktree unless PM explicitly assigns a different one.
+- Workspace root for each Antigravity lane: PM-assigned dedicated worktree `C:\data\ttrpg-worktrees\<PROMPT_ID>`.
+- Branch/worktree policy: stay on the assigned lane branch/worktree for the full lane.
 - Do not change branch history (`rebase`, `reset --hard`) or switch branches unless explicitly directed.
 - Assume unrelated uncommitted changes may exist; do not edit files outside lane scope.
 
@@ -41,15 +63,16 @@ Standard handoff format expected from each agent:
 Each lane must run and report:
 
 1. `pwd`
-2. `git rev-parse --abbrev-ref HEAD`
-3. `git rev-parse --short HEAD`
-4. `git status --short`
-5. `rg -n "<PROMPT_ID>|BL-XXX" ANTIGRAVITY_SPRINT_PROMPTS.md .agents/backlog.md docs/design/execution-sprint-plan.md`
+2. `git rev-parse --show-toplevel`
+3. `git rev-parse --abbrev-ref HEAD`
+4. `git rev-parse --short HEAD`
+5. `git status --short`
+6. `rg -n "<PROMPT_ID>|BL-XXX" ANTIGRAVITY_SPRINT_PROMPTS.md .agents/backlog.md docs/design/execution-sprint-plan.md`
 
 Required "Onboarding Acknowledgement" (before coding):
 
 1. Prompt id
-2. Workspace path + branch + base commit
+2. Worktree path + branch + base commit
 3. Backlog IDs in scope and copied acceptance criteria
 4. Planned file targets
 5. Explicit out-of-scope files/modules
@@ -64,7 +87,8 @@ In addition to the standard handoff format, include:
 1. Onboarding command evidence summary (path/branch/commit/status)
 2. Acceptance criteria checklist with `PASS`/`FAIL` and file/test evidence for each criterion
 3. Explicit statement: `No out-of-scope files modified` (or list exceptions with reason)
-4. Blockers that prevent lane closure (if any)
+4. PR recommendation (`lane/<PROMPT_ID>/<scope-slug>`, title, and merge dependency notes)
+5. Blockers that prevent lane closure (if any)
 
 Lane completion rule:
 - A lane is not complete if any required artifact/file from scope is missing or any acceptance criterion is unverified.
@@ -81,7 +105,7 @@ Status note:
 - Follow-up remains under `BL-012`/`BL-018` for durable persistence and audited admin unlock path.
 
 ```text
-You are Antigravity coder agent lane S1-P1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S1-P1 for assigned lane worktree C:\data\ttrpg-worktrees\S1-P1.
 
 Objective:
 - Implement campaign manifest selection and persistence scaffolding for account/character/campaign-lock metadata.
@@ -128,7 +152,7 @@ Status note:
 - Added SRD compliance checklist and mechanics matrix source-mapping pass.
 
 ```text
-You are Antigravity coder agent lane S1-G1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S1-G1 for assigned lane worktree C:\data\ttrpg-worktrees\S1-G1.
 
 Objective:
 - Define scene contract primitives and produce SRD compliance checklist artifact.
@@ -171,7 +195,7 @@ Deliverable handoff:
 ### Prompt `S2-P1` (Platform: Deterministic Queue + Scene Protocol)
 
 ```text
-You are Antigravity coder agent lane S2-P1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S2-P1 for assigned lane worktree C:\data\ttrpg-worktrees\S2-P1.
 
 Objective:
 - Implement deterministic scene command queue and scene snapshot/delta protocol extensions.
@@ -210,7 +234,7 @@ Deliverable handoff:
 ### Prompt `S2-E1` (Experience: CLI Scene Rendering)
 
 ```text
-You are Antigravity coder agent lane S2-E1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S2-E1 for assigned lane worktree C:\data\ttrpg-worktrees\S2-E1.
 
 Objective:
 - Add CLI scene rendering and clear movement/occupancy feedback.
@@ -252,7 +276,7 @@ Deliverable handoff:
 ### Prompt `S3-G1` (Gameplay: Party Encounter Skeleton)
 
 ```text
-You are Antigravity coder agent lane S3-G1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S3-G1 for assigned lane worktree C:\data\ttrpg-worktrees\S3-G1.
 
 Objective:
 - Implement party-based encounter participant capture and encounter state machine basics.
@@ -290,7 +314,7 @@ Deliverable handoff:
 ### Prompt `S3-P1` (Platform: Turn Timer + Fallback)
 
 ```text
-You are Antigravity coder agent lane S3-P1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S3-P1 for assigned lane worktree C:\data\ttrpg-worktrees\S3-P1.
 
 Objective:
 - Add turn timing infrastructure and deterministic timeout fallback.
@@ -327,7 +351,7 @@ Deliverable handoff:
 ### Prompt `S3-E1` (Experience: Turn Tracker UX)
 
 ```text
-You are Antigravity coder agent lane S3-E1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S3-E1 for assigned lane worktree C:\data\ttrpg-worktrees\S3-E1.
 
 Objective:
 - Render turn tracker and active actor indicators in CLI.
@@ -366,7 +390,7 @@ Deliverable handoff:
 ### Prompt `S4-P1` (Platform: Snapshot Safety + Admin Audit)
 
 ```text
-You are Antigravity coder agent lane S4-P1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S4-P1 for assigned lane worktree C:\data\ttrpg-worktrees\S4-P1.
 
 Objective:
 - Implement rollback-safe snapshot flow and audited admin unlock tooling.
@@ -403,7 +427,7 @@ Deliverable handoff:
 ### Prompt `S4-G1` (Gameplay: Disconnect Policy + DM Advisory Boundaries)
 
 ```text
-You are Antigravity coder agent lane S4-G1 for C:\data\ttrpg.
+You are Antigravity coder agent lane S4-G1 for assigned lane worktree C:\data\ttrpg-worktrees\S4-G1.
 
 Objective:
 - Implement staged disconnect fallback and advisory-only DM-agent acceptance boundaries.

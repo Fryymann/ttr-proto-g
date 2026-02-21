@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -37,13 +37,17 @@ Primary references:
 Koad (PM) owns sprint orchestration and publishes starter prompts in `ANTIGRAVITY_SPRINT_PROMPTS.md`.
 
 - One prompt id maps to one Antigravity agent lane.
+- One lane maps to one dedicated git worktree and one lane branch (`lane/<PROMPT_ID>/<scope-slug>`).
 - Lanes in the same sprint can run in parallel when file overlap is low.
 - Shared-file hotspots (protocol core, main server runtime) should be sequenced or split by explicit boundaries.
+- Default PR shape is one PR per code lane; docs/chore lanes may be batched when low-risk.
+- Cross-lane wiring is merged via an integration PR after dependency lanes complete.
 - Every lane must return:
   - changed files
   - tests/verification evidence
   - known risks/deferred items
   - prompt id used
+  - branch/worktree evidence and PR metadata recommendation
 
 ### Suggested lane map
 

@@ -21,3 +21,8 @@ Append-only record of confirmed durable facts.
 ## 2026-02-21 (process update)
 - Development workflow now uses Koad as PM and Antigravity agents for parallel sprint execution lanes.
 - Root sprint prompt pack lives at `ANTIGRAVITY_SPRINT_PROMPTS.md` and is maintained by PM.
+
+## 2026-02-21 (workflow policy update)
+- Parallel coder lanes are now standardized to one lane per dedicated git worktree/branch (`lane/<PROMPT_ID>/<scope-slug>`).
+- Lane handoffs now require PR metadata with merge dependency ordering, with default one PR per code lane.
+- Koad standards include `STD-007` for worktree-isolated lane execution policy enforcement.

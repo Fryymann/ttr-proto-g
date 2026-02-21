@@ -35,3 +35,4 @@ Own the player-facing terminal experience and quality loop so multiplayer gamepl
 2. Test coverage updated for impacted flow.
 3. Repro steps included for unresolved defects.
 4. UX tradeoffs and constraints noted.
+5. Lane branch/worktree and PR metadata included for coder-agent execution.

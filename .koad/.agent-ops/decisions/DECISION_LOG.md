@@ -133,3 +133,16 @@
   - Future lane reviews must verify artifact existence and execution-path integration, not only file presence.
 - Revisit trigger:
   - If crate test architecture changes to auto-discover and run isolated module tests.
+
+## 2026-02-21 - Worktree-isolated coder lane workflow with pragmatic PR policy
+- Decision:
+  - Adopt one lane per dedicated git worktree and branch (`lane/<PROMPT_ID>/<scope-slug>`) for Antigravity coder execution.
+  - Keep current team/lane model; do not require team restructuring to adopt worktrees.
+  - Use default one-PR-per-code-lane policy, with optional docs/chore batching and a sprint integration PR for cross-lane wiring.
+- Why:
+  - Improves parallel throughput while reducing cross-lane interference and merge ambiguity.
+- Impact:
+  - Coder prompts and PM operating rules now require worktree/branch assignment plus PR metadata in handoffs.
+  - Review flow stays flexible without forcing PR inflation or organizational changes.
+- Revisit trigger:
+  - If merge queue or CI latency becomes the dominant delivery bottleneck and requires PR policy changes.

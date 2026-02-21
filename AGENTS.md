@@ -37,3 +37,4 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 ## Scope
 - This hook applies to all work in this repository.
 - If local instructions conflict, prioritize the stricter startup requirement and then continue with task-specific instructions.
+- For Antigravity coder-lane delegation, use the worktree/branch/PR policy defined in `ANTIGRAVITY_SPRINT_PROMPTS.md`.

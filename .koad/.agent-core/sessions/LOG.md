@@ -39,3 +39,17 @@
   - `.koad/.agent-ops/decisions/DECISION_LOG.md`
 - Risks/Unknowns:
   - Default values for disconnect fallback rounds and pull-radius profiles are still unresolved product decisions.
+
+## 2026-02-21 - Saveup checkpoint after worktree policy rollout
+- Objective: Persist continuity after codifying git worktree-based coder-lane workflow and PR governance updates.
+- Actions:
+  - Registered saveup call and ran duplicate pre-check across memory/facts/pattern ledgers.
+  - Captured durable process learning for policy propagation across prompts, standards, and role docs.
+  - Updated recurring pattern and durable facts for lane-isolated worktree execution.
+- Artifacts:
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/memory/LEARNINGS.md`
+  - `.koad/.agent-core/memory/PATTERNS.md`
+  - `.koad/.agent-core/memory/FACTS_LEDGER.md`
+- Risks/Unknowns:
+  - S2 scene queue/runtime wiring remains intentionally deferred until post `S2-E1` completion per user direction.

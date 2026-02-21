@@ -59,3 +59,13 @@ Purpose: codable representation of standards for this workspace.
   - Require onboarding acknowledgement for each lane before edits (workspace path, branch, base commit, backlog acceptance mapping, planned files/tests).
   - Require lane handoffs to include acceptance checklist evidence and explicit out-of-scope modification disclosure.
   - Do not mark lane complete when required artifacts are missing or acceptance criteria are unverified.
+
+### STD-007 - Worktree-Isolated Lane Execution + PR Policy
+- Status: Active
+- Source: `ANTIGRAVITY_SPRINT_PROMPTS.md`
+- Intent: Prevent cross-lane interference and reduce merge risk while preserving parallel throughput.
+- Local interpretation:
+  - Require one coding lane per dedicated git worktree and lane branch (`lane/<PROMPT_ID>/<scope-slug>`).
+  - Require onboarding evidence to include worktree path, branch, and base commit before edits.
+  - Require lane handoff to include PR metadata (branch, title, merge dependency order or no-PR reason).
+  - Default to one PR per code lane; allow docs/chore batching and post-lane integration PR only when scope risk is low.

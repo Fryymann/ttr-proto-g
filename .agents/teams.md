@@ -5,7 +5,7 @@ Last updated: 2026-02-21
 
 ## Objective
 
-Run development with 3 core teams plus Project Manager oversight, minimizing handoff overhead while preserving clear ownership.
+Run development with 3 core teams plus Project Manager oversight, minimizing handoff overhead while preserving clear ownership and safe parallelism via lane-isolated git worktrees.
 
 ## Team Structure
 
@@ -71,6 +71,8 @@ Every handoff must include:
 3. Test evidence or verification notes
 4. Open risks or deferred work
 5. Antigravity prompt id/lane reference (if agent-executed)
+6. Lane worktree path + branch name
+7. PR link/id and merge dependency notes (or explicit no-PR reason)
 
 ## Current Near-Term Focus
 

@@ -125,3 +125,22 @@
 - Evidence:
   - Updated `crates/ttrpg-server/src/main.rs`, `docs/design/srd-compliance-checklist-v1.md`, `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, and `ANTIGRAVITY_SPRINT_PROMPTS.md`.
   - Verified with `cargo test -p ttrpg-server` (9 passing, includes `scene::*` tests) and filtered `test_occupancy_rules` run.
+
+## 2026-02-21 - Git worktree policy rollout for coder-lane parallelism
+- Scope:
+  - Configure agent workflow to use git worktrees for parallel coder lanes and codify PR strategy without team-structure changes.
+- Changes:
+  - Added one-lane-per-worktree/branch policy and PR metadata requirements to Antigravity prompt pack and PM execution docs.
+  - Added `STD-007` worktree-isolated lane execution standard and propagated policy across Koad bootstrap/identity/startup/memory docs.
+  - Updated role handoff checklists to include branch/worktree/PR evidence for coder-agent work.
+- Evidence:
+  - Updated `ANTIGRAVITY_SPRINT_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.agents/roles/*.md`, `.agents/teams.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/IDENTITY.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/README.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, and `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+
+## 2026-02-21 - Saveup continuity checkpoint after worktree policy rollout
+- Scope:
+  - Execute saveup protocol after workflow-policy propagation to preserve continuity for future PM/coder-lane sessions.
+- Changes:
+  - Registered saveup call, performed duplicate checks, and updated memory ledgers with policy-propagation learning/pattern/facts.
+  - Added core session log checkpoint for this saveup execution.
+- Evidence:
+  - Updated `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-core/memory/PATTERNS.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, and `.koad/.agent-core/memory/USER_PREFERENCES.md`.

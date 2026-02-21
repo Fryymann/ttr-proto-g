@@ -35,3 +35,4 @@ Own server authority, reliability, data integrity, and operational stability for
 2. Failure modes and fallback behavior documented.
 3. Performance impact measured.
 4. Monitoring hooks added/updated.
+5. Lane branch/worktree and PR metadata included for coder-agent execution.

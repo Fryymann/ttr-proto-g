@@ -15,3 +15,4 @@ This kit is self-contained and does not depend on any external memory framework.
 - Duplicate-aware session checkpointing (`saveup`)
 - Standards freshness gating before standards-dependent work
 - Sprint-execution authorization gating (execution only when explicitly requested by user)
+- Worktree-isolated coder-lane execution policy with lightweight PR governance

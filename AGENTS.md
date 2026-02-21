@@ -41,3 +41,4 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 - Antigravity usage is paused unless explicitly re-enabled by the user in-thread.
 - For Codex team-role delegation, use `CODEX_ROLE_PROMPTS.md` and its worktree/branch/PR policy.
 - Treat lane tasks as complete only after dual review approval (Koad git review + user GitHub review) and merged PR.
+- Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, while feature/runtime development changes stay on release-line lane branches.

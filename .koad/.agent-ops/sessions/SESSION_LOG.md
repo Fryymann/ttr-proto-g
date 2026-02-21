@@ -208,3 +208,16 @@
   - Logged durable PM decision for account-first authentication policy.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Koad-OS branch-scope enforcement rollout
+- Scope:
+  - Enforce separation between Koad/agent support updates and runtime feature delivery lanes.
+- Changes:
+  - Added `.github/workflows/koad-os-scope-gate.yml` (`validate-koad-os-scope`) to enforce branch/file scope policy on all PRs.
+  - Updated bootstrap/policy docs to reserve `koad-os` for Koad/agent support artifacts and keep development lanes focused on feature/runtime changes.
+  - Added standards entry `STD-010` in both standards registries and updated sprint-plan standards list + status notes.
+  - Updated branch-protection runbook to require `validate-koad-os-scope` for both `v1` and `koad-os`.
+  - Updated user preference memory for durable continuity.
+- Evidence:
+  - Updated `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `docs/ops/github-branch-protection.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Added `.github/workflows/koad-os-scope-gate.yml`.

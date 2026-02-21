@@ -1,0 +1,69 @@
+name: Koad OS Scope Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-koad-os-scope:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch/file scope policy
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "No changed files detected."
+            exit 0
+          fi
+
+          is_koad_os_file() {
+            local path="$1"
+            case "$path" in
+              .koad/*|.agents/*|AGENTS.md|CODEX_ROLE_PROMPTS.md|ANTIGRAVITY_SPRINT_PROMPTS.md|docs/ops/github-branch-protection.md|docs/design/execution-sprint-plan.md|.github/pull_request_template.md|.github/workflows/pr-template-gate.yml|.github/workflows/koad-os-scope-gate.yml)
+                return 0
+                ;;
+              *)
+                return 1
+                ;;
+            esac
+          }
+
+          violations=0
+
+          if [ "$BASE_REF" = "koad-os" ]; then
+            echo "PR targets koad-os; only Koad/agent support files are allowed."
+            for path in "${changed_files[@]}"; do
+              if ! is_koad_os_file "$path"; then
+                echo "Out-of-scope file for koad-os PR: $path"
+                violations=1
+              fi
+            done
+          else
+            echo "PR targets $BASE_REF; Koad/agent support files must be routed to koad-os."
+            for path in "${changed_files[@]}"; do
+              if is_koad_os_file "$path"; then
+                echo "Koad/agent support file blocked on non-koad-os PR: $path"
+                violations=1
+              fi
+            done
+          fi
+
+          if [ "$violations" -ne 0 ]; then
+            echo "Koad OS scope policy validation failed."
+            exit 1
+          fi
+
+          echo "Koad OS scope policy validation passed."

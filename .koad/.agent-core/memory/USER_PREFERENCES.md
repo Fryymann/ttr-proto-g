@@ -16,6 +16,7 @@
 - Use `v1` as the active base branch for agent lanes; cut lane branches from `v1` and merge back into `v1` until the release line is complete.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 - Require Codex boot to run Koad OS first, then ask which role to personify.
+- Keep Koad/agent support and workflow-governance edits on `koad-os`; keep feature/runtime development edits on release-lane branches.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

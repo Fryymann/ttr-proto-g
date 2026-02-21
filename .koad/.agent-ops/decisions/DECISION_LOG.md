@@ -214,3 +214,18 @@
   - `S1-P2` packet scope/acceptance is updated to implement account-first auth semantics.
 - Revisit trigger:
   - If a full external auth provider/session model replaces current local account/session handling.
+
+## 2026-02-21 - Enforce `koad-os` branch scope for Koad/agent support artifacts
+- Decision:
+  - Reserve `koad-os` for Koad/agent support and workflow-governance artifacts.
+  - Block those artifacts on non-`koad-os` PRs so release-lane PRs stay focused on product/runtime delivery.
+  - Add required status check `validate-koad-os-scope` and include it in branch-protection guidance.
+- Why:
+  - Mixed support/process updates and feature code in the same release-lane PRs increase review noise and integration risk.
+  - Enforced branch/file scope keeps delivery lanes clean while preserving a dedicated stream for agent-learning/process evolution.
+- Impact:
+  - Added `STD-010` to standards registries and sprint-plan standards list.
+  - Added CI workflow `.github/workflows/koad-os-scope-gate.yml`.
+  - Updated onboarding/policy docs to route Koad/agent support edits through `koad-os`.
+- Revisit trigger:
+  - If branch strategy changes to a different support branch name or policy engine.

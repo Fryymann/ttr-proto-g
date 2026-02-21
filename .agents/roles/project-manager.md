@@ -13,6 +13,8 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Own roadmap and milestone planning.
 - Maintain prioritized backlog with clear acceptance criteria.
 - Coordinate cross-role work (systems, protocol, content, QA, tooling).
+- Create sprint-ready task packets for Antigravity coder agents.
+- Maintain root-level starter prompts for each active sprint lane.
 - Track dependencies, risks, and blockers.
 - Enforce definition of done per milestone.
 - Keep planning docs synchronized with implementation reality.
@@ -27,6 +29,9 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 
 - `docs/design/combat-framework-outline.md`
 - `docs/design/mechanics-decision-matrix-v1.md`
+- `docs/design/game-system-roadmap.md`
+- `docs/design/execution-sprint-plan.md`
+- `ANTIGRAVITY_SPRINT_PROMPTS.md`
 - `.koad/AGENTS.md`
 - `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`
 - `.koad/.agent-ops/STANDARDS_REGISTRY.md`
@@ -55,6 +60,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 
 3. Delegate
 - Assign to role owners (or agent tracks) with required artifacts.
+- Publish/update corresponding Antigravity starter prompts for each sprint lane.
 
 4. Verify
 - Confirm code/docs/tests align with requested outcome.
@@ -70,6 +76,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Risk register.
 - Decision log updates in design docs.
 - Release readiness checklist for playable builds.
+- Root sprint prompt pack for Antigravity execution (`ANTIGRAVITY_SPRINT_PROMPTS.md`).
 - Koad ops session/decision log updates for substantial PM changes.
 
 ## Definition of Done (PM Gate)
@@ -107,3 +114,4 @@ A task is complete only when:
 - Expected files/modules listed.
 - Validation method listed.
 - Open questions explicitly called out.
+- Antigravity prompt id/label used for execution.

@@ -18,6 +18,7 @@ Primary references:
 - `docs/design/game-system-roadmap.md`
 - `.agents/backlog.md`
 - `.agents/risk-register.md`
+- `ANTIGRAVITY_SPRINT_PROMPTS.md`
 
 ## Current Standards and Risk Posture
 
@@ -30,6 +31,26 @@ Primary references:
 2. Sprint S2: Scene runtime and deterministic queue + protocol expansion
 3. Sprint S3: Party-based encounter skeleton + turn flow
 4. Sprint S4: Reliability hardening + DM-agent advisory boundary scaffolding
+
+## Antigravity Parallel Execution Model
+
+Koad (PM) owns sprint orchestration and publishes starter prompts in `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+
+- One prompt id maps to one Antigravity agent lane.
+- Lanes in the same sprint can run in parallel when file overlap is low.
+- Shared-file hotspots (protocol core, main server runtime) should be sequenced or split by explicit boundaries.
+- Every lane must return:
+  - changed files
+  - tests/verification evidence
+  - known risks/deferred items
+  - prompt id used
+
+### Suggested lane map
+
+- Sprint S1: `S1-P1`, `S1-G1`
+- Sprint S2: `S2-P1`, `S2-E1`
+- Sprint S3: `S3-G1`, `S3-P1`, `S3-E1`
+- Sprint S4: `S4-P1`, `S4-G1`
 
 ## Sprint S1: Contracts and Campaign Runtime
 

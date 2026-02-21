@@ -23,3 +23,14 @@ Track recurring workflows and known effective approaches.
   - Capture final session summary in `.koad/.agent-core/sessions/LOG.md`.
 - Validation:
   - `status: FRESH` from standards sync check and aligned entries in both planning + ops logs.
+
+## Pattern: Antigravity Sprint Packeting
+- Trigger:
+  - New sprint starts or sprint scope changes.
+- Steps:
+  - Update `docs/design/execution-sprint-plan.md` with lane map and validation gates.
+  - Publish/update lane prompts in `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+  - Ensure `.agents/backlog.md` active focus matches sprint lane priorities.
+  - Log process changes in Koad session/decision logs.
+- Validation:
+  - Antigravity agents can be launched directly from prompt ids with clear handoff requirements.

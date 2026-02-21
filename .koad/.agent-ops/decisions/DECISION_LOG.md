@@ -66,3 +66,15 @@
   - PM updates now have a standard place to track near-term execution state.
 - Revisit trigger:
   - If cadence shifts from sprint slices to release-train or kanban-only flow.
+
+## 2026-02-21 - Antigravity execution model adoption
+- Decision:
+  - Koad (PM) remains planning/orchestration authority while Antigravity coder agents execute sprint lanes in parallel.
+  - Maintain root prompt pack at `ANTIGRAVITY_SPRINT_PROMPTS.md` as canonical launcher input for each sprint lane.
+- Why:
+  - Parallel agent execution can increase throughput while preserving centralized scope/risk control.
+- Impact:
+  - PM role now includes publishing/maintaining sprint prompt packets.
+  - Handoff artifacts must include Antigravity prompt id/lane for traceability.
+- Revisit trigger:
+  - If execution platform changes or parallel-lane merge overhead outweighs throughput gains.

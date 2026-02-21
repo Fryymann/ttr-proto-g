@@ -70,6 +70,7 @@ Every handoff must include:
 2. Changed files/modules
 3. Test evidence or verification notes
 4. Open risks or deferred work
+5. Antigravity prompt id/lane reference (if agent-executed)
 
 ## Current Near-Term Focus
 

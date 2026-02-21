@@ -17,3 +17,7 @@ Append-only record of confirmed durable facts.
 - Supersedes prior encounter-pull assumption: V1 encounter participation is party-based, not pull-radius/zone based.
 - V1 mechanics/content scope is SRD-only plus original project-authored material.
 - DM-agent remains advisory by default; scripted narrative/NPC policy is authoritative.
+
+## 2026-02-21 (process update)
+- Development workflow now uses Koad as PM and Antigravity agents for parallel sprint execution lanes.
+- Root sprint prompt pack lives at `ANTIGRAVITY_SPRINT_PROMPTS.md` and is maintained by PM.

@@ -297,3 +297,14 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified with `bash .koad/scripts/koad status` and `bash .koad/scripts/koad status --refresh`.
+
+## 2026-02-21 - Queue status refresh and next packet dispatch setup
+- Scope:
+  - Advance PM queue after merged support PR and publish next task handoff shortcut.
+- Changes:
+  - Updated active queue statuses in `CODEX_ROLE_PROMPTS.md` (`S2-P1` set to active next; `S2-E1` marked queued on dependency).
+  - Added explicit operator dispatch shortcuts matching user-preferred style.
+  - Added sprint status note recording post-merge queue advance.
+  - Logged durable queue decision in decision log.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

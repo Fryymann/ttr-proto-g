@@ -38,7 +38,7 @@ Owner: Project Manager
 | BL-009 | P2 | Gameplay | todo | M4 | Implement scripted NPC policy interface (`NpcPolicyScripted`) | NPCs take valid turns without model calls |
 | BL-010 | P2 | Platform | todo | M4 | Add combat replay event logging | Replay log reconstructs encounter timeline |
 | BL-011 | P0 | Platform | done | M2 | Implement campaign manifest and startup campaign selection flow | Server boots with explicit campaign selection and loads active campaign config |
-| BL-012 | P0 | Platform | in_progress | M2 | Implement account + character persistence model with campaign lock metadata | Characters are account-owned, lock is enforced on join, and admin unlock events are audited |
+| BL-012 | P0 | Platform | in_progress | M2 | Implement account + character persistence model with account-authenticated login and campaign lock metadata | User logs into an account session first, character create/login is scoped to authenticated account ownership, campaign lock is enforced on join, and admin unlock events are audited |
 | BL-013 | P1 | Platform | todo | M3 | Implement single-save campaign storage with rollback-safe snapshot strategy | Campaign progress persists and recovery test passes after simulated crash |
 | BL-014 | P1 | Gameplay | todo | M3 | Define and implement staged quit/disconnect in encounter rules | Defensive-only fallback for configured rounds then limited AI behavior is deterministic and covered by integration tests |
 | BL-015 | P1 | Gameplay | todo | M3 | Implement V1 party-based encounter participation rules | Non-party players in the scene are not auto-pulled, party members are included deterministically, and tests cover join edge cases |

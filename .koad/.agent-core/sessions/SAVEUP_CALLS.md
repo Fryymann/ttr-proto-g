@@ -15,3 +15,4 @@ Tracks every explicit `saveup` invocation for auditability and duplicate-control
 |---|---|---|---:|---:|---|
 | SAVEUP-20260221-043542Z | koad-pm-os-adaptation | completed | 2 | 0 | continuity checkpoint completed; unresolved gameplay defaults remain |
 | SAVEUP-20260221-073905Z | worktree-policy-rollout | completed | 1 | 0 | continuity checkpoint completed; S2 queue/runtime live wiring remains deferred until post-S2-E1 |
+| SAVEUP-20260221-213545Z | koad-os-governance-sync | completed | 4 | 0 | continuity checkpoint completed; PR #3 open with passing governance checks; apply branch protection runbook in GitHub UI |

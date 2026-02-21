@@ -58,3 +58,14 @@ Track recurring workflows and known effective approaches.
   - Declare selected role, standards, risk level, and scope before substantial work.
 - Validation:
   - Substantial work never starts with unresolved role.
+
+## Pattern: Koad-OS Support Sync
+- Trigger:
+  - Koad/agent-support artifacts are updated on `koad-os` and need to flow into active release line.
+- Steps:
+  - Commit support-scope updates on `koad-os` (manual or agent-authored).
+  - Open PR from `koad-os` to release line (`v1` while active).
+  - Use PR template with `Persona signature`, and ensure both governance checks pass.
+  - Merge PR after review to keep release line current with support workflow updates.
+- Validation:
+  - PR head is `koad-os`, files are support-scope only, and `validate-pr-governance` + `validate-koad-os-scope` are green.

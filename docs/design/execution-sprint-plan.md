@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -67,7 +67,7 @@ Backlog alignment: `BL-011`, `BL-012`, `BL-019`, `BL-001`
 ### Platform Team
 
 - Deliver campaign manifest and active campaign selection.
-- Introduce persistence model for accounts, characters, and campaign-lock metadata.
+- Introduce persistence model for accounts, characters, account-authenticated login/session flow, and campaign-lock metadata.
 
 Target files/modules:
 
@@ -90,7 +90,7 @@ Target files/modules:
 ### Validation gates
 
 - Server boots only with explicit campaign selection.
-- Character join enforces campaign lock policy.
+- Account-authenticated login is required before character selection/join, and join enforces campaign lock policy.
 - Scene model compiles with occupancy rule tests.
 - SRD checklist exists with mapped mechanics rows.
 
@@ -221,3 +221,6 @@ For each backlog item completed:
 - 2026-02-21: Execution model pivoted from Antigravity to Codex multi-instance role lanes (`Koad PM` + Gameplay/Platform/Experience agents). Antigravity prompts paused.
 - 2026-02-21: Workflow updated to PR-required merge gating with dual approval lanes (Koad git review + user GitHub review) before task closure.
 - 2026-02-21: Active release branch updated to `v1`; coder lanes now branch from `v1` and PR back into `v1`.
+- 2026-02-21: Active Codex task packets published in `CODEX_ROLE_PROMPTS.md` for immediate queue (`S1-P2`, `S2-P1`, `S2-E1`) with dependency order on `v1`.
+- 2026-02-21: `BL-012` scope clarified: login must authenticate account first; character operations are account-scoped rather than name-derived.
+- 2026-02-21: Added `koad-os` scope separation gate; Koad/agent support files now route through `koad-os` and are blocked on non-`koad-os` PRs by `validate-koad-os-scope`.

@@ -201,3 +201,46 @@
   - Governance documentation now points branch protection at `v1`.
 - Revisit trigger:
   - When V1 release line closes or a new release base branch is activated.
+
+## 2026-02-21 - Account-first authentication for character management
+- Decision:
+  - Require login to authenticate a user account first.
+  - Scope all character management/join operations to the authenticated account identity.
+  - Treat name-derived account handles as insufficient for ownership enforcement.
+- Why:
+  - Character-name-derived identity allows ownership checks to be bypassed by presenting a known character name.
+- Impact:
+  - `BL-012` acceptance criteria now requires account-authenticated session flow before character operations.
+  - `S1-P2` packet scope/acceptance is updated to implement account-first auth semantics.
+- Revisit trigger:
+  - If a full external auth provider/session model replaces current local account/session handling.
+
+## 2026-02-21 - Enforce `koad-os` branch scope for Koad/agent support artifacts
+- Decision:
+  - Reserve `koad-os` for Koad/agent support and workflow-governance artifacts.
+  - Block those artifacts on non-`koad-os` PRs so release-lane PRs stay focused on product/runtime delivery.
+  - Add required status check `validate-koad-os-scope` and include it in branch-protection guidance.
+- Why:
+  - Mixed support/process updates and feature code in the same release-lane PRs increase review noise and integration risk.
+  - Enforced branch/file scope keeps delivery lanes clean while preserving a dedicated stream for agent-learning/process evolution.
+- Impact:
+  - Added `STD-010` to standards registries and sprint-plan standards list.
+  - Added CI workflow `.github/workflows/koad-os-scope-gate.yml`.
+  - Updated onboarding/policy docs to route Koad/agent support edits through `koad-os`.
+- Revisit trigger:
+  - If branch strategy changes to a different support branch name or policy engine.
+
+## 2026-02-21 - `koad-os` sync exception + lightweight branch governance
+- Decision:
+  - Allow support-file promotion PRs from `koad-os` into `v1` (and future release lines), constrained to Koad/agent support scope.
+  - Keep `koad-os` governance lightweight to permit occasional direct maintainer commits.
+  - Add PR persona-signature field enforcement for clearer authorship attribution in mixed human/agent flows.
+- Why:
+  - Previous branch-scope rule blocked `koad-os` -> `v1` promotion PRs.
+  - User requires flexibility for manual updates on `koad-os` while preserving clean release-lane scope and audit clarity.
+- Impact:
+  - `validate-koad-os-scope` now permits `koad-os` source sync PRs with support-only files.
+  - Branch-protection runbook now sets strict requirements on `v1` and lightweight guidance for `koad-os`.
+  - PR template/gate now requires a filled `Persona signature` line.
+- Revisit trigger:
+  - If repository governance moves to signed commits/attestations with automated identity verification.

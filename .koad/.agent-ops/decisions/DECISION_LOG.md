@@ -303,3 +303,16 @@
   - Script docs now include status command usage.
 - Revisit trigger:
   - If status output needs structured machine format (e.g., JSON) for external dashboards.
+
+## 2026-02-21 - Activate S2-P1 as next dispatch packet
+- Decision:
+  - Advance active queue state to dispatch `S2-P1` (Platform) as the next implementation lane.
+  - Keep `S2-E1` queued and dependency-gated until `S2-P1` merges to `v1`.
+- Why:
+  - `S1-P2` is merged, so the next critical-path M2 work is deterministic scene queue + scene protocol (`BL-004`, `BL-002`).
+- Impact:
+  - Operator shortcut now maps directly to user-preferred command style:
+    - `Your next task is S2-P1.`
+  - Queue docs and sprint status notes are aligned to current dispatch order.
+- Revisit trigger:
+  - If urgent defects or branch constraints force reordering ahead of `S2-P1`.

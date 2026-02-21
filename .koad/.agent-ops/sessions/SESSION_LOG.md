@@ -33,3 +33,23 @@
   - Logged durable product decisions in Koad decision records.
 - Evidence:
   - Updated `.agents/backlog.md`, `.agents/risk-register.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Roadmap and system outline baseline
+- Scope:
+  - Create a living game-system roadmap to centralize foundations, flows, sequencing, and focus.
+- Changes:
+  - Added `docs/design/game-system-roadmap.md` as primary roadmap reference.
+  - Aligned existing design docs to party-based encounter participation, SRD-only V1 scope, and advisory DM-agent boundaries.
+  - Added roadmap link in root `README.md` for discoverability.
+- Evidence:
+  - Updated `docs/design/game-system-roadmap.md`, `docs/design/combat-framework-outline.md`, `docs/design/mechanics-decision-matrix-v1.md`, and `README.md`.
+
+## 2026-02-21 - Execution sprint plan baseline
+- Scope:
+  - Convert roadmap strategy into concrete delivery slices with owner/file/test focus for M2-M3.
+- Changes:
+  - Added `docs/design/execution-sprint-plan.md`.
+  - Added backlog `Active Focus Window` tied to immediate `Now` and `Next` priorities.
+  - Added root README pointer for sprint plan discoverability.
+- Evidence:
+  - Updated `docs/design/execution-sprint-plan.md`, `.agents/backlog.md`, and `README.md`.

@@ -2,7 +2,7 @@
 
 Status: Draft (living)
 Last updated: 2026-02-21
-Scope: D&D 5.5e-inspired mechanics for a scene-based, turn-based multiplayer RPG
+Scope: SRD-aligned mechanics for a scene-based, turn-based multiplayer RPG
 
 ## Purpose
 
@@ -21,6 +21,7 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 - Server is fully authoritative.
 - Dice rolls remain core to resolution.
 - Combat and social scenes both use turn order when in encounter mode.
+- V1 uses SRD-only mechanics content plus original project-authored additions.
 
 ## Decision Matrix
 
@@ -68,7 +69,8 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 | Character-to-campaign binding | Prevent cross-campaign leakage | KEEP | Character becomes campaign-locked at join time; audited admin unlock path is allowed by policy | Preserves campaign continuity with operational recovery |
 | Character export | Portability/backups | KEEP | Export character snapshots as standardized JSON | User control and tooling support |
 | Quit/disconnect in encounter | Session resilience | ADAPT | Treat quit as disconnect; strictly defensive actions for N rounds, then limited AI behavior until reconnect/safe resolution | Prevent exploit and broken turns while preserving fairness |
-| Encounter pull scope | Bring participants into combat | ADAPT | V1 scene-configurable pull radius/zones with defaults by scene profile | Avoid over-capturing in large scenes |
+| Encounter participation scope | Bring participants into combat | ADAPT | V1 party-based participation; non-party actors are not auto-pulled by location | Supports distraction/sneak play and deterministic scope |
+| DM-agent authority | Add dynamic NPC support without losing control | ADAPT | DM-agent output is advisory only; scripted/rules layers decide authoritative outcomes | Preserves deterministic rule authority |
 | Client presentation | Keep terminal feel with richer UX | ADAPT | Terminal-first baseline with optional split-feed client surfaces | Better usability without forcing GUI |
 
 ## What Will Not Work Unchanged
@@ -81,7 +83,7 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 ## Multiplayer-First Adaptations We Intend To Add
 
 - Turn timer with default fallback (`dodge` + `end_turn`) on timeout.
-- Scene encounter capture via configurable pull radius/zones per scene.
+- Scene encounter capture via explicit party-based participation rules.
 - Observer mode for late joiners during active encounter.
 - Deterministic command queue per scene.
 - Replay/event log for debugging and eventual combat recap.
@@ -111,7 +113,7 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 ## Open Questions
 
 - Should diagonal movement remain 5/5 permanently or become configurable?
-- What default pull-radius profiles should ship for small/medium/large scenes?
+- What party edge rules should ship for temporary allies, summons, and cross-party assist?
 - How strict should turn timers be in public scenes versus party instances?
 - Which exact conditions are mandatory for V1 launch versus V1.1?
 - How many spells per class can we support before validation overhead spikes?
@@ -124,5 +126,6 @@ Capture what we will keep, adapt, or drop from D&D-style rules so implementation
 
 1. Convert this matrix into a typed `RuleConfig` schema in server code.
 2. Define exact formulas and tie-breakers for every `ADAPT` row.
-3. Add tests that pin each chosen mechanic behavior.
-4. Mark each row as `implemented`, `in_progress`, or `not_started`.
+3. Add SRD source mapping for each V1 mechanics row.
+4. Add tests that pin each chosen mechanic behavior.
+5. Mark each row as `implemented`, `in_progress`, or `not_started`.

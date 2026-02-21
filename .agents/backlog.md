@@ -17,6 +17,12 @@ Owner: Project Manager
 - `blocked`
 - `done`
 
+## Active Focus Window
+
+- `Now` (M2 critical path): `BL-011`, `BL-012`, `BL-019`, `BL-001`, `BL-002`, `BL-004`
+- `Next` (M2 completion + M3 entry): `BL-003`, `BL-005`, `BL-006`, `BL-015`
+- `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
+
 ## Backlog Items
 
 | ID | Priority | Team | State | Milestone | Task | Acceptance Criteria |

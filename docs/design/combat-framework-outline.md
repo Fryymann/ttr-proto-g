@@ -20,7 +20,7 @@ This document is intentionally iterative. Add decisions, revisions, and unresolv
   - Initiative rolls
   - Turn tracker
   - Action economy per turn
-- When combat starts in a scene, all players currently in that scene are pulled into the encounter.
+- When combat starts in a scene, only the triggering actor's party is captured in V1 (plus relevant NPCs).
 
 ## Core Concepts
 
@@ -140,14 +140,14 @@ Example tavern floor:
 - Hostile action, scripted event, or aggression AI in a scene.
 
 2. Participant Capture
-- Collect all players in scene + relevant NPCs.
+- Collect triggering party members + relevant NPCs.
 - Freeze entry into free actions in that scene.
 
-### Encounter Pull Policy (Draft)
+### Encounter Participation Policy (V1)
 
-- V1 uses configurable pull radius/zone per scene.
-- Campaign/content authors define pull scope in scene config.
-- Sensible defaults should be provided for common scene sizes.
+- V1 uses party-based participation rules.
+- Non-party actors in the same scene are not auto-pulled into combat.
+- Scene scripts can explicitly add/remove participants when required by content.
 
 3. Initiative
 - Roll initiative for each participant.
@@ -226,6 +226,7 @@ Goal: make NPC behavior feel dynamic while keeping gameplay fair, deterministic,
 
 - Server remains authoritative for all game rules.
 - AI proposes `intent`; server validates and resolves.
+- DM-agent guidance is advisory; scripted rules and narrative policy remain authoritative.
 - AI calls are event-driven, not tick-driven.
 - Every AI decision has a deterministic fallback.
 
@@ -462,7 +463,7 @@ Exit criteria:
 
 ## Open Design Questions
 
-- What default pull-radius profiles should we ship for small/medium/large scenes?
+- What party edge rules should we ship for temporary allies, summons, and cross-party assist?
 - Do we support multiple simultaneous encounters in one scene after V1?
 - How should stealth/surprise modify participant capture and initiative?
 - How strict should turn timers be in public scenes vs private party instances?
@@ -498,14 +499,24 @@ Format:
 - Consequences: Need admin unlock controls, audit logging, and guardrails.
 
 - Date: 2026-02-21
-- Decision: V1 encounter pull policy uses configurable pull radius/zone per scene.
-- Why: Prevent over-capturing in large scenes while retaining deterministic behavior.
-- Consequences: Need scene config schema, defaults, and validation rules for pull scope.
+- Decision: V1 encounter participation is party-based, not scene-wide pull by radius/zone.
+- Why: Supports distraction/sneak play patterns and prevents over-capturing by location alone.
+- Consequences: Need clear party membership contracts, participant-capture validation, and edge-case policies.
 
 - Date: 2026-02-21
 - Decision: Disconnect fallback is staged: strictly defensive for N rounds, then limited AI behavior.
 - Why: Fairness and anti-exploit protection while keeping encounters moving.
 - Consequences: Need configurable round count, AI action whitelist, and reconnect handoff rules.
+
+- Date: 2026-02-21
+- Decision: V1 mechanics and rules content are SRD-only plus original project-authored content.
+- Why: Reduce licensing risk and keep implementation scope explicit for early milestones.
+- Consequences: Need an SRD compliance checklist and review gating in design/code workflow.
+
+- Date: 2026-02-21
+- Decision: DM-agent is advisory by default for semi-scripted NPC support.
+- Why: Preserve deterministic authority in scripts/rules while still adding dynamic behavior.
+- Consequences: Need acceptance/rejection boundaries, logging, and non-authoritative AI interfaces.
 
 ## Next Editing Targets
 
@@ -518,4 +529,4 @@ Format:
 - Define campaign manifest/startup selection flow and save storage format.
 - Define character campaign-lock lifecycle, export schema, and admin unlock policy.
 - Define disconnect fallback defaults (`defensive_rounds_before_ai`, AI action whitelist).
-- Define pull-radius/zone scene config schema and default profiles.
+- Define party-participation edge rules (temporary allies, summons, cross-party assist).

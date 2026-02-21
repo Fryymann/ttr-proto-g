@@ -22,11 +22,12 @@ Any coding agent instance started in this workspace must initialize context befo
 - For Codex team-role lanes, enforce onboarding evidence before edits and acceptance-evidence handoff before lane closure.
 - For parallel team-role lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
 - Enforce PR completion gate: Koad git review + user GitHub review + merged PR before marking lane task complete.
-- Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
+- Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.
 - Log every saveup call in `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with role-aware metadata (`role` + `context_ref`).
+- Refresh root `PROJECT_PROGRESS.md` during `saveup` (default behavior in `.koad/scripts/koad saveup`) or via explicit `progress-sync`.
 
 ## Scope Rule
 - This workspace may contain multiple projects.

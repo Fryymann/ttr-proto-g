@@ -268,3 +268,26 @@
   - Scripted output aligns with existing branch/worktree and PR-governance rules.
 - Revisit trigger:
   - If team workflow adds merge-queue automation or expands command set beyond current three actions.
+
+## 2026-02-21 - Add continuously refreshed root progress dashboard
+- Decision:
+  - Maintain a root `PROJECT_PROGRESS.md` as a generated status dashboard aligned to roadmap + backlog + sprint/queue state.
+  - Add `koad progress-sync` command and wire `koad saveup` to refresh the dashboard by default.
+- Why:
+  - User needs a low-friction, always-available view of project progress against roadmap intent.
+- Impact:
+  - Repository now has one canonical quick-view progress artifact.
+  - `STD-012` codifies dashboard continuity and sourcing rules.
+- Revisit trigger:
+  - If dashboard generation should move to CI or external PM tooling instead of local script sync.
+
+## 2026-02-21 - Scope-gate exception for root progress dashboard
+- Decision:
+  - Treat `PROJECT_PROGRESS.md` as an in-scope Koad/agent support artifact under `koad-os` branch-scope policy.
+- Why:
+  - The new dashboard is intentionally a support/process artifact, and scope gate failures would block normal `koad-os` sync PRs.
+- Impact:
+  - `validate-koad-os-scope` now allows `PROJECT_PROGRESS.md` on `koad-os` PRs and `koad-os`-sourced sync PRs.
+  - Scope-policy docs/standards now explicitly include the dashboard file.
+- Revisit trigger:
+  - If progress reporting moves out of repository into external PM tooling.

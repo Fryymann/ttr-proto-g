@@ -232,3 +232,15 @@
   - Updated standards/bootstrap/memory artifacts to encode sync exception and lightweight `koad-os` expectation.
 - Evidence:
   - Updated `.github/workflows/koad-os-scope-gate.yml`, `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Role-aware saveup protocol rollout
+- Scope:
+  - Adapt saveup continuity workflow for all Koad OS roles (`Koad (PM)`, `Gameplay`, `Platform`, `Experience`).
+- Changes:
+  - Updated saveup protocol with role preconditions, role/context call metadata, role-focused learning extraction, and role-boundary mirror rules.
+  - Updated saveup ledger schema to include `role` and `context_ref`; backfilled existing entries.
+  - Updated saveup session-log template to include role/context fields.
+  - Added `STD-011` to standards registries and updated sprint-plan standards list/status notes.
+  - Updated startup/bootstrap/readme and preference memory to encode role-aware saveup usage.
+- Evidence:
+  - Updated `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/README.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

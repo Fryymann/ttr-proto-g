@@ -99,5 +99,6 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - Treat `koad-os` as support-only branch scope for `.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks.
   - For PRs targeting `koad-os`, reject out-of-scope runtime/feature files.
-  - For PRs targeting non-`koad-os` branches, reject in-scope Koad/agent support files and route them to `koad-os`.
+  - For PRs sourced from `koad-os` (support sync PRs), allow only in-scope Koad/agent support files.
+  - For other PRs targeting non-`koad-os` branches, reject in-scope Koad/agent support files and route them to `koad-os`.
   - Require `validate-koad-os-scope` status check before merge.

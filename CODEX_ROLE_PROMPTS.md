@@ -32,6 +32,7 @@ Each Codex instance must:
 - Lane branches must be cut from `v1` and PRs must target `v1`.
 - `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
+- Sync path: open PRs from `koad-os` -> `v1` when promoting approved support/process updates into the active release line.
 - Every lane must ship through a PR before it can be marked complete.
 - Default PR shape: one PR per lane.
 - Koad may batch low-risk docs/chore updates only when they still flow through a single reviewable PR.
@@ -47,6 +48,7 @@ Each Codex instance must:
 6. Lane PR must use `.github/pull_request_template.md`.
 7. Keep PR review-gate checkboxes current so governance checks can pass.
 8. PRs must pass both `validate-pr-governance` and `validate-koad-os-scope`.
+9. PR body must include `Persona signature` in `Role + Task Packet`.
 
 ## Required Team-Agent Onboarding Evidence
 

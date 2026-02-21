@@ -229,3 +229,18 @@
   - Updated onboarding/policy docs to route Koad/agent support edits through `koad-os`.
 - Revisit trigger:
   - If branch strategy changes to a different support branch name or policy engine.
+
+## 2026-02-21 - `koad-os` sync exception + lightweight branch governance
+- Decision:
+  - Allow support-file promotion PRs from `koad-os` into `v1` (and future release lines), constrained to Koad/agent support scope.
+  - Keep `koad-os` governance lightweight to permit occasional direct maintainer commits.
+  - Add PR persona-signature field enforcement for clearer authorship attribution in mixed human/agent flows.
+- Why:
+  - Previous branch-scope rule blocked `koad-os` -> `v1` promotion PRs.
+  - User requires flexibility for manual updates on `koad-os` while preserving clean release-lane scope and audit clarity.
+- Impact:
+  - `validate-koad-os-scope` now permits `koad-os` source sync PRs with support-only files.
+  - Branch-protection runbook now sets strict requirements on `v1` and lightweight guidance for `koad-os`.
+  - PR template/gate now requires a filled `Persona signature` line.
+- Revisit trigger:
+  - If repository governance moves to signed commits/attestations with automated identity verification.

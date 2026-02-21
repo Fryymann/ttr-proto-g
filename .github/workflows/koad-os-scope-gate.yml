@@ -17,6 +17,7 @@ jobs:
       - name: Validate branch/file scope policy
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
@@ -48,6 +49,14 @@ jobs:
             for path in "${changed_files[@]}"; do
               if ! is_koad_os_file "$path"; then
                 echo "Out-of-scope file for koad-os PR: $path"
+                violations=1
+              fi
+            done
+          elif [ "$HEAD_REF" = "koad-os" ]; then
+            echo "PR source is koad-os; sync PR may include only Koad/agent support files."
+            for path in "${changed_files[@]}"; do
+              if ! is_koad_os_file "$path"; then
+                echo "Out-of-scope file in koad-os sync PR: $path"
                 violations=1
               fi
             done

@@ -4,6 +4,7 @@
 
 ## Role + Task Packet
 - Role:
+- Persona signature (`Koad (PM)|Gameplay|Platform|Experience|User`):
 - Task packet id:
 - Backlog item(s):
 

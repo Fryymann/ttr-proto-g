@@ -38,5 +38,5 @@ Last updated: 2026-02-21
 - Intent: Keep Koad/agent support and workflow-governance artifacts isolated from gameplay/platform feature delivery lanes.
 - Enforcement:
   - Koad/agent support artifacts are committed through `koad-os`.
-  - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files.
+  - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files unless the source branch is `koad-os` (support sync PR).
   - Required status check `validate-koad-os-scope` enforces the boundary on PRs.

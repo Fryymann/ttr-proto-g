@@ -36,6 +36,11 @@ jobs:
           require_section "## Lane Metadata"
           require_section "## Review Gates"
 
+          if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- Persona signature.*: .+"; then
+            echo "Missing or empty persona signature line."
+            missing=1
+          fi
+
           require_checked_gate() {
             gate="$1"
             if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- \\[[xX]\\] ${gate}$"; then

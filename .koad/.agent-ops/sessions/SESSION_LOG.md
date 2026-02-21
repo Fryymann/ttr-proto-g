@@ -221,3 +221,14 @@
 - Evidence:
   - Updated `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `docs/ops/github-branch-protection.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Added `.github/workflows/koad-os-scope-gate.yml`.
+
+## 2026-02-21 - Koad-OS promotion path + persona-signature governance refinement
+- Scope:
+  - Unblock `koad-os` -> `v1` support-sync PR flow and align governance to user preference for lighter `koad-os` restrictions.
+- Changes:
+  - Updated `.github/workflows/koad-os-scope-gate.yml` to allow support-only PRs when source branch is `koad-os`.
+  - Added `Persona signature` field to PR template and validation in `validate-pr-governance`.
+  - Updated branch-protection runbook to keep `v1` strict and `koad-os` lightweight/direct-commit friendly.
+  - Updated standards/bootstrap/memory artifacts to encode sync exception and lightweight `koad-os` expectation.
+- Evidence:
+  - Updated `.github/workflows/koad-os-scope-gate.yml`, `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.

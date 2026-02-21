@@ -257,7 +257,6 @@
   - Standards registries include `STD-011` to keep role-aware saveup behavior durable.
 - Revisit trigger:
   - If saveup automation is introduced with explicit runtime role/session context capture.
-
 ## 2026-02-21 - Add shared Koad OS workflow CLI (`.koad/scripts/koad`)
 - Decision:
   - Add one shared CLI entrypoint for high-frequency Koad OS operations.

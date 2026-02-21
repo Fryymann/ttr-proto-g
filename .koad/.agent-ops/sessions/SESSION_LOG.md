@@ -244,7 +244,6 @@
   - Updated startup/bootstrap/readme and preference memory to encode role-aware saveup usage.
 - Evidence:
   - Updated `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/README.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-
 ## 2026-02-21 - Shared Koad workflow CLI scaffold
 - Scope:
   - Implement shared scripts for frequently repeated Koad OS actions.

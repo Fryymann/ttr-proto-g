@@ -201,3 +201,16 @@
   - Governance documentation now points branch protection at `v1`.
 - Revisit trigger:
   - When V1 release line closes or a new release base branch is activated.
+
+## 2026-02-21 - Account-first authentication for character management
+- Decision:
+  - Require login to authenticate a user account first.
+  - Scope all character management/join operations to the authenticated account identity.
+  - Treat name-derived account handles as insufficient for ownership enforcement.
+- Why:
+  - Character-name-derived identity allows ownership checks to be bypassed by presenting a known character name.
+- Impact:
+  - `BL-012` acceptance criteria now requires account-authenticated session flow before character operations.
+  - `S1-P2` packet scope/acceptance is updated to implement account-first auth semantics.
+- Revisit trigger:
+  - If a full external auth provider/session model replaces current local account/session handling.

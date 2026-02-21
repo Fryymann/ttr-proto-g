@@ -1,0 +1,26 @@
+# Agent Bootstrap
+
+Any coding agent instance started in this workspace must initialize context before substantial work.
+
+## Required Startup Order
+1. Read `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`.
+2. Read `.koad/.agent-core/IDENTITY.md`.
+3. Read `.koad/.agent-core/memory/WORKING_MEMORY.md`.
+4. Read `.koad/.agent-core/memory/LEARNINGS.md` and `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+5. Run `python3 .koad/.agent-core/scripts/standards_sync_status.py --manifest .koad/.standards/sync_manifest.json --required-sources .koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md --max-age-hours 24`.
+6. Read `.koad/.agent-ops/STANDARDS_REGISTRY.md`.
+7. Read `.koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md`.
+
+## Operational Rules
+- The persona in `.koad/.agent-core/IDENTITY.md` is the active execution posture.
+- Use `.koad/.agent-core` for identity and memory.
+- Use `.koad/.agent-ops` for operational standards and logs.
+- Never store secrets in `.koad/.agent-core` or `.koad/.agent-ops`.
+
+## Saveup Rule
+- When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.
+- Log every saveup call in `.koad/.agent-core/sessions/SAVEUP_CALLS.md`.
+
+## Scope Rule
+- This workspace may contain multiple projects.
+- Confirm target repo/path before destructive or deployment actions.

@@ -1,0 +1,128 @@
+# Mechanics Decision Matrix v1
+
+Status: Draft (living)
+Last updated: 2026-02-21
+Scope: D&D 5.5e-inspired mechanics for a scene-based, turn-based multiplayer RPG
+
+## Purpose
+
+Capture what we will keep, adapt, or drop from D&D-style rules so implementation stays consistent across server, client, and content design.
+
+## Decision Legend
+
+- `KEEP`: implement close to 5.5e behavior with minimal changes.
+- `ADAPT`: preserve spirit, but modify for multiplayer/server determinism.
+- `DROP`: exclude from V1.
+- `DEFER`: postpone beyond V1.
+
+## Foundation Assumptions
+
+- Grid combat uses 5-foot squares.
+- Server is fully authoritative.
+- Dice rolls remain core to resolution.
+- Combat and social scenes both use turn order when in encounter mode.
+
+## Decision Matrix
+
+| System | Baseline Intent | Decision | V1 Implementation Direction | Why |
+| --- | --- | --- | --- | --- |
+| d20 tests (checks/attacks/saves) | Core resolution mechanic | KEEP | Server rolls and validates all outcomes | Familiar and deterministic |
+| Ability scores + modifiers | Character math base | KEEP | Standard modifiers and derived bonuses | Required for class/skill identity |
+| Proficiency bonus scaling | Competency progression | KEEP | Global progression table in rules module | Clean and compact |
+| Advantage/disadvantage | Binary roll modifier | KEEP | Single source of truth for stacking rules | Fast to compute and explain |
+| Initiative | Turn order entry point | ADAPT | Roll once per encounter, stable tie-breakers, turn timer | Needed for online pacing |
+| Surprise | Opening advantage/disruption | ADAPT | Apply initiative penalties/bonuses; avoid skip-turn feel-bad | Better multiplayer UX |
+| Action/bonus/reaction economy | Tactical turn limits | KEEP | Hard-enforced action slots each turn/round | Strong tactical clarity |
+| Movement on 5-ft grid | Tactical positioning | KEEP | Tile movement with speed budget per turn | Aligns with scene model |
+| Diagonal movement | Grid distance edge case | ADAPT | Use 5/5 diagonals in V1 | Simpler for terminal play |
+| Reach and range | Melee/ranged constraints | KEEP | Manhattan/Chebyshev policy fixed in rules core | Required for weapon/spell identity |
+| Opportunity attacks | Threat zones | KEEP | Trigger on hostile reach exit unless exempt | Core tactical depth |
+| Cover | Positional defense | ADAPT | Tile/object tags grant half/three-quarters cover | Works with text maps |
+| Conditions | Status effects | KEEP | Implement common combat conditions first | Reusable across systems |
+| Exhaustion | Long-term fatigue | ADAPT | Use simplified track in V1 | Full detail is heavy early |
+| HP/temp HP/death saves | Survival model | KEEP | Standard damage pipeline and death saves | Critical to D&D feel |
+| Grapple/shove | Battlefield control | ADAPT | Keep with constrained deterministic checks | Useful but rules-heavy |
+| Ready action | Tactical planning | KEEP | Queue trigger + stored action intent | Important for turn play |
+| Dodge/disengage/dash/help/use object | Action set staples | KEEP | Already aligned with combat framework outline | Low risk, high value |
+| Spell slots + spellcasting | Class identity | ADAPT | Start with curated spell list + strict validators | Complexity control |
+| Concentration | Ongoing spell balance | KEEP | Single concentration effect per actor | Essential for spell balance |
+| Components/material tracking | Spell friction realism | ADAPT | Ignore most material tracking except costly components | Reduce bookkeeping |
+| Ammunition tracking | Resource realism | ADAPT | Optional toggle; default light tracking in V1 | Reduce friction |
+| Encumbrance | Inventory realism | DROP | No weight simulation in V1 | High overhead, low fun early |
+| Short/long rests | Recovery cadence | ADAPT | Server-timed, interruption-aware rest states | Persistent world needs explicit timing |
+| Passive perception/insight | Background awareness | ADAPT | Derived passive values used by server checks | Reduces hidden GM logic |
+| Stealth/hiding | Visibility gameplay | ADAPT | Deterministic visibility + contested checks | Must work without GM ad hoc |
+| Social influence | Structured social play | ADAPT | Turn-based social actions + NPC attitude states | Supports party social gameplay goal |
+| Exploration travel pace | Overland procedure | DEFER | Scene-level movement first; world travel later | Not needed for early vertical slice |
+| Mounted combat | Specialized subsystem | DROP | Excluded from V1 | Too large for early scope |
+| Legendary/lair actions | Boss complexity | DEFER | Add after core encounter loop stabilizes | Advanced content layer |
+| Multiattack/monster actions | NPC combat variety | KEEP | Per-NPC action profiles in data | Needed for encounter variety |
+
+## Campaign and Session Operations
+
+| System | Baseline Intent | Decision | V1 Implementation Direction | Why |
+| --- | --- | --- | --- | --- |
+| Server campaign selection | Choose world/campaign at startup | KEEP | One active campaign chosen from prebuilt manifest at server boot | Clear operational model |
+| Campaign save model | Persist ongoing progress | ADAPT | Single save slot per campaign on server (no branches) | Simpler state management |
+| Account ownership | Persistent player identity | KEEP | Server accounts own character roster | Supports long-term progression |
+| Character-to-campaign binding | Prevent cross-campaign leakage | KEEP | Character becomes campaign-locked at join time; audited admin unlock path is allowed by policy | Preserves campaign continuity with operational recovery |
+| Character export | Portability/backups | KEEP | Export character snapshots as standardized JSON | User control and tooling support |
+| Quit/disconnect in encounter | Session resilience | ADAPT | Treat quit as disconnect; strictly defensive actions for N rounds, then limited AI behavior until reconnect/safe resolution | Prevent exploit and broken turns while preserving fairness |
+| Encounter pull scope | Bring participants into combat | ADAPT | V1 scene-configurable pull radius/zones with defaults by scene profile | Avoid over-capturing in large scenes |
+| Client presentation | Keep terminal feel with richer UX | ADAPT | Terminal-first baseline with optional split-feed client surfaces | Better usability without forcing GUI |
+
+## What Will Not Work Unchanged
+
+- GM-only discretionary rulings with no deterministic tie-breaker.
+- Purely manual bookkeeping for all edge rules in live multiplayer.
+- Freeform NPC behavior that bypasses legal action validation.
+- Unlimited-turn pacing without timeout or fallback actions.
+
+## Multiplayer-First Adaptations We Intend To Add
+
+- Turn timer with default fallback (`dodge` + `end_turn`) on timeout.
+- Scene encounter capture via configurable pull radius/zones per scene.
+- Observer mode for late joiners during active encounter.
+- Deterministic command queue per scene.
+- Replay/event log for debugging and eventual combat recap.
+
+## New Ideas Beyond Baseline D&D
+
+- Unified encounter engine for both combat and social rounds.
+- AI-driven NPC intent layer with strict server validation.
+- Text-map overlays for turn order, threat, and cover cues.
+- Rules profiles (`strict`, `fast`, `cinematic`) as future server config.
+
+## V1 Mechanics Package (Recommended)
+
+- d20 tests, advantage/disadvantage, initiative, action economy.
+- Movement/range/reach/opportunity attacks on 5-ft squares.
+- Core conditions, HP/death saves, concentration.
+- Basic weapon attacks and curated low-complexity spell list.
+- Social turn actions with party participation.
+
+## V1 Exclusions (Hard Scope Cut)
+
+- Full encumbrance simulation.
+- Mounted combat subsystem.
+- Full spell component economy.
+- Large optional tactical variants (flanking variants, optional grids, etc.).
+
+## Open Questions
+
+- Should diagonal movement remain 5/5 permanently or become configurable?
+- What default pull-radius profiles should ship for small/medium/large scenes?
+- How strict should turn timers be in public scenes versus party instances?
+- Which exact conditions are mandatory for V1 launch versus V1.1?
+- How many spells per class can we support before validation overhead spikes?
+- What guardrails/audit requirements should admin campaign-unlock enforce?
+- What is the default defensive-round count before AI takeover on disconnect?
+- What exact post-defensive AI action whitelist should be allowed?
+- What minimum backup/snapshot cadence is required for single-save campaign safety?
+
+## Next Implementation Steps
+
+1. Convert this matrix into a typed `RuleConfig` schema in server code.
+2. Define exact formulas and tie-breakers for every `ADAPT` row.
+3. Add tests that pin each chosen mechanic behavior.
+4. Mark each row as `implemented`, `in_progress`, or `not_started`.

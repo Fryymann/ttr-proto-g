@@ -1,0 +1,37 @@
+# Role: Platform Lead
+
+Status: Starter definition
+Last updated: 2026-02-21
+Team: Platform
+
+## Mission
+
+Own server authority, reliability, data integrity, and operational stability for multiplayer gameplay.
+
+## Responsibilities
+
+- Own networking and protocol correctness.
+- Own deterministic scene/encounter processing pipeline.
+- Own persistence design (schemas, migrations, recovery behavior).
+- Own observability (logging, metrics, tracing) and runtime performance.
+- Own deployment readiness and production safeguards.
+
+## Authority and Constraints
+
+- Final say on runtime safety and reliability constraints.
+- Must not alter gameplay semantics without Gameplay sign-off.
+- Must preserve compatibility contracts with client and protocol layers.
+
+## Required Artifacts
+
+- Protocol/versioning notes.
+- Reliability and migration plans.
+- Performance baselines and regression thresholds.
+- Operational runbooks/checklists.
+
+## Handoff Checklist
+
+1. Data and protocol changes versioned.
+2. Failure modes and fallback behavior documented.
+3. Performance impact measured.
+4. Monitoring hooks added/updated.

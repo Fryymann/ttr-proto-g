@@ -61,16 +61,23 @@ pub fn ensure_campaign_lock(
     match evaluate_campaign_join(lock.as_ref(), active_campaign_id) {
         CampaignJoinDecision::Allowed => {
             if lock.is_none() {
-                *lock = Some(CharacterCampaignLock {
-                    campaign_id: active_campaign_id.to_owned(),
-                    locked_at_epoch_secs: unix_now_secs(),
-                    unlock_audit_ref: None,
-                });
+                *lock = Some(build_campaign_lock(active_campaign_id, None));
             }
 
             CampaignJoinDecision::Allowed
         }
         blocked => blocked,
+    }
+}
+
+pub fn build_campaign_lock(
+    campaign_id: &str,
+    unlock_audit_ref: Option<String>,
+) -> CharacterCampaignLock {
+    CharacterCampaignLock {
+        campaign_id: campaign_id.to_owned(),
+        locked_at_epoch_secs: unix_now_secs(),
+        unlock_audit_ref,
     }
 }
 

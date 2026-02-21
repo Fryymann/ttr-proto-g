@@ -14,6 +14,7 @@ pub struct CharacterDraft {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ClientMessage {
     Login { name: String },
+    SelectCharacter { name: String },
     CreateCharacter { character: CharacterDraft },
     CommandText { command: String },
     Ping,

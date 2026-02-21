@@ -25,6 +25,7 @@ Last updated: 2026-02-21
 
 ### STD-007 - Worktree-Isolated Team Lane Execution + PR Policy
 - Intent: Run each coding lane in a dedicated worktree/branch and capture PR merge dependency metadata.
+- Enforcement: Active release base branch is `v1`; lane branches and PR targets must use `v1` until PM declares otherwise.
 
 ### STD-008 - Team-Agent Familiarization Gate
 - Intent: Require non-PM team-role agents to load roadmap + project state artifacts before implementation.

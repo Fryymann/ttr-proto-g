@@ -66,6 +66,7 @@ Purpose: codable representation of standards for this workspace.
 - Source: `CODEX_ROLE_PROMPTS.md`
 - Intent: Prevent cross-lane interference and reduce merge risk while preserving parallel throughput across Codex team instances.
 - Local interpretation:
+  - Active release base branch is `v1`; coder lanes branch from `v1` and target PRs to `v1` unless PM declares a replacement base branch.
   - Require one coding lane per dedicated git worktree and lane branch (`lane/<ROLE>/<task-slug>`).
   - Require onboarding evidence to include worktree path, branch, and base commit before edits.
   - Require lane handoff to include PR metadata (URL, base/head, title, latest commit, merge dependency order).

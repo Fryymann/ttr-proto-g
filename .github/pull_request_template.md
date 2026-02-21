@@ -25,7 +25,7 @@
 ## Lane Metadata
 - Worktree path:
 - Branch (head):
-- Base branch:
+- Base branch (`v1` unless explicitly overridden by Koad):
 - Latest commit SHA:
 - PR dependency order / blocked-by:
 

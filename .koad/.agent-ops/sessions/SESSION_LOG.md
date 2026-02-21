@@ -177,3 +177,13 @@
 - Evidence:
   - Updated `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Added `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`.
+
+## 2026-02-21 - Release-line branch policy update to `v1`
+- Scope:
+  - Align agent lane workflow and governance docs to use `v1` as the active release base branch.
+- Changes:
+  - Updated lane workflow docs to require branching from `v1` and PR targets into `v1`.
+  - Updated branch-protection runbook target branch from `master` to `v1`.
+  - Updated standards, preferences, and learnings with release-line branching behavior.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `docs/design/execution-sprint-plan.md`, `docs/ops/github-branch-protection.md`, `.github/pull_request_template.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/LEARNINGS.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.

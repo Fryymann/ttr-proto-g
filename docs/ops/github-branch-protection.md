@@ -14,7 +14,7 @@ Enforce lane completion through PR review + merge:
 
 ## Target Branch
 
-Apply this rule set to the default integration branch (currently `master`).
+Apply this rule set to the active release integration branch (currently `v1`).
 
 ## Required Repository Files
 
@@ -26,7 +26,7 @@ Apply this rule set to the default integration branch (currently `master`).
 Open: `Settings` -> `Branches` -> `Add branch protection rule`.
 
 Use branch name pattern:
-- `master`
+- `v1`
 
 Enable:
 
@@ -61,3 +61,4 @@ Optional but recommended:
 
 - The workflow enforces that both review-gate checkboxes are checked in the PR body.
 - GitHub branch protection enforces PR approval and required status checks before merge.
+- If a different release line becomes active later, copy this rule to that branch pattern and update this document.

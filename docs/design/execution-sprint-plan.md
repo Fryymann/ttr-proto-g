@@ -39,6 +39,7 @@ Koad (PM) owns sprint orchestration and publishes starter prompts in `CODEX_ROLE
 - Antigravity usage is paused for now.
 - Three additional Codex instances represent team roles: Gameplay, Platform, Experience.
 - One active task lane maps to one dedicated git worktree and one lane branch (`lane/<ROLE>/<task-slug>`).
+- Active release base branch is `v1`; lane branches are cut from `v1` and PRs target `v1`.
 - Lanes in the same sprint can run in parallel when file overlap is low.
 - Shared-file hotspots (protocol core, main server runtime) should be sequenced or split by explicit boundaries.
 - Every lane flows through a PR and remains open until both review gates pass.
@@ -219,3 +220,4 @@ For each backlog item completed:
 - 2026-02-21: `S1-G1` completed. Scene contract/occupancy module and SRD compliance checklist + source mapping pass landed (`BL-001` and `BL-019` done).
 - 2026-02-21: Execution model pivoted from Antigravity to Codex multi-instance role lanes (`Koad PM` + Gameplay/Platform/Experience agents). Antigravity prompts paused.
 - 2026-02-21: Workflow updated to PR-required merge gating with dual approval lanes (Koad git review + user GitHub review) before task closure.
+- 2026-02-21: Active release branch updated to `v1`; coder lanes now branch from `v1` and PR back into `v1`.

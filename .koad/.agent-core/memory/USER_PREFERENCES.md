@@ -13,6 +13,7 @@
 - Use git worktrees for parallel coder-agent lanes (one lane per worktree/branch) with pragmatic PR count control.
 - Use PR-gated lane closure: user reviews on GitHub, Koad reviews via local git, and tasks close only after merge.
 - Use standardized PR bodies and enforce governance through required `validate-pr-governance` check.
+- Use `v1` as the active base branch for agent lanes; cut lane branches from `v1` and merge back into `v1` until the release line is complete.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 - Require Codex boot to run Koad OS first, then ask which role to personify.
 

@@ -62,3 +62,8 @@ Append-only record of durable lessons.
 - Observation: Review policy is more reliable when branch protection uses a concrete required status check tied to PR template governance.
 - Why it matters: Process-only guidance can drift; required checks make merge gates auditable and consistent.
 - Behavior update: Keep PR template + `validate-pr-governance` workflow aligned with branch protection settings.
+
+### Release-Line Branching
+- Observation: Parallel lane coordination stays clearer when one named release branch is the shared base for all lane branches and PR targets.
+- Why it matters: Mixed base branches during active delivery windows increase merge ambiguity and review overhead.
+- Behavior update: While release line `v1` is active, cut lane branches from `v1` and merge lane PRs back into `v1`.

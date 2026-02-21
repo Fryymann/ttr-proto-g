@@ -28,6 +28,8 @@ Each Codex instance must:
 
 - One active task lane uses one dedicated worktree and one branch.
 - Branch naming pattern: `lane/<ROLE>/<task-slug>`.
+- Active release base branch is `v1` until Koad declares otherwise.
+- Lane branches must be cut from `v1` and PRs must target `v1`.
 - Every lane must ship through a PR before it can be marked complete.
 - Default PR shape: one PR per lane.
 - Koad may batch low-risk docs/chore updates only when they still flow through a single reviewable PR.
@@ -39,7 +41,7 @@ Each Codex instance must:
 2. Koad performs local git review (`git diff`, tests, acceptance check).
 3. User performs GitHub PR review.
 4. Lane is approved only when both Koad and user reviews are approved.
-5. Task is complete only after PR merge to the target branch.
+5. Task is complete only after PR merge to `v1` (or a replacement base branch explicitly declared by Koad).
 6. Lane PR must use `.github/pull_request_template.md`.
 7. Keep PR review-gate checkboxes current so governance checks can pass.
 

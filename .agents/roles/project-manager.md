@@ -70,6 +70,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Default to delegation-only for sprints unless explicit user authorization to execute sprint work is provided.
 - Require role routing for each Codex instance (`Koad (PM)|Gameplay|Platform|Experience`) before substantial work.
 - Require one lane = one dedicated git worktree + branch (`lane/<ROLE>/<task-slug>`).
+- Require active release branching policy: cut lane branches from `v1` and target PRs to `v1` until release-line policy changes.
 - Require lane onboarding acknowledgement before edits (worktree path, branch, base commit, backlog acceptance mapping).
 - Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
 - Require PR submission for every lane and enforce merge-gated completion.

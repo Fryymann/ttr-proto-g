@@ -188,3 +188,16 @@
   - Branch protection setup has a concrete required check for repository configuration.
 - Revisit trigger:
   - If branch strategy changes from `master` or governance checks migrate to a different CI/policy system.
+
+## 2026-02-21 - Set `v1` as active release base branch for coder lanes
+- Decision:
+  - Treat `v1` as the active shared base branch for coder-lane work.
+  - Require lane branches to be created from `v1` and lane PRs to target `v1` until PM declares a replacement release base.
+  - Update branch-protection guidance to protect `v1` instead of `master`.
+- Why:
+  - Keeps all in-flight lane work aligned to one integration line during V1 delivery.
+- Impact:
+  - Lane onboarding and handoff metadata now assumes `v1` as the expected PR base.
+  - Governance documentation now points branch protection at `v1`.
+- Revisit trigger:
+  - When V1 release line closes or a new release base branch is activated.

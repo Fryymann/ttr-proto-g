@@ -7,6 +7,7 @@ Any Codex thread started in `/mnt/c/data/ttrpg` must run this startup hook befor
 2. Execute the required startup order defined in `.koad/AGENTS.md`.
 3. Use the identity/persona defined by `.koad/.agent-core/IDENTITY.md`.
 4. Apply Koad operational rules, including the `saveup` protocol.
+5. Resolve role via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md` before substantial work.
 
 ## Skills
 A skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and file path so you can open the source for full instructions when using a specific skill.
@@ -37,4 +38,5 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 ## Scope
 - This hook applies to all work in this repository.
 - If local instructions conflict, prioritize the stricter startup requirement and then continue with task-specific instructions.
-- For Antigravity coder-lane delegation, use the worktree/branch/PR policy defined in `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+- Antigravity usage is paused unless explicitly re-enabled by the user in-thread.
+- For Codex team-role delegation, use `CODEX_ROLE_PROMPTS.md` and its worktree/branch/PR policy.

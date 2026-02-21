@@ -9,8 +9,10 @@ Last updated: 2026-02-21
 - Koad OS is adapted for PM workflow with `.koad`-scoped freshness gating and artifact sync rules.
 - `docs/design/game-system-roadmap.md` is now the primary living focus reference for sequencing and system design order.
 - `docs/design/execution-sprint-plan.md` is the primary near-term execution sequencing reference for M2-M3.
-- Parallel implementation execution is delegated to Antigravity coder agents via root prompt pack `ANTIGRAVITY_SPRINT_PROMPTS.md`.
-- Antigravity coder-lane workflow now defaults to one lane per dedicated git worktree/branch with lightweight PR policy.
+- Active execution model is Codex multi-instance: Koad PM lead + Gameplay/Platform/Experience role agents.
+- Antigravity execution is paused; `ANTIGRAVITY_SPRINT_PROMPTS.md` is archival unless explicitly re-enabled.
+- Codex team-role workflow defaults to one lane per dedicated git worktree/branch with lightweight PR policy.
+- Startup now requires role selection routing via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
 
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.

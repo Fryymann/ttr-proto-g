@@ -14,7 +14,8 @@ Each role file should include:
 1. Mission
 2. Responsibilities
 3. Authority and constraints
-4. Standard workflow
-5. Required artifacts
-6. Handoff checklist
-7. Coder-lane worktree/branch/PR handoff requirements
+4. Startup context load requirements
+5. Standard workflow
+6. Required artifacts
+7. Handoff checklist
+8. Coder-lane worktree/branch/PR handoff requirements

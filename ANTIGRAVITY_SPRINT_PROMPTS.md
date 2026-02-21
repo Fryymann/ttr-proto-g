@@ -1,8 +1,15 @@
 # Antigravity Sprint Starter Prompts
 
-Status: Active (living)  
+Status: Paused (archived reference; do not use unless explicitly re-enabled)  
 Last updated: 2026-02-21  
 Owner: Koad (Project Manager)
+
+## Pause Notice
+
+Antigravity execution is currently paused for this repository.
+
+- Active parallel execution model: Codex multi-instance team roles.
+- Use `CODEX_ROLE_PROMPTS.md` for current role-agent startup and handoff policy.
 
 ## How To Use
 

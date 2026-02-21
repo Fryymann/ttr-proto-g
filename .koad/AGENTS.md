@@ -10,6 +10,7 @@ Any coding agent instance started in this workspace must initialize context befo
 5. Run `python3 .koad/.agent-core/scripts/standards_sync_status.py --manifest .koad/.standards/sync_manifest.json --required-sources .koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md --max-age-hours 24`.
 6. Read `.koad/.agent-ops/STANDARDS_REGISTRY.md`.
 7. Read `.koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md`.
+8. Run role routing in `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md` before substantial work.
 
 ## Operational Rules
 - The persona in `.koad/.agent-core/IDENTITY.md` is the active execution posture.
@@ -17,8 +18,9 @@ Any coding agent instance started in this workspace must initialize context befo
 - Use `.koad/.agent-ops` for operational standards and logs.
 - Never store secrets in `.koad/.agent-core` or `.koad/.agent-ops`.
 - Sprint execution guardrail: do not perform sprint implementation work unless the user explicitly asks for sprint execution in the current thread.
-- For Antigravity delegation, enforce onboarding evidence before edits (path/branch/commit/scope) and acceptance-evidence handoff before lane closure.
-- For Antigravity parallel lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
+- Antigravity execution is paused unless the user explicitly re-enables it.
+- For Codex team-role lanes, enforce onboarding evidence before edits and acceptance-evidence handoff before lane closure.
+- For parallel team-role lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.

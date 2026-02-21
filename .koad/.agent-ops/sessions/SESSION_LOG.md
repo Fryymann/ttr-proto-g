@@ -144,3 +144,14 @@
   - Added core session log checkpoint for this saveup execution.
 - Evidence:
   - Updated `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-core/memory/PATTERNS.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, and `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+
+## 2026-02-21 - Codex role-instance pivot and boot-sequence update
+- Scope:
+  - Pivot development orchestration from Antigravity to multi-instance Codex role agents and update repository boot behavior.
+- Changes:
+  - Added role-routing boot protocol requiring startup role question and route-specific context loading.
+  - Added active `CODEX_ROLE_PROMPTS.md` and marked `ANTIGRAVITY_SPRINT_PROMPTS.md` paused.
+  - Updated standards, PM/team-role docs, and sprint-plan execution model to Codex role-instance orchestration.
+  - Updated Koad memory artifacts to reflect the execution-model pivot and role-selection requirements.
+- Evidence:
+  - Updated `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/IDENTITY.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.agents/roles/*.md`, `.agents/teams.md`, `.agents/README.md`, `README.md`, and memory ledgers under `.koad/.agent-core/memory/`.

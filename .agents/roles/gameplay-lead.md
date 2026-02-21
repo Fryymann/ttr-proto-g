@@ -25,6 +25,16 @@ Own mechanical correctness, encounter depth, and content-facing rule behavior fo
 - Must preserve deterministic server-side resolution.
 - Must align changes with `docs/design/mechanics-decision-matrix-v1.md`.
 
+## Startup Context Load
+
+- Complete `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+- Confirm role selection is `Gameplay`.
+- Review:
+  - `docs/design/game-system-roadmap.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `.agents/backlog.md`
+  - `.agents/risk-register.md`
+
 ## Required Artifacts
 
 - Rule spec updates and decision-log entries.

@@ -5,12 +5,14 @@
 - Keep terminal-first game feel, but support richer optional client surfaces.
 - Structure project for long-term development by agent teams.
 - Consolidate complexity where possible (fewer teams, clearer ownership).
-- Use Koad as PM and Antigravity agents as parallel sprint executors.
-- Keep a root-level sprint prompt pack for launching agent lanes.
+- Use Koad as PM lead with three additional Codex role agents (`Gameplay`, `Platform`, `Experience`) as parallel executors.
+- Pause Antigravity usage for now; keep it disabled unless explicitly re-enabled.
+- Keep a root-level role prompt pack for launching Codex role agents.
 - Keep sprint execution reserved for development teams unless the user explicitly asks the PM agent to execute a sprint.
-- For Antigravity lane prompts, use Windows-native workspace paths (`C:\...`) instead of WSL `/mnt/c/...`.
+- For team-agent lane prompts, use Windows-native workspace paths (`C:\...`) instead of WSL `/mnt/c/...`.
 - Use git worktrees for parallel coder-agent lanes (one lane per worktree/branch) with pragmatic PR count control.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
+- Require Codex boot to run Koad OS first, then ask which role to personify.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

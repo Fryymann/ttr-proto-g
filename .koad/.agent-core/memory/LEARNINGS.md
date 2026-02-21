@@ -47,3 +47,8 @@ Append-only record of durable lessons.
 - Observation: Workflow policies drift when they are documented only in sprint prompts and not mirrored into standards/startup/role artifacts.
 - Why it matters: Later agents may follow incomplete guidance and bypass intended guardrails.
 - Behavior update: Treat policy rollout as complete only after synchronized updates across prompt pack, Koad standards/startup, and role handoff docs.
+
+### Role Clarity
+- Observation: Multi-instance Codex execution works best when role selection is explicit at boot, not inferred from prior thread context.
+- Why it matters: Implicit role assumptions cause PM/team boundary drift and inconsistent onboarding quality.
+- Behavior update: Require role question at startup and route to PM or team-role context before substantial work.

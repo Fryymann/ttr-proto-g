@@ -22,6 +22,16 @@ Own server authority, reliability, data integrity, and operational stability for
 - Must not alter gameplay semantics without Gameplay sign-off.
 - Must preserve compatibility contracts with client and protocol layers.
 
+## Startup Context Load
+
+- Complete `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+- Confirm role selection is `Platform`.
+- Review:
+  - `docs/design/game-system-roadmap.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `.agents/backlog.md`
+  - `.agents/risk-register.md`
+
 ## Required Artifacts
 
 - Protocol/versioning notes.

@@ -51,21 +51,30 @@ Purpose: codable representation of standards for this workspace.
   - Only run sprint implementation when the user explicitly requests sprint execution in the current thread.
   - Without explicit user authorization, limit sprint activity to planning, delegation packets, review, and coordination artifacts.
 
-### STD-006 - Antigravity Lane Onboarding Evidence Gate
+### STD-006 - Role Selection Boot Gate
 - Status: Active
-- Source: `ANTIGRAVITY_SPRINT_PROMPTS.md`
-- Intent: Ensure coder lanes are aligned on workspace, branch, scope, and acceptance evidence before implementation.
+- Source: `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`
+- Intent: Ensure every Codex instance explicitly resolves its role before substantial work.
 - Local interpretation:
-  - Require onboarding acknowledgement for each lane before edits (workspace path, branch, base commit, backlog acceptance mapping, planned files/tests).
-  - Require lane handoffs to include acceptance checklist evidence and explicit out-of-scope modification disclosure.
-  - Do not mark lane complete when required artifacts are missing or acceptance criteria are unverified.
+  - Ask role selection question (`Koad (PM)|Gameplay|Platform|Experience`) before substantial work.
+  - Route `Koad|PM` variants to Koad PM posture.
+  - Route other selected roles to team-role posture and load role-specific context.
+  - Do not begin substantial work with unresolved or ambiguous role selection.
 
-### STD-007 - Worktree-Isolated Lane Execution + PR Policy
+### STD-007 - Worktree-Isolated Team Lane Execution + PR Policy
 - Status: Active
-- Source: `ANTIGRAVITY_SPRINT_PROMPTS.md`
-- Intent: Prevent cross-lane interference and reduce merge risk while preserving parallel throughput.
+- Source: `CODEX_ROLE_PROMPTS.md`
+- Intent: Prevent cross-lane interference and reduce merge risk while preserving parallel throughput across Codex team instances.
 - Local interpretation:
-  - Require one coding lane per dedicated git worktree and lane branch (`lane/<PROMPT_ID>/<scope-slug>`).
+  - Require one coding lane per dedicated git worktree and lane branch (`lane/<ROLE>/<task-slug>`).
   - Require onboarding evidence to include worktree path, branch, and base commit before edits.
   - Require lane handoff to include PR metadata (branch, title, merge dependency order or no-PR reason).
   - Default to one PR per code lane; allow docs/chore batching and post-lane integration PR only when scope risk is low.
+
+### STD-008 - Team-Agent Familiarization Gate
+- Status: Active
+- Source: `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`
+- Intent: Ensure non-PM team-role instances align with current roadmap and project state before implementation.
+- Local interpretation:
+  - For Gameplay/Platform/Experience roles, load `.agents/teams.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `.agents/backlog.md`, and `.agents/risk-register.md` before substantial work.
+  - Require role declaration and planned scope statement before edits.

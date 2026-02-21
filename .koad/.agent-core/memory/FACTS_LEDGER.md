@@ -23,6 +23,12 @@ Append-only record of confirmed durable facts.
 - Root sprint prompt pack lives at `ANTIGRAVITY_SPRINT_PROMPTS.md` and is maintained by PM.
 
 ## 2026-02-21 (workflow policy update)
-- Parallel coder lanes are now standardized to one lane per dedicated git worktree/branch (`lane/<PROMPT_ID>/<scope-slug>`).
+- Parallel coder lanes were standardized to one lane per dedicated git worktree/branch (`lane/<PROMPT_ID>/<scope-slug>`) during Antigravity phase.
 - Lane handoffs now require PR metadata with merge dependency ordering, with default one PR per code lane.
 - Koad standards include `STD-007` for worktree-isolated lane execution policy enforcement.
+
+## 2026-02-21 (execution model pivot)
+- Supersedes Antigravity-as-primary execution model: Antigravity is paused for this repository.
+- Active model is Koad PM lead plus three Codex team-role instances (`Gameplay`, `Platform`, `Experience`).
+- Codex instances must boot general Koad OS first, then resolve role via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+- Active prompt pack is `CODEX_ROLE_PROMPTS.md`.

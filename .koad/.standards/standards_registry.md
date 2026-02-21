@@ -20,8 +20,11 @@ Last updated: 2026-02-21
 ### STD-005 - Sprint Execution Authorization Gate
 - Intent: Keep PM sprint implementation blocked by default unless user explicitly authorizes sprint execution in-thread.
 
-### STD-006 - Antigravity Lane Onboarding Evidence Gate
-- Intent: Require coder-lane onboarding and acceptance evidence before lane completion.
+### STD-006 - Role Selection Boot Gate
+- Intent: Require explicit role selection (`Koad (PM)|Gameplay|Platform|Experience`) before substantial work.
 
-### STD-007 - Worktree-Isolated Lane Execution + PR Policy
+### STD-007 - Worktree-Isolated Team Lane Execution + PR Policy
 - Intent: Run each coding lane in a dedicated worktree/branch and capture PR merge dependency metadata.
+
+### STD-008 - Team-Agent Familiarization Gate
+- Intent: Require non-PM team-role agents to load roadmap + project state artifacts before implementation.

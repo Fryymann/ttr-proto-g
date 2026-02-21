@@ -18,11 +18,11 @@ Primary references:
 - `docs/design/game-system-roadmap.md`
 - `.agents/backlog.md`
 - `.agents/risk-register.md`
-- `ANTIGRAVITY_SPRINT_PROMPTS.md`
+- `CODEX_ROLE_PROMPTS.md`
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -32,12 +32,13 @@ Primary references:
 3. Sprint S3: Party-based encounter skeleton + turn flow
 4. Sprint S4: Reliability hardening + DM-agent advisory boundary scaffolding
 
-## Antigravity Parallel Execution Model
+## Codex Multi-Instance Execution Model
 
-Koad (PM) owns sprint orchestration and publishes starter prompts in `ANTIGRAVITY_SPRINT_PROMPTS.md`.
+Koad (PM) owns sprint orchestration and publishes starter prompts in `CODEX_ROLE_PROMPTS.md`.
 
-- One prompt id maps to one Antigravity agent lane.
-- One lane maps to one dedicated git worktree and one lane branch (`lane/<PROMPT_ID>/<scope-slug>`).
+- Antigravity usage is paused for now.
+- Three additional Codex instances represent team roles: Gameplay, Platform, Experience.
+- One active task lane maps to one dedicated git worktree and one lane branch (`lane/<ROLE>/<task-slug>`).
 - Lanes in the same sprint can run in parallel when file overlap is low.
 - Shared-file hotspots (protocol core, main server runtime) should be sequenced or split by explicit boundaries.
 - Default PR shape is one PR per code lane; docs/chore lanes may be batched when low-risk.
@@ -46,15 +47,15 @@ Koad (PM) owns sprint orchestration and publishes starter prompts in `ANTIGRAVIT
   - changed files
   - tests/verification evidence
   - known risks/deferred items
-  - prompt id used
+  - role instance + task packet id
   - branch/worktree evidence and PR metadata recommendation
 
-### Suggested lane map
+### Suggested parallel role lanes by sprint
 
-- Sprint S1: `S1-P1`, `S1-G1`
-- Sprint S2: `S2-P1`, `S2-E1`
-- Sprint S3: `S3-G1`, `S3-P1`, `S3-E1`
-- Sprint S4: `S4-P1`, `S4-G1`
+- Sprint S1: Platform + Gameplay
+- Sprint S2: Platform + Experience
+- Sprint S3: Gameplay + Platform + Experience
+- Sprint S4: Platform + Gameplay
 
 ## Sprint S1: Contracts and Campaign Runtime
 
@@ -212,3 +213,4 @@ For each backlog item completed:
 - 2026-02-21: Initial execution plan created. S1 planning ready to begin.
 - 2026-02-21: `S1-P1` completed. Campaign manifest selection flow and account/character campaign-lock scaffolding landed (`BL-011` done; `BL-012` remains in progress pending durable persistence and audited admin unlock integration).
 - 2026-02-21: `S1-G1` completed. Scene contract/occupancy module and SRD compliance checklist + source mapping pass landed (`BL-001` and `BL-019` done).
+- 2026-02-21: Execution model pivoted from Antigravity to Codex multi-instance role lanes (`Koad PM` + Gameplay/Platform/Experience agents). Antigravity prompts paused.

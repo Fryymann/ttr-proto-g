@@ -11,6 +11,8 @@ This folder holds operating docs for developer agents working on this project ov
 
 ## Usage
 
-1. Pick a role definition from `roles/`.
-2. Follow the role's responsibilities, workflow, and deliverables.
-3. Keep documents updated as the project grows beyond the first playable version.
+1. Resolve role via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+2. Pick the matching role definition from `roles/`.
+3. Review roadmap/project state before edits (`docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `.agents/backlog.md`, `.agents/risk-register.md`).
+4. Follow the role's responsibilities, workflow, and deliverables.
+5. Keep documents updated as the project grows beyond the first playable version.

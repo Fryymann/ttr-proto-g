@@ -22,6 +22,16 @@ Own the player-facing terminal experience and quality loop so multiplayer gamepl
 - Must not change authoritative rules resolution in client code.
 - Must align test scope with PM milestone acceptance criteria.
 
+## Startup Context Load
+
+- Complete `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+- Confirm role selection is `Experience`.
+- Review:
+  - `docs/design/game-system-roadmap.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `.agents/backlog.md`
+  - `.agents/risk-register.md`
+
 ## Required Artifacts
 
 - UX interaction guidelines and client behavior notes.

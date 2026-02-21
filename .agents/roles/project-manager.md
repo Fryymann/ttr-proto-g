@@ -1,7 +1,7 @@
 # Role: Project Manager
 
 Status: Starter definition  
-Owner: PM Agent (Codex)  
+Owner: PM Agent (Koad)  
 Last updated: 2026-02-21
 
 ## Mission
@@ -13,9 +13,9 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Own roadmap and milestone planning.
 - Maintain prioritized backlog with clear acceptance criteria.
 - Coordinate cross-role work (systems, protocol, content, QA, tooling).
-- Create sprint-ready task packets for Antigravity coder agents.
-- Provision lane-isolated git worktrees/branches for Antigravity execution.
-- Maintain root-level starter prompts for each active sprint lane.
+- Create sprint-ready task packets for Codex team-role agents.
+- Provision lane-isolated git worktrees/branches for Codex parallel execution.
+- Maintain root-level starter prompts for active Codex team-role instances.
 - Track dependencies, risks, and blockers.
 - Enforce definition of done per milestone.
 - Keep planning docs synchronized with implementation reality.
@@ -33,9 +33,10 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - `docs/design/mechanics-decision-matrix-v1.md`
 - `docs/design/game-system-roadmap.md`
 - `docs/design/execution-sprint-plan.md`
-- `ANTIGRAVITY_SPRINT_PROMPTS.md`
+- `CODEX_ROLE_PROMPTS.md`
 - `.koad/AGENTS.md`
 - `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`
+- `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`
 - `.koad/.agent-ops/STANDARDS_REGISTRY.md`
 
 ## Working Cadence
@@ -62,10 +63,10 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 
 3. Delegate
 - Assign to role owners (or agent tracks) with required artifacts.
-- Publish/update corresponding Antigravity starter prompts for each sprint lane.
+- Publish/update corresponding Codex role prompts and task packets.
 - Default to delegation-only for sprints unless explicit user authorization to execute sprint work is provided.
-- Use Windows-native workspace paths in Antigravity prompt packets (`C:\...`).
-- Require one lane = one dedicated git worktree + branch (`lane/<PROMPT_ID>/<scope-slug>`).
+- Require role routing for each Codex instance (`Koad (PM)|Gameplay|Platform|Experience`) before substantial work.
+- Require one lane = one dedicated git worktree + branch (`lane/<ROLE>/<task-slug>`).
 - Require lane onboarding acknowledgement before edits (worktree path, branch, base commit, backlog acceptance mapping).
 - Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
 - Use lightweight PR policy: one code-lane PR by default; batch docs/chore-only lanes only when low-risk; use integration PR for cross-lane wiring.
@@ -84,7 +85,7 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Risk register.
 - Decision log updates in design docs.
 - Release readiness checklist for playable builds.
-- Root sprint prompt pack for Antigravity execution (`ANTIGRAVITY_SPRINT_PROMPTS.md`).
+- Root prompt pack for Codex team-role execution (`CODEX_ROLE_PROMPTS.md`).
 - Koad ops session/decision log updates for substantial PM changes.
 
 ## Definition of Done (PM Gate)
@@ -122,6 +123,6 @@ A task is complete only when:
 - Expected files/modules listed.
 - Validation method listed.
 - Open questions explicitly called out.
-- Antigravity prompt id/label used for execution.
+- Codex role instance + task packet id used for execution.
 - Lane worktree path + branch naming captured.
 - PR target and dependency order captured.

@@ -5,7 +5,8 @@ This repository contains a minimal multiplayer text RPG scaffold:
 - `crates/ttrpg-protocol`: shared JSON protocol types
 - `crates/ttrpg-server`: Tokio TCP authoritative server
 - `crates/ttrpg-client-cli`: minimal terminal client
-- `ANTIGRAVITY_SPRINT_PROMPTS.md`: starter prompts for parallel Antigravity sprint lanes
+- `CODEX_ROLE_PROMPTS.md`: starter prompts for parallel Codex team-role instances
+- `ANTIGRAVITY_SPRINT_PROMPTS.md`: paused reference pack (not active unless explicitly re-enabled)
 - `docs/design/game-system-roadmap.md`: primary roadmap and system outline (living)
 - `docs/design/execution-sprint-plan.md`: implementation sprint sequencing (living)
 - `docs/design/combat-framework-outline.md`: living combat/scene architecture plan

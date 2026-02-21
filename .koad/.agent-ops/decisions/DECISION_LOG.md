@@ -146,3 +146,17 @@
   - Review flow stays flexible without forcing PR inflation or organizational changes.
 - Revisit trigger:
   - If merge queue or CI latency becomes the dominant delivery bottleneck and requires PR policy changes.
+
+## 2026-02-21 - Pivot primary execution model to Codex team-role instances
+- Decision:
+  - Pause Antigravity usage as primary execution path.
+  - Use Koad (PM) as lead agent and run three additional Codex instances as team roles: Gameplay, Platform, Experience.
+  - Require all Codex instances to boot general Koad OS then explicitly resolve role before substantial work.
+- Why:
+  - Increase alignment and consistency by using a shared Codex boot/standards framework across all active development roles.
+- Impact:
+  - Startup flow now includes mandatory role-selection routing.
+  - Active parallel execution prompts moved to `CODEX_ROLE_PROMPTS.md`; Antigravity prompts are archived/paused.
+  - Standards now include role boot gate and team-agent familiarization gate for non-PM roles.
+- Revisit trigger:
+  - If user explicitly requests reactivation of Antigravity as primary execution model.

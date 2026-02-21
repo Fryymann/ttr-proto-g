@@ -37,7 +37,7 @@ Last updated: 2026-02-21
 ### STD-010 - Koad-OS Branch Scope Separation
 - Intent: Keep Koad/agent support and workflow-governance artifacts isolated from gameplay/platform feature delivery lanes.
 - Enforcement:
-  - Koad/agent support artifacts are committed through `koad-os`.
+  - Koad/agent support artifacts are committed through `koad-os` (including root `PROJECT_PROGRESS.md` dashboard).
   - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files unless the source branch is `koad-os` (support sync PR).
   - Required status check `validate-koad-os-scope` enforces the boundary on PRs.
 

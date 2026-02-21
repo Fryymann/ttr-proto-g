@@ -97,7 +97,7 @@ Purpose: codable representation of standards for this workspace.
 - Source: `CODEX_ROLE_PROMPTS.md`
 - Intent: Keep Koad/agent support and workflow-governance artifacts isolated from development-lane feature code.
 - Local interpretation:
-  - Treat `koad-os` as support-only branch scope for `.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks.
+  - Treat `koad-os` as support-only branch scope for `.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, root `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks.
   - For PRs targeting `koad-os`, reject out-of-scope runtime/feature files.
   - For PRs sourced from `koad-os` (support sync PRs), allow only in-scope Koad/agent support files.
   - For other PRs targeting non-`koad-os` branches, reject in-scope Koad/agent support files and route them to `koad-os`.

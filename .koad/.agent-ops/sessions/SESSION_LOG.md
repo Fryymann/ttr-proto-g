@@ -276,3 +276,13 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Generated `PROJECT_PROGRESS.md` via `koad progress-sync`.
+
+## 2026-02-21 - Scope-gate allowlist update for progress dashboard
+- Scope:
+  - Resolve `validate-koad-os-scope` failure for root progress dashboard updates.
+- Changes:
+  - Added `PROJECT_PROGRESS.md` to scope-gate allowlist in `.github/workflows/koad-os-scope-gate.yml`.
+  - Updated branch-scope policy wording in AGENTS + standards docs to explicitly include root dashboard artifact.
+  - Logged durable decision for dashboard scope treatment.
+- Evidence:
+  - Updated `.github/workflows/koad-os-scope-gate.yml`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

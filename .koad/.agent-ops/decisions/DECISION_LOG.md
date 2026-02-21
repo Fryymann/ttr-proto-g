@@ -280,3 +280,14 @@
   - `STD-012` codifies dashboard continuity and sourcing rules.
 - Revisit trigger:
   - If dashboard generation should move to CI or external PM tooling instead of local script sync.
+
+## 2026-02-21 - Scope-gate exception for root progress dashboard
+- Decision:
+  - Treat `PROJECT_PROGRESS.md` as an in-scope Koad/agent support artifact under `koad-os` branch-scope policy.
+- Why:
+  - The new dashboard is intentionally a support/process artifact, and scope gate failures would block normal `koad-os` sync PRs.
+- Impact:
+  - `validate-koad-os-scope` now allows `PROJECT_PROGRESS.md` on `koad-os` PRs and `koad-os`-sourced sync PRs.
+  - Scope-policy docs/standards now explicitly include the dashboard file.
+- Revisit trigger:
+  - If progress reporting moves out of repository into external PM tooling.

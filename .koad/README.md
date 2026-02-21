@@ -27,3 +27,4 @@ Use `.koad/scripts/koad` for common workflow actions:
 - `pr-open`: open a governance-template PR with lane metadata.
 - `saveup`: append role-aware saveup ledger + session log entries.
 - `progress-sync`: regenerate root `PROJECT_PROGRESS.md` dashboard from current backlog/roadmap/sprint sources.
+- `status`: print compact current progress summary in terminal (`--refresh` to regenerate first).

@@ -286,3 +286,14 @@
   - Logged durable decision for dashboard scope treatment.
 - Evidence:
   - Updated `.github/workflows/koad-os-scope-gate.yml`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-21 - Add compact status command for progress dashboard
+- Scope:
+  - Provide one-command terminal summary of current roadmap-vs-progress state.
+- Changes:
+  - Added `koad status` command to print compact snapshot from `PROJECT_PROGRESS.md`.
+  - Added `--refresh` option to regenerate dashboard before status output.
+  - Updated script docs and Koad readme utility command list.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified with `bash .koad/scripts/koad status` and `bash .koad/scripts/koad status --refresh`.

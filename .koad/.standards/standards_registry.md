@@ -40,3 +40,10 @@ Last updated: 2026-02-21
   - Koad/agent support artifacts are committed through `koad-os`.
   - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files unless the source branch is `koad-os` (support sync PR).
   - Required status check `validate-koad-os-scope` enforces the boundary on PRs.
+
+### STD-011 - Role-Aware Saveup Continuity
+- Intent: Ensure continuity checkpoints remain attributable and usable across PM and team-role agents.
+- Enforcement:
+  - Every `saveup` entry must include `role` and `context_ref`.
+  - `saveup` operational mirror behavior must follow role boundaries (`Koad (PM)` may sync `.agents/*`; team roles log proposed PM deltas without reprioritizing directly).
+  - `saveup` session summary must include role and context metadata.

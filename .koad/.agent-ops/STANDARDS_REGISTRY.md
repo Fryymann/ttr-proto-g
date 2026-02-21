@@ -102,3 +102,13 @@ Purpose: codable representation of standards for this workspace.
   - For PRs sourced from `koad-os` (support sync PRs), allow only in-scope Koad/agent support files.
   - For other PRs targeting non-`koad-os` branches, reject in-scope Koad/agent support files and route them to `koad-os`.
   - Require `validate-koad-os-scope` status check before merge.
+
+### STD-011 - Role-Aware Saveup Continuity
+- Status: Active
+- Source: `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`
+- Intent: Ensure saveup continuity artifacts remain attributable and role-correct across PM and team-role instances.
+- Local interpretation:
+  - Require every saveup call row to include `role` (`Koad (PM)|Gameplay|Platform|Experience`) and `context_ref`.
+  - Require saveup session summaries to include role + context metadata.
+  - For `Koad (PM)` saveup scope, allow `.agents/*` mirrors when relevant.
+  - For non-PM saveup scope, do not reprioritize PM artifacts directly; log proposed PM deltas in ops logs for PM review.

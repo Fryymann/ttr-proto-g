@@ -244,3 +244,16 @@
   - PR template/gate now requires a filled `Persona signature` line.
 - Revisit trigger:
   - If repository governance moves to signed commits/attestations with automated identity verification.
+
+## 2026-02-21 - Multi-role saveup continuity model
+- Decision:
+  - Adapt `saveup` to be role-aware across `Koad (PM)`, `Gameplay`, `Platform`, and `Experience`.
+  - Require saveup ledger rows to include `role` and `context_ref`.
+  - Enforce role-boundary mirror behavior during saveup (`Koad (PM)` may mirror `.agents/*`; team roles log proposed PM deltas in ops logs without direct reprioritization).
+- Why:
+  - Shared continuity records without role/context attribution become ambiguous in multi-role execution and reduce recovery quality.
+- Impact:
+  - `SAVEUP_PROTOCOL.md`, `SAVEUP_CALLS.md`, and session log template now require role/context metadata.
+  - Standards registries include `STD-011` to keep role-aware saveup behavior durable.
+- Revisit trigger:
+  - If saveup automation is introduced with explicit runtime role/session context capture.

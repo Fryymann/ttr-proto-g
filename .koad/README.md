@@ -13,7 +13,7 @@ This kit is self-contained and does not depend on any external memory framework.
 
 ## Purpose
 - Persistent agent memory
-- Duplicate-aware session checkpointing (`saveup`)
+- Duplicate-aware, role-aware session checkpointing (`saveup`)
 - Standards freshness gating before standards-dependent work
 - Sprint-execution authorization gating (execution only when explicitly requested by user)
 - Role-routed multi-instance Codex workflow (`Koad PM` + team-role agents)

@@ -1,6 +1,8 @@
 # Session Log
 
 ## YYYY-MM-DD - session title
+- Role: `Koad (PM)|Gameplay|Platform|Experience`
+- Context ref: `task packet id | lane branch | n/a`
 - Objective: ...
 - Actions:
   - ...

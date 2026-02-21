@@ -18,3 +18,11 @@ This kit is self-contained and does not depend on any external memory framework.
 - Sprint-execution authorization gating (execution only when explicitly requested by user)
 - Role-routed multi-instance Codex workflow (`Koad PM` + team-role agents)
 - Worktree-isolated coder-lane execution policy with lightweight PR governance
+
+## Utility Scripts
+
+Use `.koad/scripts/koad` for common workflow actions:
+
+- `lane-start`: create lane branch + worktree and print onboarding evidence.
+- `pr-open`: open a governance-template PR with lane metadata.
+- `saveup`: append role-aware saveup ledger + session log entries.

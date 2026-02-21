@@ -326,6 +326,80 @@ def cmd_progress_sync(args: argparse.Namespace) -> int:
     return 0
 
 
+def extract_md_value(content: str, label: str) -> str:
+    pattern = rf"^- {re.escape(label)}: (.+)\s*$"
+    match = re.search(pattern, content, flags=re.MULTILINE)
+    if match:
+        return match.group(1).replace("`", "").strip()
+    return "n/a"
+
+
+def extract_generated_utc(content: str) -> str:
+    match = re.search(r"^- Generated \(UTC\): ([0-9:\- ]+Z)\s*$", content, flags=re.MULTILINE)
+    if match:
+        return match.group(1).strip()
+    return "unknown"
+
+
+def status_age_hours(generated_utc: str) -> float | None:
+    if generated_utc == "unknown":
+        return None
+    try:
+        dt_value = dt.datetime.strptime(generated_utc, "%Y-%m-%d %H:%M:%SZ").replace(tzinfo=dt.timezone.utc)
+    except ValueError:
+        return None
+    return (now_utc() - dt_value).total_seconds() / 3600.0
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    root = repo_root()
+    progress_path = root / args.file
+
+    if args.refresh or not progress_path.exists():
+        content = build_progress_dashboard(root)
+        progress_path.write_text(content, encoding="utf-8")
+    elif progress_path.exists():
+        content = progress_path.read_text(encoding="utf-8")
+    else:
+        print(f"Missing progress file: {progress_path}", file=sys.stderr)
+        return 1
+
+    generated = extract_generated_utc(content)
+    age = status_age_hours(generated)
+    stale = "unknown"
+    if age is not None:
+        stale = "yes" if age > args.max_age_hours else "no"
+
+    branch = extract_md_value(content, "Active release branch")
+    total = extract_md_value(content, "Total backlog items")
+    done = extract_md_value(content, "Done")
+    in_progress = extract_md_value(content, "In progress")
+    blocked = extract_md_value(content, "Blocked")
+    todo = extract_md_value(content, "Todo")
+    open_items = extract_md_value(content, "Open items remaining")
+    now_focus = extract_md_value(content, "Now")
+    next_focus = extract_md_value(content, "Next")
+
+    if args.verbose:
+        print(f"file={progress_path}")
+        print(f"generated_utc={generated} age_hours={f'{age:.2f}' if age is not None else 'unknown'} stale={stale}")
+        print(
+            f"branch={branch} total={total} done={done} in_progress={in_progress} "
+            f"blocked={blocked} todo={todo} open={open_items}"
+        )
+        print(f"focus_now={now_focus}")
+        print(f"focus_next={next_focus}")
+        return 0
+
+    age_text = f"{age:.2f}" if age is not None else "unknown"
+    print(
+        f"branch={branch} total={total} done={done} in_progress={in_progress} "
+        f"blocked={blocked} todo={todo} open={open_items} now=\"{now_focus}\" "
+        f"next=\"{next_focus}\" generated_utc={generated} age_h={age_text} stale={stale}"
+    )
+    return 0
+
+
 def cmd_lane_start(args: argparse.Namespace) -> int:
     root = repo_root()
     role = normalize_role(args.role)
@@ -649,6 +723,13 @@ def build_parser() -> argparse.ArgumentParser:
     progress.add_argument("--output", default="PROJECT_PROGRESS.md")
     progress.add_argument("--dry-run", action="store_true")
     progress.set_defaults(func=cmd_progress_sync)
+
+    status = sub.add_parser("status", help="Print compact project progress summary from dashboard")
+    status.add_argument("--file", default="PROJECT_PROGRESS.md")
+    status.add_argument("--refresh", action="store_true", help="Refresh dashboard before reporting")
+    status.add_argument("--max-age-hours", type=float, default=24.0)
+    status.add_argument("--verbose", action="store_true")
+    status.set_defaults(func=cmd_status)
 
     return p
 

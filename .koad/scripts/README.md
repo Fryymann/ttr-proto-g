@@ -76,6 +76,22 @@ Example:
 .koad/scripts/koad progress-sync
 ```
 
+### `status`
+
+Print a compact progress summary from `PROJECT_PROGRESS.md`.
+
+Example:
+
+```bash
+.koad/scripts/koad status
+```
+
+Refresh dashboard first:
+
+```bash
+.koad/scripts/koad status --refresh
+```
+
 ## Notes
 
 - `pr-open` uses `gh pr create`; ensure GitHub CLI is authenticated.

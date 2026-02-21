@@ -291,3 +291,15 @@
   - Scope-policy docs/standards now explicitly include the dashboard file.
 - Revisit trigger:
   - If progress reporting moves out of repository into external PM tooling.
+
+## 2026-02-21 - Add compact `koad status` progress command
+- Decision:
+  - Add `koad status` command to print a one-line project progress summary from `PROJECT_PROGRESS.md`.
+  - Support `--refresh` so status can regenerate dashboard before output when needed.
+- Why:
+  - User requested a faster terminal-first view of roadmap progress without opening markdown manually.
+- Impact:
+  - Progress checks now become a single command (`bash .koad/scripts/koad status`).
+  - Script docs now include status command usage.
+- Revisit trigger:
+  - If status output needs structured machine format (e.g., JSON) for external dashboards.

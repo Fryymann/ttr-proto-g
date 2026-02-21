@@ -32,3 +32,9 @@ Append-only record of confirmed durable facts.
 - Active model is Koad PM lead plus three Codex team-role instances (`Gameplay`, `Platform`, `Experience`).
 - Codex instances must boot general Koad OS first, then resolve role via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
 - Active prompt pack is `CODEX_ROLE_PROMPTS.md`.
+
+## 2026-02-21 (koad-os governance update)
+- `koad-os` is the dedicated support branch for Koad/agent and workflow-governance artifacts.
+- `koad-os` may remain lightly protected to allow occasional direct maintainer commits.
+- Support updates are promoted into the active release line via `koad-os` -> `v1` PRs constrained to support-scope files.
+- PR governance now includes a required `Persona signature` line for authorship clarity.

@@ -53,3 +53,19 @@
   - `.koad/.agent-core/memory/FACTS_LEDGER.md`
 - Risks/Unknowns:
   - S2 scene queue/runtime wiring remains intentionally deferred until post `S2-E1` completion per user direction.
+
+## 2026-02-21 - Saveup checkpoint after koad-os governance push
+- Objective: Persist durable continuity after pushing `koad-os` governance updates and opening support-sync PR to `v1`.
+- Actions:
+  - Registered saveup call and ran duplicate pre-check against learning/pattern/fact ledgers.
+  - Captured branch-scope gate refinement (`koad-os` source sync exception) and persona-signature governance as durable memory.
+  - Confirmed `koad-os` branch push and PR #3 readiness with passing governance checks.
+- Artifacts:
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/sessions/LOG.md`
+  - `.koad/.agent-core/memory/LEARNINGS.md`
+  - `.koad/.agent-core/memory/PATTERNS.md`
+  - `.koad/.agent-core/memory/USER_PREFERENCES.md`
+  - `.koad/.agent-core/memory/FACTS_LEDGER.md`
+- Risks/Unknowns:
+  - Final governance behavior depends on applying branch protection settings in GitHub UI as documented.

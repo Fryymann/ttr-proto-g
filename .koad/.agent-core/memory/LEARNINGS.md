@@ -67,3 +67,23 @@ Append-only record of durable lessons.
 - Observation: Parallel lane coordination stays clearer when one named release branch is the shared base for all lane branches and PR targets.
 - Why it matters: Mixed base branches during active delivery windows increase merge ambiguity and review overhead.
 - Behavior update: While release line `v1` is active, cut lane branches from `v1` and merge lane PRs back into `v1`.
+
+### Technical
+- Observation: A branch-scope gate that inspects only PR target branch rules can accidentally block valid support-branch promotion PRs.
+- Why it matters: Governance checks can deadlock the intended `koad-os` -> release-line sync path.
+- Behavior update: Scope-gate workflows must evaluate both base and head refs and explicitly allow support-only sync PRs from `koad-os`.
+
+### Process
+- Observation: Split governance works best when the release branch is strict but the support branch stays lightweight for maintainer direct commits.
+- Why it matters: This preserves delivery controls without slowing operational/agent-support maintenance.
+- Behavior update: Keep strict required checks on `v1`, keep `koad-os` lightweight, and promote support updates by PR.
+
+### Operational
+- Observation: Saveup quality improves when CI check names, template fields, and branch-protection docs are synchronized before finalizing continuity records.
+- Why it matters: Unsynced governance artifacts create false assumptions for later agent sessions.
+- Behavior update: Before finalizing saveup, verify workflow names, required check IDs, and runbook settings match exactly.
+
+### Collaboration
+- Observation: Human+agent shared workflows need explicit PR-level authorship labeling for unambiguous review context.
+- Why it matters: Reviewers can otherwise lose attribution clarity on governance/meta updates.
+- Behavior update: Require a `Persona signature` line in PR bodies and enforce it via governance validation.

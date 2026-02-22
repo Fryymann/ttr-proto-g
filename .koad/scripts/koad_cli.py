@@ -18,7 +18,12 @@ from pathlib import Path
 ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience", "User")
 SAVEUP_ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience")
 KOAD_OS_BRANCH = "koad-os"
-REQUIRED_PR_GATE_CHECKS = ("validate-pr-governance", "validate-koad-os-scope")
+REQUIRED_PR_GATE_CHECKS = (
+    "validate-pr-governance",
+    "validate-koad-os-scope",
+    "validate-implementation-doc",
+    "validate-test-evidence",
+)
 REVIEW_GATE_LABELS = (
     "Coding agent self-review completed",
     "Koad git review approved",
@@ -37,6 +42,8 @@ KOAD_OS_EXACT_FILES = {
     ".github/workflows/sync-koad-os-from-v1.yml",
     ".github/workflows/update-v1-dashboard.yml",
     ".github/workflows/promote-koad-os-to-v1.yml",
+    ".github/workflows/implementation-doc-gate.yml",
+    ".github/workflows/test-evidence-gate.yml",
 }
 
 
@@ -527,6 +534,14 @@ def build_pr_body(args: argparse.Namespace, root: Path, head: str, changed_files
   - {args.tests_run}
 - Manual checks:
   - {args.manual_checks}
+
+## Implementation Documentation
+- Primary implementation doc: {args.impl_doc}
+- Changed-line coverage evidence: {args.coverage_evidence}
+- Automated test updates included: {args.automated_test_updates}
+- Regression tests included: {args.regression_tests}
+- Negative-path tests included: {args.negative_path_tests}
+- Skipped tests (must include reason or `none`): {args.skipped_tests}
 
 ## Files Changed
 - Primary files:
@@ -1279,6 +1294,12 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--ac2", default="TBD")
     pr.add_argument("--tests-run", default="not run")
     pr.add_argument("--manual-checks", default="not run")
+    pr.add_argument("--impl-doc", default="`docs/implementation/n-a-support-pr.md`")
+    pr.add_argument("--coverage-evidence", default="n/a (support-scope PR)")
+    pr.add_argument("--automated-test-updates", default="n/a (support-scope PR)")
+    pr.add_argument("--regression-tests", default="n/a (support-scope PR)")
+    pr.add_argument("--negative-path-tests", default="n/a (support-scope PR)")
+    pr.add_argument("--skipped-tests", default="none")
     pr.add_argument("--out-of-scope-files", default="none")
     pr.add_argument("--dependencies", default="none")
     pr.add_argument("--risks", default="none")

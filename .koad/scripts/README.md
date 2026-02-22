@@ -42,12 +42,17 @@ Example:
   --in-scope "Queue/runtime/protocol integration for S2-P1" \
   --out-of-scope "CLI rendering" \
   --ac1 "PASS - deterministic replay test added" \
-  --ac2 "PASS - snapshot/delta protocol types compile"
+  --ac2 "PASS - snapshot/delta protocol types compile" \
+  --impl-doc "`docs/implementation/s2-p1-scene-queue-protocol.md`" \
+  --coverage-evidence "Changed-line coverage: 84%" \
+  --automated-test-updates "Added queue replay regression tests and protocol serialization tests" \
+  --regression-tests "queue_replay_regression.rs" \
+  --negative-path-tests "invalid-command ordering rejection tests"
 ```
 
 ### `pr-gate`
 
-Run PM merge-gate checks against a PR (`validate-pr-governance`, `validate-koad-os-scope`, mergeability, scope policy, and required evidence markers).
+Run PM merge-gate checks against a PR (`validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, `validate-test-evidence`, mergeability, scope policy, and required evidence markers).
 
 Example:
 

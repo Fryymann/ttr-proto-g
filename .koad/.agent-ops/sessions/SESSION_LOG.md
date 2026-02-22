@@ -487,3 +487,14 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified with `python3 -m py_compile .koad/scripts/koad_cli.py`, `bash .koad/scripts/koad pr-finish --help`, and dry-run checks against PR state.
+
+## 2026-02-22 - Tightened developer documentation + test evidence enforcement
+- Scope:
+  - Enforce stricter non-`koad-os` developer-lane documentation and test/coverage requirements via CI gates and governance policy.
+- Changes:
+  - Added workflows `.github/workflows/implementation-doc-gate.yml` and `.github/workflows/test-evidence-gate.yml`.
+  - Updated PR template/governance gate to require implementation-doc metadata for non-`koad-os` PRs.
+  - Expanded PM tooling and policy docs to include new required checks and evidence expectations.
+  - Updated standards registries with `STD-014` and adjusted `STD-009` required checks list.
+- Evidence:
+  - Updated `.github/workflows/implementation-doc-gate.yml`, `.github/workflows/test-evidence-gate.yml`, `.github/workflows/pr-template-gate.yml`, `.github/workflows/koad-os-scope-gate.yml`, `.github/workflows/promote-koad-os-to-v1.yml`, `.github/pull_request_template.md`, `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.agents/roles/gameplay-lead.md`, `.agents/roles/platform-lead.md`, `.agents/roles/experience-lead.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

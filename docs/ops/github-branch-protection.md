@@ -23,6 +23,8 @@ Use split governance:
 - `.github/pull_request_template.md`
 - `.github/workflows/pr-template-gate.yml`
 - `.github/workflows/koad-os-scope-gate.yml`
+- `.github/workflows/implementation-doc-gate.yml`
+- `.github/workflows/test-evidence-gate.yml`
 - `.github/workflows/sync-koad-os-from-v1.yml`
 - `.github/workflows/promote-koad-os-to-v1.yml`
 - `.github/workflows/update-v1-dashboard.yml`
@@ -45,6 +47,8 @@ Enable:
   - Required checks:
     - `validate-pr-governance`
     - `validate-koad-os-scope`
+    - `validate-implementation-doc`
+    - `validate-test-evidence`
 - `Require conversation resolution before merging`: `ON`
 - `Include administrators`: `ON`
 - `Allow force pushes`: `OFF`
@@ -65,7 +69,7 @@ For `koad-os`:
 2. Lane agent performs self-review and keeps review-gate checkboxes accurate in PR body.
 3. Koad performs local git review and records disposition.
 4. Ian performs final review in GitHub and records approval.
-5. `validate-pr-governance` and `validate-koad-os-scope` pass and GitHub approval requirement is satisfied.
+5. `validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, and `validate-test-evidence` pass and GitHub approval requirement is satisfied.
 6. PR is merged.
 7. Only then mark task/backlog item complete.
 
@@ -102,6 +106,8 @@ For `koad-os`:
 ## Notes
 
 - `validate-pr-governance` enforces required PR sections, persona signature, and review-gate line presence.
+- `validate-implementation-doc` enforces `docs/implementation/*.md` updates with required headings and file-level mapping for non-`koad-os` source changes.
+- `validate-test-evidence` enforces tightened automated-test and changed-line coverage evidence (>=80%) for non-`koad-os` source changes.
 - Review-gate checkbox states are informational for human handoff tracking; merge authority comes from GitHub reviews + required checks.
 - Scope gate behavior:
   - PRs from `v1` to `koad-os` are allowed as an explicit sync exception.

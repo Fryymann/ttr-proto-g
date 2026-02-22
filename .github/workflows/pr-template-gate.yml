@@ -12,6 +12,8 @@ jobs:
       - name: Validate required PR body fields and review metadata
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
 
@@ -52,6 +54,22 @@ jobs:
           require_gate_line "Coding agent self-review completed"
           require_gate_line "Koad git review approved"
           require_gate_line "Ian review approved"
+
+          if [ "${BASE_REF}" != "koad-os" ] && [ "${HEAD_REF}" != "koad-os" ]; then
+            require_section "## Implementation Documentation"
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- Primary implementation doc: `docs/implementation/.+\\.md`$"; then
+              echo "Missing or invalid implementation doc path line."
+              missing=1
+            fi
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- Changed-line coverage evidence: .+"; then
+              echo "Missing changed-line coverage evidence line."
+              missing=1
+            fi
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- Automated test updates included: .+"; then
+              echo "Missing automated test update evidence line."
+              missing=1
+            fi
+          fi
 
           if [ "$missing" -ne 0 ]; then
             echo "PR governance validation failed."

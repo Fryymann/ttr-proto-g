@@ -87,7 +87,7 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - Require one PR for every execution lane (code/docs/chore), with clear base/head and latest commit metadata.
   - Require `.github/pull_request_template.md` usage for lane PRs.
-  - Require `validate-pr-governance` status check to pass before merge.
+  - Require `validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, and `validate-test-evidence` checks to pass before merge.
   - Require PR review-gate lines to exist in PR body; checkbox states are informational audit metadata, not merge authority.
   - Treat GitHub approval + required checks as authoritative merge gates.
   - Require Koad git-side review disposition and Ian review disposition before approval.
@@ -138,3 +138,13 @@ Purpose: codable representation of standards for this workspace.
   - Team-role lanes on non-`koad-os` branches should not force global-ledger saveup writes.
   - Avoid writing shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) from feature-lane saveup calls unless explicitly forced.
   - Keep role/context metadata in lane journals and reconcile durable PM/global entries on `koad-os`.
+
+### STD-014 - Developer Documentation + Test Evidence Gate
+- Status: Active
+- Source: `.github/workflows/implementation-doc-gate.yml`, `.github/workflows/test-evidence-gate.yml`
+- Intent: Enforce high-quality implementation documentation and concrete automated test/coverage evidence for non-`koad-os` source-code PRs.
+- Local interpretation:
+  - For non-`koad-os` PRs with source changes, require an updated `docs/implementation/*.md` document with required headings and file-level mapping.
+  - Require changed-line coverage evidence at or above 80%.
+  - Require explicit automated test command/results plus negative-path and regression evidence in implementation documentation.
+  - Reject source-code PRs that do not show test updates or detectable in-file test deltas.

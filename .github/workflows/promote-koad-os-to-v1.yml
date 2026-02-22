@@ -153,7 +153,7 @@ jobs:
                 "",
                 "## Verification",
                 "- Tests run:",
-                "  - `validate-pr-governance`, `validate-koad-os-scope`.",
+                "  - `validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, `validate-test-evidence`.",
                 "- Manual checks:",
                 "  - Review file list and merge intent before approval.",
                 "",
@@ -300,6 +300,8 @@ jobs:
                 ".github/workflows/sync-koad-os-from-v1.yml",
                 ".github/workflows/update-v1-dashboard.yml",
                 ".github/workflows/promote-koad-os-to-v1.yml",
+                ".github/workflows/implementation-doc-gate.yml",
+                ".github/workflows/test-evidence-gate.yml",
               ]);
               return exact.has(path);
             };
@@ -374,6 +376,18 @@ jobs:
               "validate-koad-os-scope",
               scopeViolations.length === 0 ? "success" : "failure",
               scopeSummary
+            );
+
+            await createCheck(
+              "validate-implementation-doc",
+              "success",
+              "Not applicable: managed koad-os promotion PR carries support/process artifacts only."
+            );
+
+            await createCheck(
+              "validate-test-evidence",
+              "success",
+              "Not applicable: managed koad-os promotion PR carries support/process artifacts only."
             );
 
             core.info("Seeded required check-runs for managed promotion PR.");

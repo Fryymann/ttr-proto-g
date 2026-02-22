@@ -85,6 +85,11 @@ jobs:
             const headSha = process.env.HEAD_SHA || "unknown";
             const aheadCount = process.env.AHEAD_COUNT || "0";
             const managedTag = process.env.MANAGED_TAG;
+            const blockedMessage = "GitHub Actions is not permitted to create or approve pull requests";
+            const isBlocked = (err) =>
+              err &&
+              err.status === 403 &&
+              String(err.message || "").includes(blockedMessage);
 
             const prs = await github.rest.pulls.list({
               owner,
@@ -98,122 +103,133 @@ jobs:
             const existing = prs.data[0];
             const isManaged = existing && (existing.body || "").includes(managedTag);
 
-            if (!hasChanges) {
-              if (existing && isManaged) {
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: existing.number,
-                  body: "Auto-closed: no effective `koad-os` support delta remains versus `v1`.",
-                });
-                await github.rest.pulls.update({
-                  owner,
-                  repo,
-                  pull_number: existing.number,
-                  state: "closed",
-                });
-                core.info(`Closed managed promotion PR #${existing.number} (no deltas).`);
-                core.setOutput("result", "closed");
-                core.setOutput("pr_number", String(existing.number));
+            try {
+              if (!hasChanges) {
+                if (existing && isManaged) {
+                  await github.rest.pulls.update({
+                    owner,
+                    repo,
+                    pull_number: existing.number,
+                    state: "closed",
+                  });
+                  core.info(`Closed managed promotion PR #${existing.number} (no deltas).`);
+                  core.setOutput("result", "closed");
+                  core.setOutput("pr_number", String(existing.number));
+                  return;
+                }
+
+                core.info("No promotion PR action needed (no deltas).");
+                core.setOutput("result", "noop");
                 return;
               }
 
-              core.info("No promotion PR action needed (no deltas).");
-              core.setOutput("result", "noop");
-              return;
-            }
+              const title = "koad-os promotion: sync support/process updates into v1";
+              const body = [
+                managedTag,
+                "",
+                "## Summary",
+                "- What changed:",
+                "  - Auto-managed promotion PR from `koad-os` to `v1` for support/process artifacts.",
+                "- Why:",
+                "  - Keep release-line support governance updates flowing without manual PR creation overhead.",
+                "",
+                "## Role + Task Packet",
+                "- Role: Koad (PM)",
+                "- Persona signature (`Koad (PM)|Gameplay|Platform|Experience|User`): Koad (PM)",
+                "- Task packet id: AUTO-KOAD-OS-PROMOTION",
+                "- Backlog item(s): n/a",
+                "",
+                "## Scope + Acceptance Criteria",
+                "- In scope:",
+                "  - Promotion of `koad-os` support/process artifacts into `v1`.",
+                "- Out of scope:",
+                "  - Runtime gameplay/platform/client code changes.",
+                "- Acceptance criteria evidence:",
+                `  - [x] AC-1 \`PASS\`/\`FAIL\` + evidence: \`${changedCount}\` changed file(s) detected versus \`v1\`; ahead commits=\`${aheadCount}\`.`,
+                "  - [x] AC-2 `PASS`/`FAIL` + evidence: PR is auto-managed and refreshed on `koad-os` pushes.",
+                "",
+                "## Verification",
+                "- Tests run:",
+                "  - `validate-pr-governance`, `validate-koad-os-scope`.",
+                "- Manual checks:",
+                "  - Review file list and merge intent before approval.",
+                "",
+                "## Files Changed",
+                "- Primary files:",
+                filesMd,
+                "- Out-of-scope files touched (`none` if none): none",
+                "",
+                "## Lane Metadata",
+                "- Worktree path: `github-actions`",
+                "- Branch (head): `koad-os`",
+                "- Base branch (`v1` unless explicitly overridden by Koad): `v1`",
+                `- Latest commit SHA: \`${headSha}\``,
+                "- PR dependency order / blocked-by: none",
+                "",
+                "## Review Gates",
+                "- [x] Coding agent self-review completed",
+                "- [ ] Koad git review approved",
+                "- [ ] Ian review approved",
+                "",
+                "## Risks / Deferred Work",
+                "- Risks:",
+                "  - Low: support/process promotion only.",
+                "- Deferred follow-ups:",
+                "  - none",
+                "",
+                "Task completion gate: this task is complete only after this PR is merged.",
+              ].join("\n");
 
-            const title = "koad-os promotion: sync support/process updates into v1";
-            const body = [
-              managedTag,
-              "",
-              "## Summary",
-              "- What changed:",
-              "  - Auto-managed promotion PR from `koad-os` to `v1` for support/process artifacts.",
-              "- Why:",
-              "  - Keep release-line support governance updates flowing without manual PR creation overhead.",
-              "",
-              "## Role + Task Packet",
-              "- Role: Koad (PM)",
-              "- Persona signature (`Koad (PM)|Gameplay|Platform|Experience|User`): Koad (PM)",
-              "- Task packet id: AUTO-KOAD-OS-PROMOTION",
-              "- Backlog item(s): n/a",
-              "",
-              "## Scope + Acceptance Criteria",
-              "- In scope:",
-              "  - Promotion of `koad-os` support/process artifacts into `v1`.",
-              "- Out of scope:",
-              "  - Runtime gameplay/platform/client code changes.",
-              "- Acceptance criteria evidence:",
-              `  - [x] AC-1 \`PASS\`/\`FAIL\` + evidence: \`${changedCount}\` changed file(s) detected versus \`v1\`; ahead commits=\`${aheadCount}\`.`,
-              "  - [x] AC-2 `PASS`/`FAIL` + evidence: PR is auto-managed and refreshed on `koad-os` pushes.",
-              "",
-              "## Verification",
-              "- Tests run:",
-              "  - `validate-pr-governance`, `validate-koad-os-scope`.",
-              "- Manual checks:",
-              "  - Review file list and merge intent before approval.",
-              "",
-              "## Files Changed",
-              "- Primary files:",
-              filesMd,
-              "- Out-of-scope files touched (`none` if none): none",
-              "",
-              "## Lane Metadata",
-              "- Worktree path: `github-actions`",
-              "- Branch (head): `koad-os`",
-              "- Base branch (`v1` unless explicitly overridden by Koad): `v1`",
-              `- Latest commit SHA: \`${headSha}\``,
-              "- PR dependency order / blocked-by: none",
-              "",
-              "## Review Gates",
-              "- [x] Coding agent self-review completed",
-              "- [ ] Koad git review approved",
-              "- [ ] Ian review approved",
-              "",
-              "## Risks / Deferred Work",
-              "- Risks:",
-              "  - Low: support/process promotion only.",
-              "- Deferred follow-ups:",
-              "  - none",
-              "",
-              "Task completion gate: this task is complete only after this PR is merged.",
-            ].join("\n");
-
-            if (existing) {
-              if (isManaged) {
-                await github.rest.pulls.update({
-                  owner,
-                  repo,
-                  pull_number: existing.number,
-                  title,
-                  body,
-                });
-                core.info(`Updated managed promotion PR #${existing.number}.`);
-                core.setOutput("result", "updated");
-                core.setOutput("pr_number", String(existing.number));
-                core.setOutput("pr_url", existing.html_url);
-              } else {
-                core.info(`Found non-managed open promotion PR #${existing.number}; leaving unchanged.`);
-                core.setOutput("result", "existing_non_managed");
-                core.setOutput("pr_number", String(existing.number));
-                core.setOutput("pr_url", existing.html_url);
+              if (existing) {
+                if (isManaged) {
+                  await github.rest.pulls.update({
+                    owner,
+                    repo,
+                    pull_number: existing.number,
+                    title,
+                    body,
+                  });
+                  core.info(`Updated managed promotion PR #${existing.number}.`);
+                  core.setOutput("result", "updated");
+                  core.setOutput("pr_number", String(existing.number));
+                  core.setOutput("pr_url", existing.html_url);
+                } else {
+                  core.info(`Found non-managed open promotion PR #${existing.number}; leaving unchanged.`);
+                  core.setOutput("result", "existing_non_managed");
+                  core.setOutput("pr_number", String(existing.number));
+                  core.setOutput("pr_url", existing.html_url);
+                }
+                return;
               }
-              return;
-            }
 
-            const created = await github.rest.pulls.create({
-              owner,
-              repo,
-              base: "v1",
-              head: "koad-os",
-              title,
-              body,
-            });
-            core.info(`Created managed promotion PR #${created.data.number}.`);
-            core.setOutput("result", "created");
-            core.setOutput("pr_number", String(created.data.number));
-            core.setOutput("pr_url", created.data.html_url);
+              const created = await github.rest.pulls.create({
+                owner,
+                repo,
+                base: "v1",
+                head: "koad-os",
+                title,
+                body,
+              });
+              core.info(`Created managed promotion PR #${created.data.number}.`);
+              core.setOutput("result", "created");
+              core.setOutput("pr_number", String(created.data.number));
+              core.setOutput("pr_url", created.data.html_url);
+            } catch (err) {
+              if (isBlocked(err)) {
+                core.warning(
+                  "GitHub Actions cannot create/update PRs in this repository. " +
+                  "Enable repository setting: Settings > Actions > General > Workflow permissions > " +
+                  "\"Allow GitHub Actions to create and approve pull requests\"."
+                );
+                core.setOutput("result", "blocked_actions_pr_creation");
+                if (existing) {
+                  core.setOutput("pr_number", String(existing.number));
+                  core.setOutput("pr_url", existing.html_url);
+                }
+                return;
+              }
+              throw err;
+            }
 
       - name: Write workflow summary
         run: |
@@ -221,6 +237,9 @@ jobs:
             echo "## koad-os Promotion PR"
             echo ""
             echo "- Result: ${{ steps.upsert.outputs.result }}"
+            if [ "${{ steps.upsert.outputs.result }}" = "blocked_actions_pr_creation" ]; then
+              echo "- Action required: enable GitHub Actions PR creation in repository settings."
+            fi
             if [ -n "${{ steps.upsert.outputs.pr_number }}" ]; then
               echo "- PR: #${{ steps.upsert.outputs.pr_number }}"
             fi

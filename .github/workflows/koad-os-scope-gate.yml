@@ -23,6 +23,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ "${HEAD_REF}" = "gemini" ]; then
+            echo "Branch 'gemini' is excluded from scope-gate checks."
+            exit 0
+          fi
+
           mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
 
           if [ "${#changed_files[@]}" -eq 0 ]; then

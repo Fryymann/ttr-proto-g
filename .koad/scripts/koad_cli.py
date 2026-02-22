@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import glob
 import json
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -76,7 +78,7 @@ def call_id_now() -> str:
 
 def normalize_role(role: str) -> str:
     role = role.strip().lower()
-    if role in {"koad", "koad pm", "pm", "project manager"}:
+    if role in {"koad", "koad pm", "pm", "project manager", "koad (pm)"}:
         return "Koad"
     if role == "gameplay":
         return "Gameplay"
@@ -1264,6 +1266,289 @@ def cmd_saveup(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_context(args: argparse.Namespace) -> int:
+    root = repo_root()
+    role = normalize_role(args.role)
+    
+    # Files to read
+    core_files = [
+        ".koad/.agent-core/IDENTITY.md",
+        ".koad/.agent-core/MISSION.md",
+        ".koad/.agent-core/memory/WORKING_MEMORY.md",
+        ".koad/.agent-core/memory/LEARNINGS.md",
+        ".koad/.agent-core/memory/USER_PREFERENCES.md",
+    ]
+    
+    role_file = ""
+    if role == "Koad":
+        role_file = ".agents/roles/project-manager.md"
+    elif role == "Gameplay":
+        role_file = ".agents/roles/gameplay-lead.md"
+    elif role == "Platform":
+        role_file = ".agents/roles/platform-lead.md"
+    elif role == "Experience":
+        role_file = ".agents/roles/experience-lead.md"
+        
+    backlog_file = ".agents/backlog.md"
+    risk_file = ".agents/risk-register.md"
+
+    output = [f"# Boot Context for {role}"]
+    output.append(f"Timestamp (UTC): {now_utc().isoformat()}")
+    
+    # Read Core
+    output.append("\n# Core Memory")
+    for path in core_files:
+        p = root / path
+        if p.exists():
+            output.append(f"\n--- {path} ---\n{p.read_text(encoding='utf-8').strip()}")
+        else:
+            output.append(f"\n--- {path} (MISSING) ---")
+            
+    # Read Role
+    output.append(f"\n# Role Context: {role}")
+    p = root / role_file
+    if p.exists():
+         output.append(f"\n--- {role_file} ---\n{p.read_text(encoding='utf-8').strip()}")
+    else:
+        output.append(f"\n--- {role_file} (MISSING) ---")
+
+    # Read Backlog Focus
+    p = root / backlog_file
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        focus = parse_focus_window(text)
+        output.append(f"\n# Active Focus\n- Now: {focus['now']}\n- Next: {focus['next']}")
+    else:
+        output.append("\n# Active Focus (Backlog Missing)")
+    
+    # Read Active Risks
+    p = root / risk_file
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        output.append("\n# Active Risks (Top 3)")
+        risk_lines = []
+        in_table = False
+        count = 0
+        for line in text.splitlines():
+            if line.startswith("| ID |"):
+                in_table = True
+                continue
+            if not in_table or line.startswith("| ---"):
+                continue
+            if not line.startswith("|"):
+                break
+            # Just capture the top few for context brevity
+            risk_lines.append(line)
+            count += 1
+            if count >= 3:
+                break
+        if risk_lines:
+             output.append("\n".join(risk_lines))
+        else:
+             output.append("(No active risks found)")
+
+    # Dump output
+    print("\n".join(output))
+    return 0
+
+
+def parse_lane_saveup_content(text: str) -> list[dict]:
+    # Extract entries starting with ## SAVEUP-...
+    entries = []
+    current_entry = {}
+    lines = text.splitlines()
+    
+    for i, line in enumerate(lines):
+        if line.startswith("## SAVEUP-"):
+            if current_entry:
+                entries.append(current_entry)
+            current_entry = {"call_id": line.strip("## ").strip()}
+            continue
+        
+        if not current_entry:
+            continue
+            
+        if line.startswith("- Role:"):
+            current_entry["role"] = line.split(":", 1)[1].replace("`", "").strip()
+        elif line.startswith("- Context ref:"):
+            current_entry["context_ref"] = line.split(":", 1)[1].replace("`", "").strip()
+        elif line.startswith("- Scope:"):
+            current_entry["scope"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- Result:"):
+            current_entry["result"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- New learnings:"):
+            try:
+                current_entry["new_learnings"] = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                current_entry["new_learnings"] = 0
+        elif line.startswith("- Duplicates skipped:"):
+             try:
+                current_entry["duplicates_skipped"] = int(line.split(":", 1)[1].strip())
+             except ValueError:
+                current_entry["duplicates_skipped"] = 0
+        elif line.startswith("- Notes:"):
+            current_entry["notes"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- Objective:"):
+            current_entry["objective"] = line.split(":", 1)[1].strip()
+            
+        # Collect lists (Action, Artifacts, Risks) - simplistic parsing for summary log
+        # For full log reconstruction we'd need more robust parsing, but for global log synthesis 
+        # we mainly need the summary fields + objective + actions list.
+        if line.startswith("- Actions:"):
+            current_entry["actions"] = []
+            j = i + 1
+            while j < len(lines) and lines[j].strip().startswith("- "):
+                 # Sub-bullets are usually indented, but we look for dashed lines that aren't headers
+                 # Actually in the format: "  - Action..."
+                 if lines[j].strip().startswith("- Artifacts:") or lines[j].strip().startswith("- Risks/Unknowns:") or lines[j].startswith("## "):
+                     break
+                 current_entry["actions"].append(lines[j].strip("- ").strip())
+                 j += 1
+
+    if current_entry:
+        entries.append(current_entry)
+    return entries
+
+
+def cmd_saveup_reconcile(args: argparse.Namespace) -> int:
+    root = repo_root()
+    if current_branch(root) != KOAD_OS_BRANCH and not args.force:
+        print(f"Error: Reconcile must run on {KOAD_OS_BRANCH} (or use --force).", file=sys.stderr)
+        return 1
+        
+    lane_dir = root / ".koad/.agent-core/sessions/lane-saveups"
+    archive_dir = lane_dir / "archive"
+    archive_dir.mkdir(exist_ok=True)
+    
+    files = list(lane_dir.glob("*.md"))
+    if not files:
+        print("No lane saveup journals found to reconcile.")
+        return 0
+        
+    reconciled_count = 0
+    entries_processed = 0
+    
+    for p in files:
+        if p.name.lower() == "readme.md":
+            continue
+            
+        content = p.read_text(encoding="utf-8")
+        entries = parse_lane_saveup_content(content)
+        
+        for entry in entries:
+            # Append to SAVEUP_CALLS.md
+            row = (
+                f"| {entry.get('call_id')} | {entry.get('role')} | {entry.get('context_ref')} | "
+                f"{entry.get('scope')} | {entry.get('result')} | {entry.get('new_learnings', 0)} | "
+                f"{entry.get('duplicates_skipped', 0)} | {entry.get('notes')} |"
+            )
+            append_saveup_call_row(root, row)
+            
+            # Append to LOG.md
+            append_session_log(
+                root,
+                title=f"Reconciled: {entry.get('scope')}",
+                role=entry.get('role', 'unknown'),
+                context_ref=entry.get('context_ref', 'unknown'),
+                objective=entry.get('objective', 'Lane saveup reconciliation'),
+                actions=entry.get('actions', []),
+                artifacts=[str(p.relative_to(root))],
+                risks=["Reconciled from lane journal"]
+            )
+            entries_processed += 1
+
+        if not args.dry_run:
+            shutil.move(str(p), str(archive_dir / p.name))
+        reconciled_count += 1
+        
+    if args.dry_run:
+        print(f"Dry run: Would reconcile {reconciled_count} files containing {entries_processed} entries.")
+    else:
+        print(f"Reconciled {reconciled_count} files containing {entries_processed} entries.")
+        print(f"Archived to {archive_dir}")
+        
+    return 0
+
+
+def parse_iso_utc(value: str) -> dt.datetime:
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+    try:
+        dt_val = dt.datetime.fromisoformat(value)
+    except ValueError:
+        return dt.datetime.now(dt.timezone.utc)
+    if dt_val.tzinfo is None:
+        dt_val = dt_val.replace(tzinfo=dt.timezone.utc)
+    return dt_val.astimezone(dt.timezone.utc)
+
+
+def extract_required_paths(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    text = path.read_text(encoding="utf-8", errors="replace")
+    candidates = re.findall(r"`([^`]+)`", text)
+    out = []
+    for item in candidates:
+        if item.startswith(".") and "/" in item:
+            out.append(item)
+    seen = set()
+    unique = []
+    for item in out:
+        if item not in seen:
+            seen.add(item)
+            unique.append(item)
+    return unique
+
+
+def cmd_standards_check(args: argparse.Namespace) -> int:
+    root = repo_root()
+    manifest_path = root / args.manifest
+    required_sources_path = root / args.required_sources
+
+    status = "FRESH"
+    synced_at = None
+    age_hours = None
+    missing = []
+
+    if not manifest_path.exists():
+        status = "MISSING_MANIFEST"
+    else:
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            synced_at_raw = manifest.get("synced_at")
+            if not synced_at_raw:
+                status = "INVALID_MANIFEST"
+            else:
+                synced_at = parse_iso_utc(synced_at_raw)
+                age_hours = (now_utc() - synced_at).total_seconds() / 3600.0
+                if age_hours > args.max_age_hours:
+                    status = "STALE"
+        except Exception:
+            status = "INVALID_MANIFEST"
+
+    required_paths = extract_required_paths(required_sources_path)
+    for rel in required_paths:
+        if not (root / rel).exists():
+            missing.append(rel)
+
+    if missing and status == "FRESH":
+        status = "MISSING_REQUIRED_SOURCES"
+
+    print(f"manifest: {manifest_path}")
+    print(f"required_sources: {required_sources_path}")
+    print(f"synced_at: {synced_at.isoformat().replace('+00:00', 'Z') if synced_at else 'unknown'}")
+    print(f"age_hours: {age_hours:.2f}" if age_hours is not None else "age_hours: unknown")
+    print(f"max_age_hours: {args.max_age_hours:.2f}")
+    print(f"required_paths_checked: {len(required_paths)}")
+    print(f"missing_required_paths: {len(missing)}")
+    if missing:
+        for path in missing:
+            print(f"missing: {path}")
+    print(f"status: {status}")
+    
+    return 1 if status != "FRESH" else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="koad", description="Koad OS workflow helper CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -1434,6 +1719,21 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--max-age-hours", type=float, default=24.0)
     status.add_argument("--verbose", action="store_true")
     status.set_defaults(func=cmd_status)
+    
+    context = sub.add_parser("context", help="Dump combined core + role memory context")
+    context.add_argument("--role", required=True, choices=ROLE_VALUES)
+    context.set_defaults(func=cmd_context)
+    
+    reconcile = sub.add_parser("saveup-reconcile", help="Merge lane saveups into global ledger")
+    reconcile.add_argument("--dry-run", action="store_true")
+    reconcile.add_argument("--force", action="store_true", help="Run even if not on koad-os branch")
+    reconcile.set_defaults(func=cmd_saveup_reconcile)
+    
+    standards = sub.add_parser("standards-check", help="Verify standards freshness and source presence")
+    standards.add_argument("--manifest", default=".koad/.standards/sync_manifest.json")
+    standards.add_argument("--required-sources", default=".koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md")
+    standards.add_argument("--max-age-hours", type=float, default=24.0)
+    standards.set_defaults(func=cmd_standards_check)
 
     return p
 

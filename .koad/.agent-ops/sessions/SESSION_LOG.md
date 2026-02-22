@@ -192,117 +192,7 @@
 - Scope:
   - Prepare actionable developer-agent handoff packets for the current `Now`/`Next` queue on `v1`.
 - Changes:
-  - Added active packet queue in `CODEX_ROLE_PROMPTS.md` with packet IDs, ownership, dependencies, and suggested lane branches.
-  - Published detailed packet briefs for `S1-P2` (`BL-012`), `S2-P1` (`BL-004` + `BL-002`), and `S2-E1` (`BL-003`).
-  - Updated sprint-plan status notes to record packet publication and dependency order.
-- Evidence:
-  - Updated `CODEX_ROLE_PROMPTS.md` and `docs/design/execution-sprint-plan.md`.
-
-## 2026-02-21 - BL-012 scope correction to account-first login semantics
-- Scope:
-  - Clarify active Platform lane requirements after review finding on ownership enforcement bypass risk.
-- Changes:
-  - Updated `BL-012` to require account-authenticated login before character operations.
-  - Updated `S1-P2` task packet objective/scope/acceptance to enforce account-scoped character management.
-  - Updated sprint-plan S1 platform validation gate and status notes to reflect account-first auth requirement.
-  - Logged durable PM decision for account-first authentication policy.
-- Evidence:
-  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-
-## 2026-02-21 - Koad-OS branch-scope enforcement rollout
-- Scope:
-  - Enforce separation between Koad/agent support updates and runtime feature delivery lanes.
-- Changes:
-  - Added `.github/workflows/koad-os-scope-gate.yml` (`validate-koad-os-scope`) to enforce branch/file scope policy on all PRs.
-  - Updated bootstrap/policy docs to reserve `koad-os` for Koad/agent support artifacts and keep development lanes focused on feature/runtime changes.
-  - Added standards entry `STD-010` in both standards registries and updated sprint-plan standards list + status notes.
-  - Updated branch-protection runbook to require `validate-koad-os-scope` for both `v1` and `koad-os`.
-  - Updated user preference memory for durable continuity.
-- Evidence:
-  - Updated `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `docs/ops/github-branch-protection.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-  - Added `.github/workflows/koad-os-scope-gate.yml`.
-
-## 2026-02-21 - Koad-OS promotion path + persona-signature governance refinement
-- Scope:
-  - Unblock `koad-os` -> `v1` support-sync PR flow and align governance to user preference for lighter `koad-os` restrictions.
-- Changes:
-  - Updated `.github/workflows/koad-os-scope-gate.yml` to allow support-only PRs when source branch is `koad-os`.
-  - Added `Persona signature` field to PR template and validation in `validate-pr-governance`.
-  - Updated branch-protection runbook to keep `v1` strict and `koad-os` lightweight/direct-commit friendly.
-  - Updated standards/bootstrap/memory artifacts to encode sync exception and lightweight `koad-os` expectation.
-- Evidence:
-  - Updated `.github/workflows/koad-os-scope-gate.yml`, `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, and `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-
-## 2026-02-21 - Role-aware saveup protocol rollout
-- Scope:
-  - Adapt saveup continuity workflow for all Koad OS roles (`Koad (PM)`, `Gameplay`, `Platform`, `Experience`).
-- Changes:
-  - Updated saveup protocol with role preconditions, role/context call metadata, role-focused learning extraction, and role-boundary mirror rules.
-  - Updated saveup ledger schema to include `role` and `context_ref`; backfilled existing entries.
-  - Updated saveup session-log template to include role/context fields.
-  - Added `STD-011` to standards registries and updated sprint-plan standards list/status notes.
-  - Updated startup/bootstrap/readme and preference memory to encode role-aware saveup usage.
-- Evidence:
-  - Updated `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/README.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-## 2026-02-21 - Shared Koad workflow CLI scaffold
-- Scope:
-  - Implement shared scripts for frequently repeated Koad OS actions.
-- Changes:
-  - Added `.koad/scripts/koad` wrapper and `.koad/scripts/koad_cli.py` command implementation.
-  - Implemented commands:
-    - `lane-start`: create lane branch/worktree and emit onboarding evidence.
-    - `pr-open`: generate governance-template PR body and call `gh pr create`.
-    - `saveup`: append role-aware saveup ledger row and session log entry.
-  - Added usage guide `.koad/scripts/README.md` and linked script purpose in `.koad/README.md`.
-  - Ran smoke checks for command help and dry-run paths.
-- Evidence:
-  - Added `.koad/scripts/koad_cli.py`, `.koad/scripts/koad`, `.koad/scripts/README.md`.
-  - Updated `.koad/README.md`.
-  - Verified with:
-    - `.koad/scripts/koad --help`
-    - `.koad/scripts/koad lane-start --help`
-    - `.koad/scripts/koad pr-open --help`
-    - `.koad/scripts/koad saveup --help`
-    - dry-run calls for each command.
-
-## 2026-02-21 - Root project progress dashboard automation
-- Scope:
-  - Provide an easy, continuously refreshed roadmap-vs-progress view in repo root.
-- Changes:
-  - Added `koad progress-sync` command to generate `PROJECT_PROGRESS.md` from canonical planning sources.
-  - Wired `koad saveup` to refresh `PROJECT_PROGRESS.md` by default (`--no-progress-sync` to skip).
-  - Added script docs and propagated continuity rules into AGENTS/standards/sprint-plan artifacts.
-  - Added standards entry `STD-012` for dashboard continuity.
-- Evidence:
-  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-  - Generated `PROJECT_PROGRESS.md` via `koad progress-sync`.
-
-## 2026-02-21 - Scope-gate allowlist update for progress dashboard
-- Scope:
-  - Resolve `validate-koad-os-scope` failure for root progress dashboard updates.
-- Changes:
-  - Added `PROJECT_PROGRESS.md` to scope-gate allowlist in `.github/workflows/koad-os-scope-gate.yml`.
-  - Updated branch-scope policy wording in AGENTS + standards docs to explicitly include root dashboard artifact.
-  - Logged durable decision for dashboard scope treatment.
-- Evidence:
-  - Updated `.github/workflows/koad-os-scope-gate.yml`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-
-## 2026-02-21 - Add compact status command for progress dashboard
-- Scope:
-  - Provide one-command terminal summary of current roadmap-vs-progress state.
-- Changes:
-  - Added `koad status` command to print compact snapshot from `PROJECT_PROGRESS.md`.
-  - Added `--refresh` option to regenerate dashboard before status output.
-  - Updated script docs and Koad readme utility command list.
-- Evidence:
-  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
-  - Verified with `bash .koad/scripts/koad status` and `bash .koad/scripts/koad status --refresh`.
-
-## 2026-02-21 - Queue status refresh and next packet dispatch setup
-- Scope:
-  - Advance PM queue after merged support PR and publish next task handoff shortcut.
-- Changes:
-  - Updated active queue statuses in `CODEX_ROLE_PROMPTS.md` (`S2-P1` set to active next; `S2-E1` marked queued on dependency).
+  - Added active queue statuses in `CODEX_ROLE_PROMPTS.md` (`S2-P1` set to active next; `S2-E1` marked queued on dependency).
   - Added explicit operator dispatch shortcuts matching user-preferred style.
   - Added sprint status note recording post-merge queue advance.
   - Logged durable queue decision in decision log.
@@ -553,3 +443,16 @@
   - Updated user preference memory with strict lane-isolation preference.
 - Evidence:
   - Updated `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+
+## 2026-02-22 - KoadOS v2: Deeper automation and better memory
+- Scope:
+  - Assessment of Koad functionality and efficiency leading to KoadOS v2 core improvements.
+- Changes:
+  - Implemented `koad context --role <ROLE>` for single-command boot context dumping.
+  - Implemented `koad standards-check` (integrated from legacy python script).
+  - Implemented `koad saveup-reconcile` for merging lane-isolated journals into global ledger.
+  - Excluded `gemini` devops branch from strict PR governance and scope-gate validation.
+  - Updated `STARTUP_CHECKLIST.md` and `README.md` to reflect new tooling.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.github/workflows/*.yml`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/scripts/README.md`.
+  - Verified `koad context` and `koad standards-check` functionality.

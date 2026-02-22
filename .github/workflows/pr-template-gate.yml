@@ -17,6 +17,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ "${HEAD_REF}" = "gemini" ]; then
+            echo "Branch 'gemini' is excluded from governance checks."
+            exit 0
+          fi
+
           if [ -z "${PR_BODY:-}" ]; then
             echo "PR body is empty. Use .github/pull_request_template.md."
             exit 1

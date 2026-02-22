@@ -23,3 +23,4 @@ Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups 
 | SAVEUP-20260222-002034Z | Koad (PM) | S2-E1 | post-merge docs+saveup-prep | completed | 2 | 0 | Synced post-PR#11 roadmap docs/status and shipped lane-isolated saveup journaling defaults to reduce cross-lane merge conflicts. |
 | SAVEUP-20260222-020839Z | Koad (PM) | S3-G1 | post-merge status + S3-P1 prep | partial | 1 | 0 | S3-G1 merged and S3-P1 lane prepared; koad-os status docs committed locally but push blocked by intermittent github DNS resolution. |
 | SAVEUP-20260222-024209Z | Experience | S2-E1/pr-11 | s2-e1-cli-scene-render | completed | 1 | 0 | S2-E1 delivered; PR #11 opened; sandbox blocked socket-based manual multiplayer run. |
+| SAVEUP-20260222-042201Z | Koad (PM) | koad-os | post-review-flow-main-savepoint | completed | 0 | 0 | main savepoint after PR #18/#19 merge and branch/worktree cleanup |

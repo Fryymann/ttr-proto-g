@@ -32,7 +32,9 @@ Each Codex instance must:
 - Lane branches must be cut from `v1` and PRs must target `v1`.
 - `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
-- Sync path: open PRs from `koad-os` -> `v1` when promoting approved support/process updates into the active release line.
+- Sync path:
+  - Promote approved support/process updates with PRs from `koad-os` -> `v1`.
+  - `v1` updates auto-sync into `koad-os` via `.github/workflows/sync-koad-os-from-v1.yml`.
 - Saveup scope rule: if saveup writes tracked `.koad/**` files or `PROJECT_PROGRESS.md`, those edits must be committed from `koad-os`; team-role lane branches should use lane-isolated saveup journals only.
 - Every lane must ship through a PR before it can be marked complete.
 - Default PR shape: one PR per lane.
@@ -49,7 +51,7 @@ Each Codex instance must:
 6. Lane is approved only when both Koad and Ian reviews are approved.
 7. Task is complete only after PR merge to `v1` (or a replacement base branch explicitly declared by Koad).
 8. Lane PR must use `.github/pull_request_template.md`.
-9. Keep PR review-gate checkboxes current so governance checks can pass.
+9. Keep PR review-gate checkboxes current for handoff audit clarity.
 10. PRs must pass both `validate-pr-governance` and `validate-koad-os-scope`.
 11. PR body must include `Persona signature` in `Role + Task Packet`.
 

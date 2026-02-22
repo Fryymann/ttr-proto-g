@@ -31,6 +31,7 @@
 - PR dependency order / blocked-by:
 
 ## Review Gates
+- Informational audit checklist: keep these accurate for handoff visibility.
 - [ ] Coding agent self-review completed
 - [ ] Koad git review approved
 - [ ] Ian review approved

@@ -1,0 +1,98 @@
+name: Sync koad-os From v1
+
+on:
+  push:
+    branches:
+      - v1
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-koad-os-from-v1
+  cancel-in-progress: false
+
+jobs:
+  sync-koad-os:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge v1 into koad-os
+        id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin v1 koad-os
+          old_head="$(git rev-parse origin/koad-os)"
+          git checkout -B koad-os origin/koad-os
+
+          if git merge --no-edit origin/v1; then
+            new_head="$(git rev-parse HEAD)"
+            if [ "$new_head" = "$old_head" ]; then
+              echo "result=up_to_date" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            git push origin HEAD:koad-os
+            echo "result=merged" >> "$GITHUB_OUTPUT"
+            echo "new_head=$new_head" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git merge --abort || true
+          echo "result=conflict" >> "$GITHUB_OUTPUT"
+
+          existing_pr="$(gh pr list --repo "$REPO" --state open --base koad-os --head v1 --json number --jq '.[0].number // empty')"
+          if [ -n "$existing_pr" ]; then
+            echo "existing_pr=$existing_pr" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          gh pr create \
+            --repo "$REPO" \
+            --base koad-os \
+            --head v1 \
+            --title "sync: resolve v1 -> koad-os merge conflict" \
+            --body "Automatic v1 -> koad-os sync hit merge conflicts. Resolve this PR to restore branch alignment."
+
+          created_pr="$(gh pr list --repo "$REPO" --state open --base koad-os --head v1 --json number --jq '.[0].number // empty')"
+          if [ -n "$created_pr" ]; then
+            echo "created_pr=$created_pr" >> "$GITHUB_OUTPUT"
+          fi
+
+          exit 1
+
+      - name: Sync summary
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          result="${{ steps.sync.outputs.result }}"
+          if [ "$result" = "merged" ]; then
+            echo "koad-os synced successfully at ${{ steps.sync.outputs.new_head }}."
+          elif [ "$result" = "up_to_date" ]; then
+            echo "koad-os already up to date with v1."
+          elif [ "$result" = "conflict" ]; then
+            if [ -n "${{ steps.sync.outputs.created_pr }}" ]; then
+              echo "Sync conflict detected; opened PR #${{ steps.sync.outputs.created_pr }} (v1 -> koad-os)."
+            elif [ -n "${{ steps.sync.outputs.existing_pr }}" ]; then
+              echo "Sync conflict detected; existing PR #${{ steps.sync.outputs.existing_pr }} (v1 -> koad-os) is open."
+            else
+              echo "Sync conflict detected; manual resolution required."
+            fi
+          else
+            echo "Sync result unavailable."
+          fi

@@ -17,6 +17,7 @@
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 - Require Codex boot to run Koad OS first, then ask which role to personify.
 - Keep Koad/agent support and workflow-governance edits on `koad-os`; keep feature/runtime development edits on release-lane branches.
+- Keep `koad-os` updated from `v1` with automation to minimize manual sync/merge overhead.
 - For saveup executions, keep tracked `.koad/**` edits checked in on `koad-os` (not developer lane branches).
 - Keep `koad-os` lightweight enough for occasional manual maintainer commits, then sync those updates into release line by PR.
 - Include explicit persona/role signature in governance PRs for Koad-OS updates.

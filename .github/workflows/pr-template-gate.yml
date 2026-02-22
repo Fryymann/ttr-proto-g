@@ -9,7 +9,7 @@ jobs:
     if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     steps:
-      - name: Validate required PR body fields and review gates
+      - name: Validate required PR body fields and review metadata
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
@@ -41,17 +41,17 @@ jobs:
             missing=1
           fi
 
-          require_checked_gate() {
+          require_gate_line() {
             gate="$1"
-            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- \\[[xX]\\] ${gate}$"; then
-              echo "Unchecked review gate: ${gate}"
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- \\[[xX ]\\] ${gate}$"; then
+              echo "Missing review gate line: ${gate}"
               missing=1
             fi
           }
 
-          require_checked_gate "Coding agent self-review completed"
-          require_checked_gate "Koad git review approved"
-          require_checked_gate "Ian review approved"
+          require_gate_line "Coding agent self-review completed"
+          require_gate_line "Koad git review approved"
+          require_gate_line "Ian review approved"
 
           if [ "$missing" -ne 0 ]; then
             echo "PR governance validation failed."

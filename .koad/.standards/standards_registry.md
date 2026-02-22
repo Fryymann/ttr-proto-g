@@ -31,14 +31,19 @@ Last updated: 2026-02-21
 - Intent: Require non-PM team-role agents to load roadmap + project state artifacts before implementation.
 
 ### STD-009 - Dual Review + Merge Completion Gate
-- Intent: Require PR-based dual review (Koad git review + user GitHub review) and merged PR confirmation before task closure.
-- Enforcement: Use PR template and required `validate-pr-governance` status check under branch protection.
+- Intent: Require PR-based dual review (Koad git review + Ian GitHub review) and merged PR confirmation before task closure.
+- Enforcement:
+  - Use PR template and required `validate-pr-governance` status check under branch protection.
+  - Governance validation requires review-gate lines to be present; checkbox states are informational audit metadata.
+  - Merge authority remains GitHub review approvals plus required status checks.
 
 ### STD-010 - Koad-OS Branch Scope Separation
 - Intent: Keep Koad/agent support and workflow-governance artifacts isolated from gameplay/platform feature delivery lanes.
 - Enforcement:
   - Koad/agent support artifacts are committed through `koad-os` (including root `PROJECT_PROGRESS.md` dashboard).
   - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files unless the source branch is `koad-os` (support sync PR).
+  - `koad-os` is auto-synced from `v1` via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual drift.
+  - Scope-gate exception allows `v1` -> `koad-os` sync PRs when automatic sync hits merge conflicts.
   - Required status check `validate-koad-os-scope` enforces the boundary on PRs.
 
 ### STD-011 - Role-Aware Saveup Continuity

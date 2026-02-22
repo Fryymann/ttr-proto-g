@@ -103,3 +103,13 @@ Append-only record of durable lessons.
 - Observation: Codex team-role agents in this workspace run inside WSL2 (typically Ubuntu), not Windows-native shells.
 - Why it matters: Prompt packets that direct Codex agents to `C:\...` paths can fail or target the wrong filesystem context.
 - Behavior update: Use `/mnt/c/...` workspace paths in Codex task packets; keep Windows-native pathing only for Antigravity-specific workflows if re-enabled.
+
+### Operational
+- Observation: Requiring checked PR review-gate boxes in CI creates avoidable merge friction when GitHub approvals already enforce reviewer authority.
+- Why it matters: Checkbox timing failures block merges without improving real review quality and slow development throughput.
+- Behavior update: Validate review-gate line presence in CI, keep checkbox states informational, and rely on required GitHub approvals + status checks as merge authority.
+
+### Process
+- Observation: Manual `v1`/`koad-os` sync maintenance creates recurring branch drift and conflict overhead.
+- Why it matters: Sync chores consume PM time and delay development lanes without adding product value.
+- Behavior update: Auto-sync `koad-os` from `v1` on every `v1` push, with conflict fallback to explicit `v1` -> `koad-os` sync PR.

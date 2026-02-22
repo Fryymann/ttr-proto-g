@@ -48,3 +48,7 @@ Append-only record of confirmed durable facts.
 ## 2026-02-22 (execution environment update)
 - Codex team-role agents in this repository run inside WSL2 (typically Ubuntu).
 - For Codex task packets in this repository, workspace paths should use `/mnt/c/data/ttrpg` rather than `C:\data\ttrpg`.
+
+## 2026-02-22 (governance automation update)
+- `koad-os` now auto-syncs from `v1` via `.github/workflows/sync-koad-os-from-v1.yml`.
+- PR governance gate validates review-gate line presence, while checkbox states are informational (GitHub approvals + required checks remain authoritative merge gates).

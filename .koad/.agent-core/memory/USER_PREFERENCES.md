@@ -23,7 +23,7 @@
 - Include explicit persona/role signature in governance PRs for Koad-OS updates.
 - Keep `saveup` role-aware across all Koad OS roles with explicit role/context metadata.
 - Keep developer saveups conflict-resistant by using lane-isolated saveup journals when team roles work in parallel lanes.
-- Keep a root `PROJECT_PROGRESS.md` file continuously updated to compare roadmap intent against current execution progress.
+- Keep project status dashboard updates lightweight: refresh after roadmap PR merges to `v1` via automation, not as per-change manual commits.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

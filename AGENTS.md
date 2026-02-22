@@ -46,4 +46,4 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 - Keep `koad-os` synchronized from `v1` using `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual branch-maintenance overhead.
 - Enforce saveup branch scope: any saveup execution that writes tracked `.koad/**` artifacts or `PROJECT_PROGRESS.md` must be checked in via `koad-os`; team-role lane branches should use lane-isolated journals only.
 - Use role-aware `saveup` continuity entries (`role` + `context_ref`) for every saveup call, and use lane-isolated journals for team-role lane contexts to reduce merge conflicts (keep these journals out of feature-lane PR scope).
-- Maintain root `PROJECT_PROGRESS.md` as a continuously refreshed roadmap-vs-progress dashboard (via `.koad/scripts/koad progress-sync` or default `saveup` sync).
+- Keep dashboard updates merge-driven via `.github/workflows/update-v1-dashboard.yml` on `v1`; use `.koad/scripts/koad progress-sync` for manual/on-demand local snapshots.

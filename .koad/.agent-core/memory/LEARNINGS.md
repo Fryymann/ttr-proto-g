@@ -113,3 +113,8 @@ Append-only record of durable lessons.
 - Observation: Manual `v1`/`koad-os` sync maintenance creates recurring branch drift and conflict overhead.
 - Why it matters: Sync chores consume PM time and delay development lanes without adding product value.
 - Behavior update: Auto-sync `koad-os` from `v1` on every `v1` push, with conflict fallback to explicit `v1` -> `koad-os` sync PR.
+
+### Operational
+- Observation: Status dashboards create recurring maintenance friction when they require separate status commits during active lane delivery.
+- Why it matters: Extra status-only commits and PR noise slow development flow and distract from roadmap execution.
+- Behavior update: Publish the V1 dashboard automatically after merges to `v1` via workflow-managed issue updates; keep manual dashboard generation on-demand.

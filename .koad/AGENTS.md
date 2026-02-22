@@ -31,7 +31,8 @@ Any coding agent instance started in this workspace must initialize context befo
 - Treat lane saveup journals as local continuity artifacts; do not include them in feature-lane PRs.
 - Any saveup execution that writes tracked `.koad/**` artifacts or `PROJECT_PROGRESS.md` must be committed on `koad-os` (not feature lane branches).
 - Use `.koad/.agent-core/sessions/SAVEUP_CALLS.md` + `.koad/.agent-core/sessions/LOG.md` for global/PM saveup entries and reconciled summaries.
-- Refresh root `PROJECT_PROGRESS.md` during `saveup` (default behavior in `.koad/scripts/koad saveup`) or via explicit `progress-sync`.
+- Keep dashboard updates merge-driven: `.github/workflows/update-v1-dashboard.yml` refreshes and publishes V1 status after pushes to `v1`.
+- Use `.koad/scripts/koad progress-sync` for manual/on-demand local dashboard generation.
 
 ## Scope Rule
 - This workspace may contain multiple projects.

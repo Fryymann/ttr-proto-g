@@ -55,10 +55,12 @@ Last updated: 2026-02-21
   - `saveup` session summary must include role and context metadata.
 
 ### STD-012 - Project Progress Dashboard Continuity
-- Intent: Keep a root-level, roadmap-aligned progress dashboard continuously available for fast status inspection.
+- Intent: Keep an easy-to-read, roadmap-aligned progress dashboard current after release-line merges without adding per-change process overhead.
 - Enforcement:
-  - Maintain `PROJECT_PROGRESS.md` in repo root.
-  - Regenerate dashboard after backlog/sprint/queue/merge state changes using `.koad/scripts/koad progress-sync` (or default `saveup` sync path).
+  - Trigger dashboard refresh/publish via `.github/workflows/update-v1-dashboard.yml` on pushes to `v1`.
+  - Managed issue `V1 Project Dashboard` is the primary PM dashboard reference.
+  - `PROJECT_PROGRESS.md` remains a generated local artifact from `.koad/scripts/koad progress-sync` for on-demand inspection.
+  - `saveup` should not refresh `PROJECT_PROGRESS.md` by default; sync is explicit via `--sync-progress` or `--sync-progress-in-lane`.
   - Dashboard content must be sourced from canonical planning artifacts (`.agents/backlog.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `CODEX_ROLE_PROMPTS.md`).
 
 ### STD-013 - Lane-Isolated Saveup Journaling

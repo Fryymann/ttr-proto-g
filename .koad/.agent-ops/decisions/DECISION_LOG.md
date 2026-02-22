@@ -436,3 +436,16 @@
   - Queue/backlog/progress artifacts now reflect `BL-006` as `done` and `S3-E1` as active next.
 - Revisit trigger:
   - If post-merge S3-P1 defects require urgent Platform hotfixes before S3-E1 starts.
+
+## 2026-02-22 - Shift project dashboard to merge-driven automation
+- Decision:
+  - Publish the PM status dashboard through a managed `V1 Project Dashboard` issue refreshed automatically after merges to `v1`.
+  - Keep `koad saveup` dashboard sync opt-in (`--sync-progress` / `--sync-progress-in-lane`) instead of default behavior.
+- Why:
+  - User requested easy status visibility without adding per-change status commits or extra PM overhead.
+- Impact:
+  - New workflow `.github/workflows/update-v1-dashboard.yml` now regenerates dashboard content and upserts the managed issue on every `v1` push.
+  - Standards/agent docs now describe merge-driven dashboard updates as the default operating model.
+  - Manual local snapshots remain available via `.koad/scripts/koad progress-sync`.
+- Revisit trigger:
+  - If dashboard consumers need a different publication surface (e.g., Pages/Notion) or multi-branch views beyond `v1`.

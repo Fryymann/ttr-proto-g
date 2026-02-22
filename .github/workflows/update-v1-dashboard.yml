@@ -1,0 +1,98 @@
+name: Update V1 Dashboard
+
+on:
+  push:
+    branches:
+      - v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: update-v1-dashboard
+  cancel-in-progress: true
+
+jobs:
+  publish-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate dashboard markdown
+        run: |
+          set -euo pipefail
+          bash .koad/scripts/koad progress-sync --output /tmp/v1-project-progress.md
+
+      - name: Upsert dashboard issue
+        id: upsert
+        uses: actions/github-script@v7
+        env:
+          DASHBOARD_FILE: /tmp/v1-project-progress.md
+          DASHBOARD_TITLE: V1 Project Dashboard
+          MANAGED_TAG: "<!-- koad:v1-dashboard -->"
+        with:
+          script: |
+            const fs = require("fs");
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = process.env.DASHBOARD_TITLE;
+            const managedTag = process.env.MANAGED_TAG;
+            const dashboardPath = process.env.DASHBOARD_FILE;
+            const dashboardMd = fs.readFileSync(dashboardPath, "utf8").trim();
+
+            const body = [
+              managedTag,
+              "",
+              "Auto-updated after merges to `v1`.",
+              "",
+              "Primary source files: `.agents/backlog.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `CODEX_ROLE_PROMPTS.md`.",
+              "",
+              dashboardMd,
+            ].join("\n");
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+
+            let issue = issues.find((item) => !item.pull_request && (item.title === title || (item.body || "").includes(managedTag)));
+
+            if (issue) {
+              const updated = await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: issue.number,
+                title,
+                body,
+              });
+              core.info(`Updated dashboard issue #${updated.data.number}`);
+              core.setOutput("issue_number", String(updated.data.number));
+              core.setOutput("issue_url", updated.data.html_url);
+            } else {
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+              core.info(`Created dashboard issue #${created.data.number}`);
+              core.setOutput("issue_number", String(created.data.number));
+              core.setOutput("issue_url", created.data.html_url);
+            }
+
+      - name: Write workflow summary
+        run: |
+          {
+            echo "## V1 Dashboard Updated"
+            echo ""
+            echo "- Issue: #${{ steps.upsert.outputs.issue_number }}"
+            echo "- URL: ${{ steps.upsert.outputs.issue_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"

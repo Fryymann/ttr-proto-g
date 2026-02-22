@@ -35,6 +35,7 @@ Each Codex instance must:
 - Sync path:
   - Promote approved support/process updates with PRs from `koad-os` -> `v1`.
   - `v1` updates auto-sync into `koad-os` via `.github/workflows/sync-koad-os-from-v1.yml`.
+  - `v1` merges auto-refresh the managed dashboard issue via `.github/workflows/update-v1-dashboard.yml`.
 - Saveup scope rule: if saveup writes tracked `.koad/**` files or `PROJECT_PROGRESS.md`, those edits must be committed from `koad-os`; team-role lane branches should use lane-isolated saveup journals only.
 - Every lane must ship through a PR before it can be marked complete.
 - Default PR shape: one PR per lane.

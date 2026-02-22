@@ -16,6 +16,8 @@ Last updated: 2026-02-22
 - Codex agents execute inside WSL2 (Ubuntu), so lane prompt workspace paths should use `/mnt/c/...` instead of `C:\...`.
 - `koad-os` branch sync from `v1` is now automated via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual maintenance.
 - `koad-os` -> `v1` promotion PR lifecycle is now automated via `.github/workflows/promote-koad-os-to-v1.yml`.
+- Promotion workflow now seeds required PR checks for auto-created promotion PRs to avoid missing-check deadlocks.
+- PM PR gate review preflight is now scriptable via `.koad/scripts/koad pr-gate` (including optional Koad checkbox apply).
 - V1 status dashboard publishing is merge-driven via `.github/workflows/update-v1-dashboard.yml` (managed issue `V1 Project Dashboard`) to avoid per-change status commit overhead.
 
 ## Open Unknowns

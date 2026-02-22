@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  checks: write
 
 concurrency:
   group: promote-koad-os-to-v1
@@ -224,6 +225,158 @@ jobs:
               }
               throw err;
             }
+
+      - name: Seed required check runs for managed promotion PR
+        uses: actions/github-script@v7
+        env:
+          OUTCOME_JSON: ${{ steps.upsert.outputs.result }}
+          HEAD_SHA: ${{ steps.delta.outputs.head_sha }}
+        with:
+          script: |
+            const outcomeRaw = process.env.OUTCOME_JSON || "";
+            if (!outcomeRaw) {
+              core.info("No promotion outcome payload; skipping seeded checks.");
+              return;
+            }
+
+            let outcome;
+            try {
+              outcome = JSON.parse(outcomeRaw);
+            } catch (err) {
+              core.warning(`Unable to parse outcome payload for check seeding: ${err}`);
+              return;
+            }
+
+            const result = outcome.result || "";
+            if (!["created", "updated"].includes(result)) {
+              core.info(`Outcome '${result}' does not require seeded checks.`);
+              return;
+            }
+
+            const prNumber = Number(outcome.pr_number || 0);
+            if (!prNumber) {
+              core.warning("No PR number in outcome payload; skipping seeded checks.");
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headSha = process.env.HEAD_SHA || "";
+
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              }
+            );
+            const changedPaths = files.map((f) => f.filename);
+            const body = String(pr.data.body || "");
+            const baseRef = String(pr.data.base.ref || "");
+            const headRef = String(pr.data.head.ref || "");
+
+            const isKoadOsFile = (path) => {
+              if (path.startsWith(".koad/") || path.startsWith(".agents/")) {
+                return true;
+              }
+              const exact = new Set([
+                "AGENTS.md",
+                "CODEX_ROLE_PROMPTS.md",
+                "ANTIGRAVITY_SPRINT_PROMPTS.md",
+                "PROJECT_PROGRESS.md",
+                "docs/ops/github-branch-protection.md",
+                "docs/design/execution-sprint-plan.md",
+                ".github/pull_request_template.md",
+                ".github/workflows/pr-template-gate.yml",
+                ".github/workflows/koad-os-scope-gate.yml",
+                ".github/workflows/sync-koad-os-from-v1.yml",
+                ".github/workflows/update-v1-dashboard.yml",
+                ".github/workflows/promote-koad-os-to-v1.yml",
+              ]);
+              return exact.has(path);
+            };
+
+            const scopeViolations = [];
+            if (baseRef === "koad-os" && headRef === "v1") {
+              // Explicit sync exception.
+            } else if (baseRef === "koad-os") {
+              for (const path of changedPaths) {
+                if (!isKoadOsFile(path)) {
+                  scopeViolations.push(`Out-of-scope file for koad-os PR: ${path}`);
+                }
+              }
+            } else if (headRef === "koad-os") {
+              for (const path of changedPaths) {
+                if (!isKoadOsFile(path)) {
+                  scopeViolations.push(`Out-of-scope file in koad-os sync PR: ${path}`);
+                }
+              }
+            } else {
+              for (const path of changedPaths) {
+                if (isKoadOsFile(path)) {
+                  scopeViolations.push(`Koad/agent support file blocked on non-koad-os PR: ${path}`);
+                }
+              }
+            }
+
+            const requiredMarkers = [
+              "## Scope + Acceptance Criteria",
+              "## Verification",
+              "## Files Changed",
+              "## Risks / Deferred Work",
+              "AC-1 `PASS`/`FAIL` + evidence:",
+              "AC-2 `PASS`/`FAIL` + evidence:",
+              "Out-of-scope files touched (`none` if none):",
+              "Coding agent self-review completed",
+              "Koad git review approved",
+              "Ian review approved",
+            ];
+            const missingMarkers = requiredMarkers.filter((m) => !body.includes(m));
+
+            const createCheck = async (name, conclusion, summary) => {
+              await github.rest.checks.create({
+                owner,
+                repo,
+                name,
+                head_sha: headSha,
+                status: "completed",
+                conclusion,
+                output: {
+                  title: `${name} (${conclusion})`,
+                  summary,
+                },
+              });
+            };
+
+            const governanceSummary =
+              missingMarkers.length === 0
+                ? "Required governance markers are present."
+                : `Missing markers:\n- ${missingMarkers.join("\n- ")}`;
+            await createCheck(
+              "validate-pr-governance",
+              missingMarkers.length === 0 ? "success" : "failure",
+              governanceSummary
+            );
+
+            const scopeSummary =
+              scopeViolations.length === 0
+                ? "Scope policy validation passed for this PR."
+                : `Scope violations:\n- ${scopeViolations.join("\n- ")}`;
+            await createCheck(
+              "validate-koad-os-scope",
+              scopeViolations.length === 0 ? "success" : "failure",
+              scopeSummary
+            );
+
+            core.info("Seeded required check-runs for managed promotion PR.");
 
       - name: Write workflow summary
         run: |

@@ -123,3 +123,13 @@ Append-only record of durable lessons.
 - Observation: Even with branch sync automation, manually opening recurring `koad-os` promotion PRs still adds PM overhead and context switching.
 - Why it matters: Repetitive promotion steps slow flow and increase risk of support updates lingering on `koad-os`.
 - Behavior update: Auto-manage one `koad-os` -> `v1` promotion PR from a workflow keyed off effective branch deltas.
+
+### Operational
+- Observation: PM PR gate reviews repeatedly perform the same merge/check/scope/evidence inspection and manual checkbox update steps.
+- Why it matters: Manual repetition increases review-cycle time and creates avoidable inconsistency in Koad approval handling.
+- Behavior update: Use `koad pr-gate` as the default scripted PM review preflight and optional checkbox/comment apply path.
+
+### Automation
+- Observation: PRs auto-created by workflows may not immediately trigger required `pull_request` checks when created via `GITHUB_TOKEN`.
+- Why it matters: Required checks can remain missing, leaving merge state blocked until an extra push occurs.
+- Behavior update: Seed required check-runs directly from the promotion workflow on managed PR create/update outcomes.

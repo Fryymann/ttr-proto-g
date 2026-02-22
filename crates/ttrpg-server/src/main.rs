@@ -1,5 +1,7 @@
 mod account;
 mod campaign;
+mod encounter;
+mod party;
 mod persistence;
 #[allow(dead_code)]
 mod scene;
@@ -15,6 +17,8 @@ use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
 use campaign::{CampaignCatalog, CampaignManifestEntry};
+use encounter::{capture_participants, deterministic_initiative_for_actor, EncounterState};
+use party::PartyRegistry;
 use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
 use scene::queue::CommandEnvelope;
 use scene::runtime::SceneRuntime;
@@ -49,9 +53,12 @@ impl Player {
 
 struct ServerState {
     next_player_id: u64,
+    next_encounter_id: u64,
     players: HashMap<u64, Player>,
     player_name_index: HashMap<String, u64>,
     sessions: HashMap<u64, ClientTx>,
+    party_registry: PartyRegistry,
+    active_encounters: HashMap<String, EncounterState>, // room_id -> active encounter
     rooms: HashMap<String, Room>,
     persistence: Box<dyn Persistence>,
     active_campaign: CampaignManifestEntry,
@@ -61,9 +68,12 @@ impl ServerState {
     fn new(active_campaign: CampaignManifestEntry) -> Self {
         Self {
             next_player_id: 1,
+            next_encounter_id: 1,
             players: HashMap::new(),
             player_name_index: HashMap::new(),
             sessions: HashMap::new(),
+            party_registry: PartyRegistry::default(),
+            active_encounters: HashMap::new(),
             rooms: build_world(),
             persistence: Box::new(InMemoryPersistence::default()),
             active_campaign,
@@ -287,6 +297,29 @@ async fn process_client_message(
                 return;
             };
 
+            if let Some(encounter) = locked.active_encounters.get(&room_id) {
+                if !encounter.is_participant(&actor_id) {
+                    send_to_client(
+                        tx,
+                        ServerMessage::Error {
+                            text: "You are not a participant in this encounter.".to_owned(),
+                        },
+                    );
+                    return;
+                }
+
+                if !encounter.is_actor_turn(&actor_id) {
+                    let active_actor = encounter.active_actor().unwrap_or("unknown");
+                    send_to_client(
+                        tx,
+                        ServerMessage::Error {
+                            text: format!("It is {}'s turn.", active_actor),
+                        },
+                    );
+                    return;
+                }
+            }
+
             if let Some(room) = locked.rooms.get_mut(&room_id) {
                 if let Some(runtime) = &mut room.scene_runtime {
                     runtime.queue.push(CommandEnvelope {
@@ -408,6 +441,9 @@ async fn handle_create_character(
         locked.players.insert(player_id, player);
         locked.player_name_index.insert(name_key.clone(), player_id);
         locked.sessions.insert(player_id, tx.clone());
+        locked
+            .party_registry
+            .ensure_solo_party_for_actor(&player_name, &active_campaign_id);
 
         // Scene Occupancy Join
         if let Some(room) = locked.rooms.get_mut(&room_id) {
@@ -656,6 +692,9 @@ async fn handle_select_character(
 
         room_id = player.room_id.clone();
         player_name = player.display_name().to_owned();
+        locked
+            .party_registry
+            .ensure_solo_party_for_actor(&player_name, &active_campaign_id);
 
         // Scene Occupancy Join
         if let Some(room) = locked.rooms.get_mut(&room_id) {
@@ -729,6 +768,35 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
         "look" => {
             show_room(player_id, tx, state).await;
         }
+        "encounter" => {
+            let Some(action) = parts.next() else {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Usage: encounter <start|end|status>".to_owned(),
+                    },
+                );
+                return;
+            };
+            let action = action.to_lowercase();
+
+            match action.as_str() {
+                "start" => start_encounter(player_id, tx, state).await,
+                "end" => end_encounter(player_id, tx, state).await,
+                "status" => show_encounter_status(player_id, tx, state).await,
+                _ => {
+                    send_to_client(
+                        tx,
+                        ServerMessage::Error {
+                            text: "Usage: encounter <start|end|status>".to_owned(),
+                        },
+                    );
+                }
+            }
+        }
+        "end_turn" => {
+            end_encounter_turn(player_id, tx, state).await;
+        }
         "go" => {
             let Some(direction) = parts.next() else {
                 send_to_client(
@@ -770,7 +838,7 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
             send_to_client(
                 tx,
                 ServerMessage::Info {
-                    text: "Commands: look, go <dir>, say <msg>, who, sheet, help".to_owned(),
+                    text: "Commands: look, encounter <start|end|status>, end_turn, go <dir>, say <msg>, who, sheet, help".to_owned(),
                 },
             );
         }
@@ -783,6 +851,261 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
             );
         }
     }
+}
+
+async fn start_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
+    let (recipients, message) = {
+        let mut locked = state.lock().await;
+        let Some(player) = locked.players.get(&player_id).cloned() else {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Unknown player session.".to_owned(),
+                },
+            );
+            return;
+        };
+
+        let room_id = player.room_id.clone();
+        if locked.active_encounters.contains_key(&room_id) {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "An encounter is already active in this room.".to_owned(),
+                },
+            );
+            return;
+        }
+
+        let actor_id = player.display_name().to_owned();
+        let campaign_id = locked.active_campaign.campaign_id.clone();
+        locked
+            .party_registry
+            .ensure_solo_party_for_actor(&actor_id, &campaign_id);
+        let Some(party) = locked.party_registry.party_for_actor(&actor_id).cloned() else {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Unable to resolve party membership for encounter start.".to_owned(),
+                },
+            );
+            return;
+        };
+
+        let scene_id = locked
+            .rooms
+            .get(&room_id)
+            .and_then(|room| room.scene_runtime.as_ref())
+            .map(|runtime| runtime.scene.id.clone())
+            .unwrap_or_else(|| room_id.clone());
+        let relevant_npcs = locked
+            .rooms
+            .get(&room_id)
+            .map(relevant_npc_ids_for_room)
+            .unwrap_or_default();
+        let participants = capture_participants(&party, relevant_npcs.clone());
+        let initiative_scores = participants
+            .iter()
+            .map(|participant| {
+                (
+                    participant.actor_id.clone(),
+                    deterministic_initiative_for_actor(&participant.actor_id),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+
+        let encounter_id = format!("encounter-{}", locked.next_encounter_id);
+        locked.next_encounter_id += 1;
+
+        let encounter = match EncounterState::start(
+            encounter_id.clone(),
+            scene_id,
+            &actor_id,
+            &party,
+            relevant_npcs,
+            initiative_scores,
+        ) {
+            Ok(encounter) => encounter,
+            Err(error) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: format!("Failed to start encounter: {:?}", error),
+                    },
+                );
+                return;
+            }
+        };
+
+        let message = format!(
+            "Encounter started: {}",
+            format_encounter_status_line(&encounter)
+        );
+        locked.active_encounters.insert(room_id.clone(), encounter);
+        let recipients = players_in_room_senders_locked(&locked, &room_id, None);
+        (recipients, message)
+    };
+
+    for recipient in recipients {
+        send_to_client(
+            &recipient,
+            ServerMessage::Info {
+                text: message.clone(),
+            },
+        );
+    }
+}
+
+async fn end_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
+    let (recipients, message) = {
+        let mut locked = state.lock().await;
+        let Some(player) = locked.players.get(&player_id) else {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Unknown player session.".to_owned(),
+                },
+            );
+            return;
+        };
+
+        let room_id = player.room_id.clone();
+        let actor_id = player.display_name().to_owned();
+        let Some(mut encounter) = locked.active_encounters.remove(&room_id) else {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "No active encounter in this room.".to_owned(),
+                },
+            );
+            return;
+        };
+
+        if !encounter.is_participant(&actor_id) {
+            locked.active_encounters.insert(room_id.clone(), encounter);
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Only encounter participants can end the encounter.".to_owned(),
+                },
+            );
+            return;
+        }
+
+        encounter.resolve();
+        encounter.end();
+
+        let recipients = players_in_room_senders_locked(&locked, &room_id, None);
+        (
+            recipients,
+            format!(
+                "Encounter {} ended by {}.",
+                encounter.encounter_id, actor_id
+            ),
+        )
+    };
+
+    for recipient in recipients {
+        send_to_client(
+            &recipient,
+            ServerMessage::Info {
+                text: message.clone(),
+            },
+        );
+    }
+}
+
+async fn end_encounter_turn(player_id: u64, tx: &ClientTx, state: &SharedState) {
+    let (recipients, message) = {
+        let mut locked = state.lock().await;
+        let Some(player) = locked.players.get(&player_id) else {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Unknown player session.".to_owned(),
+                },
+            );
+            return;
+        };
+
+        let room_id = player.room_id.clone();
+        let actor_id = player.display_name().to_owned();
+        let turn_message = {
+            let Some(encounter) = locked.active_encounters.get_mut(&room_id) else {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "No active encounter in this room.".to_owned(),
+                    },
+                );
+                return;
+            };
+
+            if !encounter.is_participant(&actor_id) {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "You are not a participant in this encounter.".to_owned(),
+                    },
+                );
+                return;
+            }
+
+            if !encounter.is_actor_turn(&actor_id) {
+                let active_actor = encounter.active_actor().unwrap_or("unknown");
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: format!("It is {}'s turn.", active_actor),
+                    },
+                );
+                return;
+            }
+
+            let next_actor = encounter
+                .advance_turn()
+                .map(str::to_owned)
+                .unwrap_or_else(|| "unknown".to_owned());
+            let round = encounter.round;
+            format!(
+                "{} ends turn. Active turn: {} (round {}).",
+                actor_id, next_actor, round
+            )
+        };
+
+        let recipients = players_in_room_senders_locked(&locked, &room_id, None);
+        (recipients, turn_message)
+    };
+
+    for recipient in recipients {
+        send_to_client(
+            &recipient,
+            ServerMessage::Info {
+                text: message.clone(),
+            },
+        );
+    }
+}
+
+async fn show_encounter_status(player_id: u64, tx: &ClientTx, state: &SharedState) {
+    let text = {
+        let locked = state.lock().await;
+        if let Some(player) = locked.players.get(&player_id) {
+            match locked.active_encounters.get(&player.room_id) {
+                Some(encounter) => {
+                    format!(
+                        "Encounter status: {}",
+                        format_encounter_status_line(encounter)
+                    )
+                }
+                None => "No active encounter in this room.".to_owned(),
+            }
+        } else {
+            "Unknown player session.".to_owned()
+        }
+    };
+
+    send_to_client(tx, ServerMessage::Info { text });
 }
 
 async fn show_room(player_id: u64, tx: &ClientTx, state: &SharedState) {
@@ -891,6 +1214,18 @@ async fn move_player(player_id: u64, direction: &str, tx: &ClientTx, state: &Sha
         };
 
         let old_room = player_snapshot.room_id.clone();
+
+        if let Some(encounter) = locked.active_encounters.get(&old_room) {
+            if encounter.is_participant(player_snapshot.display_name()) {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Cannot leave room during an active encounter.".to_owned(),
+                    },
+                );
+                return;
+            }
+        }
 
         let Some(current_room) = locked.rooms.get(&old_room) else {
             send_to_client(
@@ -1021,6 +1356,46 @@ async fn disconnect_player(state: &SharedState, session: &mut SessionContext) {
     for recipient in recipients {
         send_to_client(&recipient, message.clone());
     }
+}
+
+fn format_encounter_status_line(encounter: &EncounterState) -> String {
+    let participants = encounter
+        .participants
+        .iter()
+        .map(|participant| participant.actor_id.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let initiative_order = encounter.initiative_order.join(" -> ");
+    let active_turn = encounter.active_actor().unwrap_or("none");
+
+    format!(
+        "{} | participants: [{}] | initiative: [{}] | round: {} | active_turn: {}",
+        encounter.encounter_id, participants, initiative_order, encounter.round, active_turn
+    )
+}
+
+fn relevant_npc_ids_for_room(room: &Room) -> Vec<String> {
+    let mut actor_ids = room
+        .scene_runtime
+        .as_ref()
+        .map(|runtime| {
+            runtime
+                .scene
+                .occupants
+                .values()
+                .filter(|actor_id| is_npc_actor_id(actor_id))
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+
+    actor_ids.sort();
+    actor_ids.dedup();
+    actor_ids
+}
+
+fn is_npc_actor_id(actor_id: &str) -> bool {
+    actor_id.starts_with("npc:")
 }
 
 fn room_state_for_player_locked(state: &ServerState, player_id: u64) -> Option<ServerMessage> {
@@ -1234,6 +1609,7 @@ fn opposite_direction(direction: &str) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::party::Party;
     use tokio::sync::mpsc;
     use ttrpg_protocol::{SceneCommand, SceneDelta, ScenePosition};
 
@@ -1292,6 +1668,44 @@ mod tests {
                     && (delta_to.x, delta_to.y) == to
             })
         })
+    }
+
+    fn has_error_message_containing(messages: &[ServerMessage], needle: &str) -> bool {
+        messages.iter().any(|message| match message {
+            ServerMessage::Error { text } => text.contains(needle),
+            _ => false,
+        })
+    }
+
+    async fn seed_player(
+        state: &SharedState,
+        player_id: u64,
+        account_id: &str,
+        name: &str,
+        room_id: &str,
+        tx: &ClientTx,
+        pos: Position,
+    ) {
+        let mut locked = state.lock().await;
+        locked.players.insert(
+            player_id,
+            Player {
+                id: player_id,
+                account_id: account_id.to_owned(),
+                character: test_character(name),
+                room_id: room_id.to_owned(),
+            },
+        );
+        locked.sessions.insert(player_id, tx.clone());
+
+        if let Some(room) = locked.rooms.get_mut(room_id) {
+            if let Some(runtime) = room.scene_runtime.as_mut() {
+                runtime
+                    .scene
+                    .move_actor(name, pos)
+                    .expect("actor placement should succeed");
+            }
+        }
     }
 
     #[tokio::test]
@@ -1378,6 +1792,267 @@ mod tests {
                 message,
                 ServerMessage::Info { text } if text == "Scene action processed."
             )
+        }));
+    }
+
+    #[tokio::test]
+    async fn encounter_start_captures_only_party_members_plus_relevant_npcs() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_bravo, _rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_charlie, _rx_charlie) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:alpha",
+            "Alpha",
+            "town_square",
+            &tx_alpha,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            2,
+            "acct:bravo",
+            "Bravo",
+            "town_square",
+            &tx_bravo,
+            Position { x: 1, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            3,
+            "acct:charlie",
+            "Charlie",
+            "town_square",
+            &tx_charlie,
+            Position { x: 2, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            let party = Party::new(
+                "party:alpha",
+                "test-campaign",
+                "Alpha",
+                vec!["Bravo".to_owned(), "Alpha".to_owned()],
+            )
+            .expect("party should be valid");
+            locked.party_registry.upsert_party(party);
+            locked
+                .party_registry
+                .ensure_solo_party_for_actor("Charlie", "test-campaign");
+
+            let room = locked
+                .rooms
+                .get_mut("town_square")
+                .expect("town_square should exist");
+            let runtime = room
+                .scene_runtime
+                .as_mut()
+                .expect("town_square should have scene runtime");
+            runtime
+                .scene
+                .move_actor("npc:wolf", Position { x: 3, y: 0 })
+                .expect("npc placement should succeed");
+        }
+
+        start_encounter(1, &tx_alpha, &state).await;
+
+        let participants = {
+            let locked = state.lock().await;
+            locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should be active")
+                .participants
+                .iter()
+                .map(|participant| participant.actor_id.clone())
+                .collect::<Vec<_>>()
+        };
+
+        assert_eq!(
+            participants,
+            vec![
+                "Alpha".to_owned(),
+                "Bravo".to_owned(),
+                "npc:wolf".to_owned()
+            ]
+        );
+        assert!(!participants.iter().any(|actor_id| actor_id == "Charlie"));
+
+        let actor_messages = collect_messages(&mut rx_alpha);
+        assert!(actor_messages.iter().any(|message| {
+            matches!(message, ServerMessage::Info { text } if text.contains("Encounter started:"))
+        }));
+    }
+
+    #[tokio::test]
+    async fn scene_action_is_rejected_when_actor_is_out_of_turn() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:alpha",
+            "Alpha",
+            "town_square",
+            &tx_alpha,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            2,
+            "acct:bravo",
+            "Bravo",
+            "town_square",
+            &tx_bravo,
+            Position { x: 1, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            let party = Party::new(
+                "party:duo",
+                "test-campaign",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid");
+            locked.party_registry.upsert_party(party);
+        }
+
+        start_encounter(1, &tx_alpha, &state).await;
+
+        // Drop start encounter broadcast chatter to make assertions focused.
+        let _ = collect_messages(&mut rx_alpha);
+        let _ = collect_messages(&mut rx_bravo);
+
+        let active_actor = {
+            let locked = state.lock().await;
+            locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should be active")
+                .active_actor()
+                .expect("active actor should exist")
+                .to_owned()
+        };
+
+        let (out_of_turn_player_id, out_of_turn_tx, out_of_turn_rx) = if active_actor == "Alpha" {
+            (2_u64, tx_bravo.clone(), &mut rx_bravo)
+        } else {
+            (1_u64, tx_alpha.clone(), &mut rx_alpha)
+        };
+
+        let mut session = SessionContext {
+            account_handle: Some("acct:test".to_owned()),
+            player_id: Some(out_of_turn_player_id),
+        };
+
+        process_client_message(
+            ClientMessage::SceneAction {
+                command: SceneCommand::Move {
+                    target_pos: ScenePosition { x: 0, y: 1 },
+                },
+            },
+            &out_of_turn_tx,
+            &state,
+            &mut session,
+        )
+        .await;
+
+        let out_of_turn_messages = collect_messages(out_of_turn_rx);
+        assert!(has_error_message_containing(&out_of_turn_messages, "It is"));
+    }
+
+    #[tokio::test]
+    async fn end_turn_advances_to_next_actor() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:alpha",
+            "Alpha",
+            "town_square",
+            &tx_alpha,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            2,
+            "acct:bravo",
+            "Bravo",
+            "town_square",
+            &tx_bravo,
+            Position { x: 1, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            let party = Party::new(
+                "party:duo",
+                "test-campaign",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid");
+            locked.party_registry.upsert_party(party);
+        }
+
+        start_encounter(1, &tx_alpha, &state).await;
+        let _ = collect_messages(&mut rx_alpha);
+        let _ = collect_messages(&mut rx_bravo);
+
+        let (active_actor_before, active_player_id, active_player_tx) = {
+            let locked = state.lock().await;
+            let encounter = locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should be active");
+            let active_actor = encounter.active_actor().expect("active actor should exist");
+            if active_actor == "Alpha" {
+                (active_actor.to_owned(), 1_u64, tx_alpha.clone())
+            } else {
+                (active_actor.to_owned(), 2_u64, tx_bravo.clone())
+            }
+        };
+
+        end_encounter_turn(active_player_id, &active_player_tx, &state).await;
+
+        let active_actor_after = {
+            let locked = state.lock().await;
+            locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should stay active")
+                .active_actor()
+                .expect("active actor should exist")
+                .to_owned()
+        };
+
+        assert_ne!(active_actor_before, active_actor_after);
+
+        let actor_messages = if active_player_id == 1 {
+            collect_messages(&mut rx_alpha)
+        } else {
+            collect_messages(&mut rx_bravo)
+        };
+        assert!(actor_messages.iter().any(|message| {
+            matches!(message, ServerMessage::Info { text } if text.contains("ends turn"))
         }));
     }
 }

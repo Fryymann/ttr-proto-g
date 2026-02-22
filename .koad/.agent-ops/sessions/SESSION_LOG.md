@@ -563,3 +563,12 @@
   - Added sprint status note in execution plan for PR #38 merge and queue transition.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, and `docs/design/execution-sprint-plan.md`.
+
+## 2026-02-22 - Saveup checkpoint after PR40 promotion
+- Scope:
+  - Persist continuity after PR #40 merge and PM queue advancement to S4-G1.
+- Changes:
+  - Recorded global saveup entry (`Koad (PM)`, `context_ref=koad-os`) after syncing backlog/queue/progress artifacts.
+  - Added operational memory guidance for post-edit worktree verification to prevent branch-scope spillover.
+- Evidence:
+  - Updated `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-core/memory/PATTERNS.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`.

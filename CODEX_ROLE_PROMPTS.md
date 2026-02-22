@@ -41,15 +41,17 @@ Each Codex instance must:
 
 ## Review + Merge Gate
 
-1. Lane agent opens PR and posts handoff evidence.
-2. Koad performs local git review (`git diff`, tests, acceptance check).
-3. User performs GitHub PR review.
-4. Lane is approved only when both Koad and user reviews are approved.
-5. Task is complete only after PR merge to `v1` (or a replacement base branch explicitly declared by Koad).
-6. Lane PR must use `.github/pull_request_template.md`.
-7. Keep PR review-gate checkboxes current so governance checks can pass.
-8. PRs must pass both `validate-pr-governance` and `validate-koad-os-scope`.
-9. PR body must include `Persona signature` in `Role + Task Packet`.
+1. Lane agent completes task, runs self-review, then opens PR with handoff evidence.
+2. Lane agent checks `Coding agent self-review completed` in the PR body.
+3. Koad performs local git review (`git diff`, tests, acceptance check).
+4. If approved, Koad checks `Koad git review approved` and notifies Ian.
+5. Ian performs final GitHub PR review and checks `Ian review approved`.
+6. Lane is approved only when both Koad and Ian reviews are approved.
+7. Task is complete only after PR merge to `v1` (or a replacement base branch explicitly declared by Koad).
+8. Lane PR must use `.github/pull_request_template.md`.
+9. Keep PR review-gate checkboxes current so governance checks can pass.
+10. PRs must pass both `validate-pr-governance` and `validate-koad-os-scope`.
+11. PR body must include `Persona signature` in `Role + Task Packet`.
 
 ## Required Team-Agent Onboarding Evidence
 

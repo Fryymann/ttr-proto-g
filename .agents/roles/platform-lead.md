@@ -49,5 +49,5 @@ Own server authority, reliability, data integrity, and operational stability for
 6. PR includes latest commit SHA and target branch.
 7. Review status placeholders included for:
    - Koad git review
-   - User GitHub review
+   - Ian review
    - Merge status

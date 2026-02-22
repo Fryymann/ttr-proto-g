@@ -88,7 +88,7 @@ Purpose: codable representation of standards for this workspace.
   - Require one PR for every execution lane (code/docs/chore), with clear base/head and latest commit metadata.
   - Require `.github/pull_request_template.md` usage for lane PRs.
   - Require `validate-pr-governance` status check to pass before merge.
-  - Require Koad git-side review disposition and user GitHub review disposition before approval.
+  - Require Koad git-side review disposition and Ian review disposition before approval.
   - If either review requests changes, keep lane state `in_progress`.
   - Mark lane/backlog task complete only after PR merge confirmation.
 

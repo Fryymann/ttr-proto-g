@@ -11,7 +11,7 @@
 - Keep sprint execution reserved for development teams unless the user explicitly asks the PM agent to execute a sprint.
 - For Codex team-agent lane prompts, use WSL workspace paths (for this repo: `/mnt/c/data/ttrpg`), since Codex runs inside WSL2.
 - Use git worktrees for parallel coder-agent lanes (one lane per worktree/branch) with pragmatic PR count control.
-- Use PR-gated lane closure: user reviews on GitHub, Koad reviews via local git, and tasks close only after merge.
+- Use PR-gated lane closure: coding agent self-review first, Koad git review second, Ian final GitHub review third, then merge.
 - Use standardized PR bodies and enforce governance through required `validate-pr-governance` check.
 - Use `v1` as the active base branch for agent lanes; cut lane branches from `v1` and merge back into `v1` until the release line is complete.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.

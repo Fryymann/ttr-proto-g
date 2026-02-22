@@ -475,8 +475,9 @@ def changed_files_for_pr(root: Path, base: str, head: str) -> list[str]:
 
 def build_pr_body(args: argparse.Namespace, root: Path, head: str, changed_files: list[str]) -> str:
     checks = [
+        "- [x] Coding agent self-review completed",
         f"- [{bool_to_checkbox(args.koad_approved)}] Koad git review approved",
-        f"- [{bool_to_checkbox(args.user_approved)}] User GitHub review approved",
+        f"- [{bool_to_checkbox(args.ian_approved)}] Ian review approved",
     ]
     body = f"""## Summary
 - What changed:
@@ -520,6 +521,7 @@ def build_pr_body(args: argparse.Namespace, root: Path, head: str, changed_files
 ## Review Gates
 {checks[0]}
 {checks[1]}
+{checks[2]}
 
 ## Risks / Deferred Work
 - Risks:
@@ -837,7 +839,8 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--risks", default="none")
     pr.add_argument("--deferred", default="none")
     pr.add_argument("--koad-approved", action="store_true")
-    pr.add_argument("--user-approved", action="store_true")
+    pr.add_argument("--ian-approved", action="store_true")
+    pr.add_argument("--user-approved", dest="ian_approved", action="store_true", help=argparse.SUPPRESS)
     pr.add_argument("--draft", action="store_true")
     pr.add_argument("--dry-run", action="store_true")
     pr.set_defaults(func=cmd_pr_open)

@@ -51,5 +51,5 @@ Own mechanical correctness, encounter depth, and content-facing rule behavior fo
 6. PR includes latest commit SHA and target branch.
 7. Review status placeholders included for:
    - Koad git review
-   - User GitHub review
+   - Ian review
    - Merge status

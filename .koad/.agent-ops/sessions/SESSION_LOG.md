@@ -536,10 +536,9 @@
 - Scope:
   - Review latest `IAN.md` entry and integrate ideas into durable, dispatch-ready project specs.
 - Changes:
-  - Added dedicated design spec `docs/design/v2-world-interaction-spec.md` covering movement chaining, terrain/reversion, auto-walk, spell targeting, NPC promotion, relationship/faction systems, and spell dependency gating.
-  - Added `BL-027` (spell capability staging + dependency gates) and linked the new spec from sprint V2 parking-lot section.
-  - Updated roadmap with V2 concept anchors and additional V2 open questions.
+  - Added `BL-027` (spell capability staging + dependency gates) to V2 backlog intake.
+  - Added branch-split execution plan: keep PM/backlog/risk continuity on `koad-os`; route `docs/design/**` concept spec formalization to a dedicated `v1` specs lane.
   - Updated risk register with V2 movement/auto-walk parser-desync risk (`R-015`).
   - Updated PM continuity artifacts (decision log + working memory + learnings) for durable context.
 - Evidence:
-  - Updated `docs/design/v2-world-interaction-spec.md`, `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, `docs/design/game-system-roadmap.md`, `.agents/risk-register.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`.
+  - Updated `.agents/backlog.md`, `.agents/risk-register.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `PROJECT_PROGRESS.md`.

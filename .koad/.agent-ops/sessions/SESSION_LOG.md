@@ -553,3 +553,13 @@
   - Updated user preference memory with strict lane-isolation preference.
 - Evidence:
   - Updated `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`.
+
+## 2026-02-22 - Post-PR38 queue advance and S4-G1 dispatch prep
+- Scope:
+  - Capture S4-P2 merge completion and advance PM queue/state artifacts to the next active Gameplay lane.
+- Changes:
+  - Marked `BL-018` as `done` and refreshed backlog `Now` focus to `BL-012` + `BL-014`.
+  - Updated `CODEX_ROLE_PROMPTS.md` queue state (`S4-P2` done, `S4-G1` active next), dispatch shortcut, and added `S4-G1` task packet for staged disconnect fallback policy (`BL-014`).
+  - Added sprint status note in execution plan for PR #38 merge and queue transition.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, and `docs/design/execution-sprint-plan.md`.

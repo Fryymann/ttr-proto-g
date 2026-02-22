@@ -91,11 +91,12 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | `S2-E1` | Experience | `BL-003` | Done (merged to `v1`) | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
 | `S3-G1` | Gameplay | `BL-005`, `BL-015` | Done (merged to `v1`, PR #13) | `S2-E1` merged to `v1` | `lane/Gameplay/s3-g1-encounter-skeleton-party-capture` |
 | `S3-P1` | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | `lane/Platform/s3-p1-turn-timer-fallback` |
-| `S3-E1` | Experience | `BL-007` | Active Next (dispatch now) | `S3-P1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
+| `S3-E1` | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
+| `S4-P1` | Platform | `BL-013` | Active Next (dispatch now) | `S3-E1` merged to `v1` | `lane/Platform/s4-p1-single-save-snapshot-recovery` |
 
 ### Operator Dispatch Shortcut
 
-- Experience Agent: `Your next task is S3-E1.`
+- Platform Agent: `Your next task is S4-P1.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
@@ -356,6 +357,51 @@ Minimum verification:
 Handoff requirements:
 - Include CLI output samples for turn transitions.
 - Provide PR URL targeting v1, latest commit SHA, and UX follow-up risks.
+```
+
+### Task Packet `S4-P1` (Platform: Single-Save Snapshot + Recovery Baseline)
+
+```text
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
+
+Task packet id: S4-P1
+Backlog scope: BL-013
+Milestone/Sprint: M3 closeout / S4 entry
+Dependency: start only after S3-E1 is merged to v1.
+Branch policy: create branch from v1 and target PR to v1.
+
+Objective:
+- Implement rollback-safe single-save campaign snapshot/recovery baseline so campaign progress survives crash/restart.
+
+In scope:
+- Add atomic single-save write path and snapshot persistence primitives.
+- Implement restore path and startup validation behavior for corrupted/partial save scenarios.
+- Add deterministic recovery test evidence for simulated crash/restart flow.
+
+Suggested file targets:
+- crates/ttrpg-server/src/persistence/mod.rs
+- crates/ttrpg-server/src/persistence/snapshot.rs
+- crates/ttrpg-server/src/main.rs (integration glue only as needed)
+
+Out of scope:
+- Admin unlock command UX and permission model details (BL-018 follow-on)
+- Gameplay disconnect fallback semantics (BL-014)
+- DM-agent advisory behavior (BL-020)
+
+Acceptance criteria:
+1) Campaign progress persists via single-save strategy with rollback-safe snapshot behavior (BL-013).
+2) Recovery path succeeds after simulated crash/startup interruption.
+3) Recovery behavior has deterministic test evidence and does not regress active campaign boot flow.
+
+Minimum verification:
+- cargo test -p ttrpg-server
+- cargo check
+- Targeted recovery/snapshot tests (documented in implementation doc and PR evidence).
+
+Handoff requirements:
+- Include acceptance checklist with PASS/FAIL + evidence lines.
+- Provide crash/recovery reproduction steps and results.
+- Provide PR URL targeting v1, latest commit SHA, and risks/deferred items.
 ```
 
 ## Role Prompt: Gameplay Instance

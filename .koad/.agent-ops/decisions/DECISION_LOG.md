@@ -536,3 +536,16 @@
   - Sprint spec artifacts now include an explicit V2 concept queue tied to backlog IDs for later dispatch.
 - Revisit trigger:
   - When M3/M4 exit criteria are closed and Koad schedules the first V2 planning sprint.
+
+## 2026-02-22 - Advance execution queue after S3-E1 merge
+- Decision:
+  - Mark `S3-E1` complete (`BL-007` done) after merge to `v1` (PR #32).
+  - Advance active dispatch target to `S4-P1` (Platform) focused on `BL-013` single-save snapshot/recovery baseline.
+- Why:
+  - S3 encounter readability slice is now landed, and the highest-value stability follow-on is campaign persistence safety/recovery.
+- Impact:
+  - `CODEX_ROLE_PROMPTS.md` queue now sets `S4-P1` as active next with Platform dispatch shortcut.
+  - Backlog active-focus window now removes `BL-007` and prioritizes `BL-012`, `BL-013`, and `BL-018`.
+  - Sprint status notes now capture post-PR32 queue transition.
+- Revisit trigger:
+  - If urgent regressions from PR #32 require Experience hotfix lane before `S4-P1` starts.

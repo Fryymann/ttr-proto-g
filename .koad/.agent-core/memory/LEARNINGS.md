@@ -153,3 +153,8 @@ Append-only record of durable lessons.
 - Observation: Late-stage idea spikes can be captured without disrupting active delivery lanes when converted immediately into explicit V2 backlog/spec entries.
 - Why it matters: Preserves momentum on in-flight sprint work while preventing idea loss or vague future-scope drift.
 - Behavior update: Default latest `IAN.md` concept intake to V2 parking-lot backlog items unless the user explicitly elevates ideas into active V1 scope.
+
+### PM Operations
+- Observation: Queue state drifts quickly after lane merges unless backlog, prompt-pack packet table, and sprint status notes are advanced in the same PM checkpoint.
+- Why it matters: Unsynced queue artifacts create dispatch ambiguity for the next agent lane.
+- Behavior update: After each merged lane PR, update backlog focus/state and prompt-pack active packet in the same koad-os change set.

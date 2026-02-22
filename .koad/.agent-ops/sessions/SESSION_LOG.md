@@ -508,3 +508,14 @@
   - Logged durable PM decision to keep these concepts V2-scoped and out of active M3 lane scope.
 - Evidence:
   - Updated `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-22 - Post-PR32 queue advance and S4-P1 dispatch prep
+- Scope:
+  - Capture S3-E1 merge completion and advance PM queue to the next active packet.
+- Changes:
+  - Marked `BL-007` done and refreshed active focus window for M3 closeout/S4 entry.
+  - Updated `CODEX_ROLE_PROMPTS.md` queue state: `S3-E1` done (PR #32), `S4-P1` active next, and added `S4-P1` Platform task packet.
+  - Added sprint status note in execution plan for PR #32 merge and queue transition.
+  - Logged durable PM decision for post-S3 queue advancement.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

@@ -73,14 +73,15 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 - Require active release branching policy: cut lane branches from `v1` and target PRs to `v1` until release-line policy changes.
 - Require lane onboarding acknowledgement before edits (worktree path, branch, base commit, backlog acceptance mapping).
 - Require handoff acceptance checklist with pass/fail evidence before accepting lane completion.
+- Require coding-agent self-review completion before PR creation.
 - Require PR submission for every lane and enforce merge-gated completion.
-- Require dual approval for every lane PR: Koad git review + user GitHub review.
+- Require dual approval for every lane PR: Koad git review + Ian review.
 - Use one-PR-per-lane by default; integration PR remains allowed for cross-lane wiring.
 
 4. Verify
 - Confirm code/docs/tests align with requested outcome.
 - Review lane PR locally with git tooling and record disposition (`approve` or `changes requested`).
-- Confirm user GitHub review disposition before merge.
+- Confirm Ian review disposition before merge.
 
 5. Close
 - Update backlog, decision log, and open risk register.
@@ -103,7 +104,7 @@ A task is complete only when:
 
 - Acceptance criteria are met.
 - Tests or manual verification notes are recorded.
-- Koad git review and user GitHub review are both approved.
+- Koad git review and Ian review are both approved.
 - PR merge to the target branch is confirmed.
 - User-facing or architecture docs are updated if behavior changed.
 - Follow-up tasks are captured (if any).
@@ -137,4 +138,4 @@ A task is complete only when:
 - Codex role instance + task packet id used for execution.
 - Lane worktree path + branch naming captured.
 - PR URL, base/head, latest commit, and dependency order captured.
-- Review dispositions captured for both Koad git review and user GitHub review.
+- Review dispositions captured for both Koad git review and Ian review.

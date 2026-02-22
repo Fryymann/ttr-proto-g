@@ -49,8 +49,9 @@ jobs:
             fi
           }
 
+          require_checked_gate "Coding agent self-review completed"
           require_checked_gate "Koad git review approved"
-          require_checked_gate "User GitHub review approved"
+          require_checked_gate "Ian review approved"
 
           if [ "$missing" -ne 0 ]; then
             echo "PR governance validation failed."

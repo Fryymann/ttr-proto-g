@@ -21,7 +21,7 @@ Any coding agent instance started in this workspace must initialize context befo
 - Antigravity execution is paused unless the user explicitly re-enables it.
 - For Codex team-role lanes, enforce onboarding evidence before edits and acceptance-evidence handoff before lane closure.
 - For parallel team-role lanes, enforce one lane per dedicated git worktree/branch and capture PR metadata in handoffs.
-- Enforce PR completion gate: Koad git review + user GitHub review + merged PR before marking lane task complete.
+- Enforce PR completion gate: Koad git review + Ian review + merged PR before marking lane task complete.
 - Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
 
 ## Saveup Rule

@@ -9,7 +9,7 @@ Owner: Project Manager (Koad)
 Enforce lane completion through PR review + merge:
 
 1. Koad local git review approved.
-2. User GitHub review approved.
+2. Ian review approved.
 3. PR merged to target branch.
 
 ## Target Branches
@@ -59,15 +59,16 @@ For `koad-os`:
 ## Operational Flow
 
 1. Lane agent opens PR using the template.
-2. Koad performs local git review and checks `Koad git review approved` in PR body.
-3. User reviews in GitHub and checks `User GitHub review approved` in PR body.
-4. `validate-pr-governance` and `validate-koad-os-scope` pass and GitHub approval requirement is satisfied.
-5. PR is merged.
-6. Only then mark task/backlog item complete.
+2. Lane agent performs self-review and checks `Coding agent self-review completed` in PR body.
+3. Koad performs local git review; once approved, checks `Koad git review approved` and notifies Ian.
+4. Ian performs final review in GitHub and checks `Ian review approved` in PR body.
+5. `validate-pr-governance` and `validate-koad-os-scope` pass and GitHub approval requirement is satisfied.
+6. PR is merged.
+7. Only then mark task/backlog item complete.
 
 ## Notes
 
-- The workflow enforces that both review-gate checkboxes are checked in the PR body.
+- The workflow enforces that all three review-gate checkboxes are checked in the PR body.
 - Scope gate behavior:
   - PRs targeting `koad-os` may only modify Koad/agent support files.
   - PRs sourced from `koad-os` (e.g., `koad-os` -> `v1`) may only modify Koad/agent support files.

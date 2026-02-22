@@ -33,10 +33,10 @@
 ## File-Level Change Map
 
 - `crates/ttrpg-server/src/admin/mod.rs`
-  - New admin command parsing (`AdminUnlockCommand`) and authorization policy (`is_admin_authorized`).
+  - New admin command parsing (`AdminUnlockCommand`) and authorization policy (`AdminPolicy`), including case-normalized allowlist parsing for `acct:` entries.
 - `crates/ttrpg-server/src/main.rs`
   - Added `admin` command route and `run_admin_command` handler.
-  - Enforced `admin unlock <character> <campaign> --reason <text>` flow.
+  - Enforced `admin unlock <character> <campaign> --token <token> --reason <text>` flow.
   - Added unlock success/denied integration tests and updated test player fixtures with account handle context.
 - `crates/ttrpg-server/src/persistence/mod.rs`
   - Added `CampaignUnlockAuditOutcome`.
@@ -57,7 +57,7 @@
 ### Automated Tests
 
 - Command: `cargo test -p ttrpg-server`
-- Result: PASS (`45 passed; 0 failed`)
+- Result: PASS (`47 passed; 0 failed`)
 - Command: `cargo check`
 - Result: PASS
 - Command: `cargo test -p ttrpg-server admin_unlock`
@@ -76,7 +76,7 @@
 
 ### Negative Paths
 
-- Negative-path tests: `tests::admin_unlock_denied_for_non_admin_and_attempt_is_audited`, `persistence::tests::denied_unlock_attempt_is_audited_without_mutation`, and parser rejection checks in `admin::tests::parse_unlock_command_rejects_missing_reason`.
+- Negative-path tests: `tests::admin_unlock_denied_for_non_admin_and_attempt_is_audited`, `persistence::tests::denied_unlock_attempt_is_audited_without_mutation`, and parser rejection checks in `admin::tests::parse_unlock_command_rejects_missing_reason_or_token`.
 - Skipped tests: none
 
 ### Manual Validation
@@ -117,4 +117,4 @@
   - `PASS` - Successful unlock emits immutable audit record with actor/reason metadata and binds `unlock_audit_ref` (`persistence::tests::admin_override_rebinds_lock_and_appends_audit_event`).
 - Sample audit payload (success): `{"character_name_key":"target","target_campaign_id":"ashfall","reason":"support-ticket-91","outcome":"success",...}`
 - Sample audit payload (denied): `{"character_name_key":"target","target_campaign_id":"ashfall","reason":"ticket-77","outcome":"denied_unauthorized",...}`
-- Deferred-risk notes: authorization model is currently convention/env-list based pending dedicated admin role store.
+- Deferred-risk notes: authorization is currently env-configured allowlist + shared unlock token pending dedicated admin role store.

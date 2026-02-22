@@ -99,10 +99,11 @@ fn configured_admin_accounts() -> HashSet<String> {
 }
 
 fn normalize_account_entry(entry: &str) -> String {
-    if entry.starts_with("acct:") {
-        entry.to_owned()
+    let lowered = entry.trim().to_lowercase();
+    if let Some(suffix) = lowered.strip_prefix("acct:") {
+        format!("acct:{}", suffix)
     } else {
-        format!("acct:{}", entry.to_lowercase())
+        format!("acct:{}", lowered)
     }
 }
 
@@ -151,6 +152,9 @@ mod tests {
 
         let normalized = AdminPolicy::for_tests(&["admin_tools"], "topsecret");
         assert!(normalized.is_authorized("acct:admin_tools", "topsecret"));
+
+        let mixed_case = AdminPolicy::for_tests(&["acct:Admin_Ops"], "topsecret");
+        assert!(mixed_case.is_authorized("acct:admin_ops", "topsecret"));
     }
 
     #[test]

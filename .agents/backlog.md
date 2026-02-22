@@ -19,8 +19,8 @@ Owner: Project Manager
 
 ## Active Focus Window
 
-- `Now` (M2 closeout + M3 execution): `BL-012`, `BL-007`, `BL-013`
-- `Next` (M3 follow-on): `BL-018`, `BL-008`, `BL-014`, `BL-020`
+- `Now` (M3 closeout + S4 Platform entry): `BL-012`, `BL-013`, `BL-018`
+- `Next` (S4 follow-on): `BL-008`, `BL-014`, `BL-020`
 - `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
@@ -34,7 +34,7 @@ Owner: Project Manager
 | BL-004 | P0 | Platform | done | M2 | Implement deterministic scene command queue | Stable ordering test passes with same input stream |
 | BL-005 | P1 | Gameplay | done | M3 | Implement encounter skeleton (start, party-scoped participants, initiative, turns) | Encounter can start/end, includes only the initiating actor's party in V1, and cycles turns correctly |
 | BL-006 | P1 | Platform | done | M3 | Add turn timer + timeout fallback action | Timed-out actor auto-resolves with configured fallback |
-| BL-007 | P1 | Experience | todo | M3 | Show turn tracker and active actor in client | Turn indicator updates for all participants |
+| BL-007 | P1 | Experience | done | M3 | Show turn tracker and active actor in client | Turn indicator updates for all participants |
 | BL-008 | P1 | Gameplay | todo | M3 | Implement core combat actions (`move`, `attack`, `dodge`, `help`) | Action legality and resolution tests pass |
 | BL-009 | P2 | Gameplay | todo | M4 | Implement scripted NPC policy interface (`NpcPolicyScripted`) | NPCs take valid turns without model calls |
 | BL-010 | P2 | Platform | todo | M4 | Add combat replay event logging | Replay log reconstructs encounter timeline |

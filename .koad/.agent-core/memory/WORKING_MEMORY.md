@@ -22,6 +22,7 @@ Last updated: 2026-02-22
 - Non-`koad-os` source PRs now require implementation docs plus tightened test/coverage evidence via `validate-implementation-doc` and `validate-test-evidence`.
 - V1 status dashboard publishing is merge-driven via `.github/workflows/update-v1-dashboard.yml` (managed issue `V1 Project Dashboard`) to avoid per-change status commit overhead.
 - Latest `IAN.md` gameplay/system intake (2026-02-22 11:42pm entry) is now captured as V2 backlog/spec parking-lot scope (`BL-021` to `BL-026`) without altering active S3 lane priorities.
+- `S3-E1` is merged to `v1` (PR #32); queue is advanced to `S4-P1` (`BL-013`, Platform) as active next dispatch.
 
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.

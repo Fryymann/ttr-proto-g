@@ -57,7 +57,7 @@ jobs:
 
           if [ "${BASE_REF}" != "koad-os" ] && [ "${HEAD_REF}" != "koad-os" ]; then
             require_section "## Implementation Documentation"
-            if ! printf '%s\n' "$PR_BODY" | grep -Eiq "^- Primary implementation doc: `docs/implementation/.+\\.md`$"; then
+            if ! printf '%s\n' "$PR_BODY" | grep -Eiq '^- Primary implementation doc: `docs/implementation/.+\.md`$'; then
               echo "Missing or invalid implementation doc path line."
               missing=1
             fi

@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
@@ -17,7 +18,10 @@ use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
 use campaign::{CampaignCatalog, CampaignManifestEntry};
-use encounter::{capture_participants, deterministic_initiative_for_actor, EncounterState};
+use encounter::{
+    capture_participants, deterministic_initiative_for_actor, resolve_timeout_fallback,
+    EncounterState, TimeoutFallbackAction, TimeoutFallbackError, TurnTimerConfig, TurnTimerMarker,
+};
 use party::PartyRegistry;
 use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
 use scene::queue::CommandEnvelope;
@@ -62,6 +66,8 @@ struct ServerState {
     rooms: HashMap<String, Room>,
     persistence: Box<dyn Persistence>,
     active_campaign: CampaignManifestEntry,
+    turn_timer_config: TurnTimerConfig,
+    timeout_fallback_action: TimeoutFallbackAction,
 }
 
 impl ServerState {
@@ -77,6 +83,8 @@ impl ServerState {
             rooms: build_world(),
             persistence: Box::new(InMemoryPersistence::default()),
             active_campaign,
+            turn_timer_config: TurnTimerConfig::from_env(),
+            timeout_fallback_action: TimeoutFallbackAction::from_env(),
         }
     }
 }
@@ -110,10 +118,21 @@ async fn main() -> io::Result<()> {
 
     let listener = TcpListener::bind(&startup_config.addr).await?;
     let state = Arc::new(Mutex::new(ServerState::new(active_campaign.clone())));
+    let (turn_timeout, fallback_action) = {
+        let locked = state.lock().await;
+        (
+            locked.turn_timer_config.timeout(),
+            locked.timeout_fallback_action.as_str(),
+        )
+    };
 
     info!(
         "active campaign: {} ({})",
         active_campaign.name, active_campaign.campaign_id
+    );
+    info!(
+        "encounter timeout configured: {:?}, fallback action: {}",
+        turn_timeout, fallback_action
     );
     info!("server listening on {}", startup_config.addr);
 
@@ -854,7 +873,7 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
 }
 
 async fn start_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
-    let (recipients, message) = {
+    let (recipients, message, timeout_schedule) = {
         let mut locked = state.lock().await;
         let Some(player) = locked.players.get(&player_id).cloned() else {
             send_to_client(
@@ -941,9 +960,17 @@ async fn start_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
             "Encounter started: {}",
             format_encounter_status_line(&encounter)
         );
+        let timeout_schedule =
+            TurnTimerMarker::capture(room_id.clone(), &encounter).map(|marker| {
+                (
+                    marker,
+                    locked.turn_timer_config.timeout(),
+                    locked.timeout_fallback_action,
+                )
+            });
         locked.active_encounters.insert(room_id.clone(), encounter);
         let recipients = players_in_room_senders_locked(&locked, &room_id, None);
-        (recipients, message)
+        (recipients, message, timeout_schedule)
     };
 
     for recipient in recipients {
@@ -953,6 +980,10 @@ async fn start_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
                 text: message.clone(),
             },
         );
+    }
+
+    if let Some((marker, timeout, fallback_action)) = timeout_schedule {
+        spawn_turn_timeout_task(Arc::clone(state), marker, timeout, fallback_action);
     }
 }
 
@@ -1016,7 +1047,7 @@ async fn end_encounter(player_id: u64, tx: &ClientTx, state: &SharedState) {
 }
 
 async fn end_encounter_turn(player_id: u64, tx: &ClientTx, state: &SharedState) {
-    let (recipients, message) = {
+    let (recipients, message, timeout_schedule) = {
         let mut locked = state.lock().await;
         let Some(player) = locked.players.get(&player_id) else {
             send_to_client(
@@ -1030,7 +1061,9 @@ async fn end_encounter_turn(player_id: u64, tx: &ClientTx, state: &SharedState) 
 
         let room_id = player.room_id.clone();
         let actor_id = player.display_name().to_owned();
-        let turn_message = {
+        let turn_timeout = locked.turn_timer_config.timeout();
+        let fallback_action = locked.timeout_fallback_action;
+        let (turn_message, timeout_schedule) = {
             let Some(encounter) = locked.active_encounters.get_mut(&room_id) else {
                 send_to_client(
                     tx,
@@ -1067,14 +1100,19 @@ async fn end_encounter_turn(player_id: u64, tx: &ClientTx, state: &SharedState) 
                 .map(str::to_owned)
                 .unwrap_or_else(|| "unknown".to_owned());
             let round = encounter.round;
-            format!(
-                "{} ends turn. Active turn: {} (round {}).",
-                actor_id, next_actor, round
+            let timeout_schedule = TurnTimerMarker::capture(room_id.clone(), encounter)
+                .map(|marker| (marker, turn_timeout, fallback_action));
+            (
+                format!(
+                    "{} ends turn. Active turn: {} (round {}).",
+                    actor_id, next_actor, round
+                ),
+                timeout_schedule,
             )
         };
 
         let recipients = players_in_room_senders_locked(&locked, &room_id, None);
-        (recipients, turn_message)
+        (recipients, turn_message, timeout_schedule)
     };
 
     for recipient in recipients {
@@ -1084,6 +1122,94 @@ async fn end_encounter_turn(player_id: u64, tx: &ClientTx, state: &SharedState) 
                 text: message.clone(),
             },
         );
+    }
+
+    if let Some((marker, timeout, fallback_action)) = timeout_schedule {
+        spawn_turn_timeout_task(Arc::clone(state), marker, timeout, fallback_action);
+    }
+}
+
+fn spawn_turn_timeout_task(
+    state: SharedState,
+    marker: TurnTimerMarker,
+    timeout: Duration,
+    fallback_action: TimeoutFallbackAction,
+) {
+    tokio::spawn(async move {
+        tokio::time::sleep(timeout).await;
+        apply_turn_timeout_fallback(state, marker, fallback_action).await;
+    });
+}
+
+async fn apply_turn_timeout_fallback(
+    state: SharedState,
+    marker: TurnTimerMarker,
+    fallback_action: TimeoutFallbackAction,
+) {
+    let (recipients, message, next_timer) = {
+        let mut locked = state.lock().await;
+        let turn_timeout = locked.turn_timer_config.timeout();
+        let timeout_fallback_action = locked.timeout_fallback_action;
+        let (event, next_timer) = {
+            let Some(encounter) = locked.active_encounters.get_mut(&marker.room_id) else {
+                return;
+            };
+
+            let event = match resolve_timeout_fallback(encounter, &marker, fallback_action) {
+                Ok(event) => event,
+                Err(
+                    TimeoutFallbackError::StaleTurnMarker
+                    | TimeoutFallbackError::EncounterNotActive,
+                ) => {
+                    return;
+                }
+                Err(TimeoutFallbackError::MissingActiveActor) => {
+                    error!(
+                        "encounter timeout fallback failed: missing active actor for encounter {}",
+                        encounter.encounter_id
+                    );
+                    return;
+                }
+            };
+            let next_timer = TurnTimerMarker::capture(marker.room_id.clone(), encounter)
+                .map(|next_marker| (next_marker, turn_timeout, timeout_fallback_action));
+            (event, next_timer)
+        };
+
+        info!(
+            "encounter timeout fallback applied: encounter={} room={} actor={} action={} prior_round={} prior_turn_index={} resulting_round={} next_actor={}",
+            event.encounter_id,
+            marker.room_id,
+            event.actor_id,
+            event.action.as_str(),
+            event.prior_round,
+            event.prior_turn_index,
+            event.resulting_round,
+            event.next_actor_id.as_deref().unwrap_or("none"),
+        );
+
+        let recipients = players_in_room_senders_locked(&locked, &marker.room_id, None);
+        let message = format!(
+            "Turn timeout: {} auto-resolves with {}. Active turn: {} (round {}).",
+            event.actor_id,
+            event.action.as_str(),
+            event.next_actor_id.as_deref().unwrap_or("none"),
+            event.resulting_round,
+        );
+        (recipients, message, next_timer)
+    };
+
+    for recipient in recipients {
+        send_to_client(
+            &recipient,
+            ServerMessage::Info {
+                text: message.clone(),
+            },
+        );
+    }
+
+    if let Some((next_marker, timeout, next_fallback_action)) = next_timer {
+        spawn_turn_timeout_task(state, next_marker, timeout, next_fallback_action);
     }
 }
 
@@ -1677,6 +1803,13 @@ mod tests {
         })
     }
 
+    fn has_info_message_containing(messages: &[ServerMessage], needle: &str) -> bool {
+        messages.iter().any(|message| match message {
+            ServerMessage::Info { text } => text.contains(needle),
+            _ => false,
+        })
+    }
+
     async fn seed_player(
         state: &SharedState,
         player_id: u64,
@@ -2054,5 +2187,186 @@ mod tests {
         assert!(actor_messages.iter().any(|message| {
             matches!(message, ServerMessage::Info { text } if text.contains("ends turn"))
         }));
+    }
+
+    #[tokio::test]
+    async fn timeout_fallback_advances_turn_when_actor_does_not_end_turn() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:alpha",
+            "Alpha",
+            "town_square",
+            &tx_alpha,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            2,
+            "acct:bravo",
+            "Bravo",
+            "town_square",
+            &tx_bravo,
+            Position { x: 1, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            let party = Party::new(
+                "party:duo",
+                "test-campaign",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid");
+            locked.party_registry.upsert_party(party);
+            locked.turn_timer_config = TurnTimerConfig::from_millis(5);
+        }
+
+        start_encounter(1, &tx_alpha, &state).await;
+        let _ = collect_messages(&mut rx_alpha);
+        let _ = collect_messages(&mut rx_bravo);
+        let active_actor_before_timeout = {
+            let locked = state.lock().await;
+            locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should still be active")
+                .active_actor()
+                .expect("active actor should exist")
+                .to_owned()
+        };
+
+        let mut active_actor_after_timeout = active_actor_before_timeout.clone();
+        for _ in 0..20 {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+            active_actor_after_timeout = {
+                let locked = state.lock().await;
+                locked
+                    .active_encounters
+                    .get("town_square")
+                    .expect("encounter should still be active")
+                    .active_actor()
+                    .expect("active actor should exist")
+                    .to_owned()
+            };
+            if active_actor_after_timeout != active_actor_before_timeout {
+                break;
+            }
+        }
+
+        assert_ne!(active_actor_after_timeout, active_actor_before_timeout);
+
+        let alpha_messages = collect_messages(&mut rx_alpha);
+        let bravo_messages = collect_messages(&mut rx_bravo);
+        assert!(has_info_message_containing(
+            &alpha_messages,
+            "Turn timeout:"
+        ));
+        assert!(has_info_message_containing(
+            &bravo_messages,
+            "Turn timeout:"
+        ));
+    }
+
+    #[tokio::test]
+    async fn timeout_fallback_does_not_double_advance_after_manual_end_turn() {
+        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
+        let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:alpha",
+            "Alpha",
+            "town_square",
+            &tx_alpha,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+        seed_player(
+            &state,
+            2,
+            "acct:bravo",
+            "Bravo",
+            "town_square",
+            &tx_bravo,
+            Position { x: 1, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            let party = Party::new(
+                "party:duo",
+                "test-campaign",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid");
+            locked.party_registry.upsert_party(party);
+            locked.turn_timer_config = TurnTimerConfig::from_millis(25);
+        }
+
+        start_encounter(1, &tx_alpha, &state).await;
+        let _ = collect_messages(&mut rx_alpha);
+        let _ = collect_messages(&mut rx_bravo);
+
+        let (active_player_id, active_player_tx, ended_actor_name) = {
+            let locked = state.lock().await;
+            let encounter = locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should be active");
+            let active_actor = encounter.active_actor().expect("active actor should exist");
+            if active_actor == "Alpha" {
+                (1_u64, tx_alpha.clone(), "Alpha".to_owned())
+            } else {
+                (2_u64, tx_bravo.clone(), "Bravo".to_owned())
+            }
+        };
+
+        end_encounter_turn(active_player_id, &active_player_tx, &state).await;
+        let _ = collect_messages(&mut rx_alpha);
+        let _ = collect_messages(&mut rx_bravo);
+
+        let active_actor_after_manual_end = {
+            let locked = state.lock().await;
+            locked
+                .active_encounters
+                .get("town_square")
+                .expect("encounter should still be active")
+                .active_actor()
+                .expect("active actor should exist")
+                .to_owned()
+        };
+        assert_ne!(active_actor_after_manual_end, ended_actor_name);
+
+        let mut active_actor_after_timer = active_actor_after_manual_end.clone();
+        for _ in 0..20 {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+            active_actor_after_timer = {
+                let locked = state.lock().await;
+                locked
+                    .active_encounters
+                    .get("town_square")
+                    .expect("encounter should still be active")
+                    .active_actor()
+                    .expect("active actor should exist")
+                    .to_owned()
+            };
+            if active_actor_after_timer != active_actor_after_manual_end {
+                break;
+            }
+        }
+
+        assert_ne!(active_actor_after_timer, active_actor_after_manual_end);
     }
 }

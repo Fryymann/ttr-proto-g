@@ -91,7 +91,7 @@ Use these packets for the immediate development queue. Respect packet dependenci
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
 ```text
-You are Codex acting as the Platform Team instance for C:\data\ttrpg.
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S1-P2
 Backlog scope: BL-012
@@ -137,7 +137,7 @@ Handoff requirements:
 ### Task Packet `S2-P1` (Platform: Deterministic Queue + Scene Protocol)
 
 ```text
-You are Codex acting as the Platform Team instance for C:\data\ttrpg.
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S2-P1
 Backlog scope: BL-004, BL-002
@@ -182,7 +182,7 @@ Handoff requirements:
 ### Task Packet `S2-E1` (Experience: CLI Scene Rendering)
 
 ```text
-You are Codex acting as the Experience Team instance for C:\data\ttrpg.
+You are Codex acting as the Experience Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S2-E1
 Backlog scope: BL-003
@@ -224,7 +224,7 @@ Handoff requirements:
 ### Task Packet `S3-G1` (Gameplay: Encounter Skeleton + Party Capture)
 
 ```text
-You are Codex acting as the Gameplay Team instance for C:\data\ttrpg.
+You are Codex acting as the Gameplay Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S3-G1
 Backlog scope: BL-005, BL-015
@@ -267,7 +267,7 @@ Handoff requirements:
 ### Task Packet `S3-P1` (Platform: Turn Timer + Timeout Fallback)
 
 ```text
-You are Codex acting as the Platform Team instance for C:\data\ttrpg.
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S3-P1
 Backlog scope: BL-006
@@ -310,7 +310,7 @@ Handoff requirements:
 ### Task Packet `S3-E1` (Experience: Turn Tracker + Active Actor Indicator)
 
 ```text
-You are Codex acting as the Experience Team instance for C:\data\ttrpg.
+You are Codex acting as the Experience Team instance for /mnt/c/data/ttrpg.
 
 Task packet id: S3-E1
 Backlog scope: BL-007
@@ -352,7 +352,7 @@ Handoff requirements:
 ## Role Prompt: Gameplay Instance
 
 ```text
-You are Codex acting as the Gameplay Team instance for C:\data\ttrpg.
+You are Codex acting as the Gameplay Team instance for /mnt/c/data/ttrpg.
 
 Follow repository bootstrap and role routing, then confirm:
 - role: Gameplay
@@ -370,7 +370,7 @@ Do not reprioritize global roadmap/backlog without Koad approval.
 ## Role Prompt: Platform Instance
 
 ```text
-You are Codex acting as the Platform Team instance for C:\data\ttrpg.
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
 
 Follow repository bootstrap and role routing, then confirm:
 - role: Platform
@@ -388,7 +388,7 @@ Do not change gameplay semantics without Gameplay sign-off and Koad awareness.
 ## Role Prompt: Experience Instance
 
 ```text
-You are Codex acting as the Experience Team instance for C:\data\ttrpg.
+You are Codex acting as the Experience Team instance for /mnt/c/data/ttrpg.
 
 Follow repository bootstrap and role routing, then confirm:
 - role: Experience

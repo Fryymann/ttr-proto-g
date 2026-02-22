@@ -498,3 +498,14 @@
   - Reduces repeated terminal polling commands during Koad review flow.
 - Revisit trigger:
   - If repository adopts merge queue or a centralized CI gate API that provides built-in readiness wait semantics.
+
+## 2026-02-22 - Add `pr-finish` merge-finalization automation
+- Decision:
+  - Add `koad pr-finish` command to enforce gate/checkbox readiness and perform PR merge with an allowed repository strategy.
+- Why:
+  - Merge completion still required manual readiness checks and strategy retries (for repositories that disallow merge commits).
+- Impact:
+  - PM can execute one command to wait for transient gate readiness (`--watch`), verify required review checkboxes, and merge.
+  - `--strategy auto` now chooses an allowed repository merge method in preference order (squash, rebase, merge).
+- Revisit trigger:
+  - If merge authority moves to queue-managed merges with repository-native readiness gating.

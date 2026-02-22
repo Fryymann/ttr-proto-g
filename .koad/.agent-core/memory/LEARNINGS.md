@@ -138,3 +138,8 @@ Append-only record of durable lessons.
 - Observation: PM review loops still spend time manually polling check status while waiting to run Koad gate approval.
 - Why it matters: Manual polling adds repetitive overhead and slows review throughput without adding quality.
 - Behavior update: Use `koad pr-gate --watch` to wait for check settlement and apply Koad approval flow in one command.
+
+### Operational
+- Observation: Final merge execution still failed intermittently when the default merge strategy conflicted with repository merge-method restrictions.
+- Why it matters: Manual retries and ad-hoc strategy switching add friction at the exact completion checkpoint.
+- Behavior update: Use `koad pr-finish` with strategy auto-selection to enforce readiness and merge in one deterministic step.

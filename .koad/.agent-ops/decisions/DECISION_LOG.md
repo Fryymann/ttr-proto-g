@@ -423,3 +423,16 @@
   - PR body governance checks remain structured while reducing merge friction from administrative checkbox timing.
 - Revisit trigger:
   - If automated sync causes recurring conflict churn or if branch-scope policy is simplified further.
+
+## 2026-02-22 - Advance queue to S3-E1 after S3-P1 merge
+- Decision:
+  - Mark `S3-P1` complete and merged to `v1` (PR #17).
+  - Promote `S3-E1` to active next dispatch packet.
+- Why:
+  - Turn timer/timeout fallback infrastructure (`BL-006`) is landed, so the immediate follow-on is Experience turn tracker delivery (`BL-007`).
+- Impact:
+  - Operator dispatch shortcut is now:
+    - `Your next task is S3-E1.`
+  - Queue/backlog/progress artifacts now reflect `BL-006` as `done` and `S3-E1` as active next.
+- Revisit trigger:
+  - If post-merge S3-P1 defects require urgent Platform hotfixes before S3-E1 starts.

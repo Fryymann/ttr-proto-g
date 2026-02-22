@@ -549,3 +549,16 @@
   - Sprint status notes now capture post-PR32 queue transition.
 - Revisit trigger:
   - If urgent regressions from PR #32 require Experience hotfix lane before `S4-P1` starts.
+
+## 2026-02-22 - Advance execution queue after S4-P1 merge
+- Decision:
+  - Mark `S4-P1` complete (`BL-013` done) after merge to `v1` (PR #34).
+  - Advance active dispatch target to `S4-P2` (Platform) focused on `BL-018` admin campaign-unlock guardrails and audit path.
+- Why:
+  - Snapshot/recovery baseline is landed; the next reliability-critical dependency is permission-gated unlock tooling with immutable audit evidence.
+- Impact:
+  - `CODEX_ROLE_PROMPTS.md` queue now sets `S4-P2` as active next with updated Platform dispatch shortcut.
+  - Backlog active-focus window now prioritizes `BL-012`, `BL-018`, and `BL-014`; `BL-013` is recorded as done.
+  - Sprint status notes now capture post-PR34 queue transition.
+- Revisit trigger:
+  - If post-merge regressions from PR #34 require immediate snapshot/recovery hotfix before `S4-P2` starts.

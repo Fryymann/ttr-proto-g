@@ -519,3 +519,15 @@
   - Logged durable PM decision for post-S3 queue advancement.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-22 - Post-PR34 queue advance and S4-P2 dispatch prep
+- Scope:
+  - Capture S4-P1 merge completion and advance PM queue and continuity artifacts to the next active packet.
+- Changes:
+  - Marked `BL-013` as `done` and refreshed active focus window for S4 follow-on.
+  - Updated `CODEX_ROLE_PROMPTS.md` queue state (`S4-P1` done, `S4-P2` active next), dispatch shortcut, and added the `S4-P2` packet.
+  - Added sprint status note in execution plan for PR #34 merge and queue transition.
+  - Logged durable queue decision in decision log and refreshed memory continuity for active dispatch state.
+  - Synced `PROJECT_PROGRESS.md` from current backlog/roadmap state.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `PROJECT_PROGRESS.md`.

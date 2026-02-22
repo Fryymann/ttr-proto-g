@@ -249,3 +249,4 @@ For each backlog item completed:
 - 2026-02-22: `S3-G1` merged to `v1` (PR #13); `BL-005` + `BL-015` marked done and queue advanced to `S3-P1` as active next dispatch (Platform).
 - 2026-02-22: `S3-P1` merged to `v1` (PR #17); `BL-006` marked done and queue advanced to `S3-E1` as active next dispatch (Experience).
 - 2026-02-22: `S3-E1` merged to `v1` (PR #32); `BL-007` marked done and queue advanced to `S4-P1` as active next dispatch (Platform, `BL-013`).
+- 2026-02-22: `S4-P1` merged to `v1` (PR #34); `BL-013` marked done and queue advanced to `S4-P2` as active next dispatch (Platform, `BL-018`).

@@ -120,3 +120,20 @@
   - `.koad/.agent-ops/sessions/SESSION_LOG.md`
 - Risks/Unknowns:
   - Runtime socket permission in sandbox prevented end-to-end multiplayer manual capture; unit/integration evidence used instead.
+
+## 2026-02-22 - post-review-flow main savepoint
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Record merged governance workflow updates and clean operating baseline
+- Actions:
+  - verified PR #18 and PR #19 merged
+  - cleaned local worktrees and removed stale lane branches
+  - aligned active worktrees to clean v1 and koad-os states
+- Artifacts:
+  - `https://github.com/Fryymann/ttr-proto-g/pull/18`
+  - `https://github.com/Fryymann/ttr-proto-g/pull/19`
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/sessions/LOG.md`
+  - `PROJECT_PROGRESS.md`
+- Risks/Unknowns:
+  - no open blocking risks; governance flow now uses Ian final approval gate

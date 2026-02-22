@@ -207,3 +207,29 @@
   - `.koad/.agent-core/sessions/LOG.md`
 - Risks/Unknowns:
   - Intermittent DNS/API connectivity to GitHub remains unresolved and may delay future merge/review operations.
+
+## 2026-02-22 - koad-os-v2-upgrade
+- Role: `Koad (PM)`
+- Context ref: `gemini`
+- Objective: Persist KoadOS v2 upgrades and branch-exemption logic.
+- Actions:
+  - Implemented koad context, standards-check, and saveup-reconcile commands
+  - Excluded gemini branch from PR governance and scope-gate checks
+  - Updated startup checklist and README documentation
+- Artifacts:
+  - `.koad/scripts/koad_cli.py`
+  - `.github/workflows/*.yml`
+- Risks/Unknowns:
+  - none
+
+## 2026-02-22 - pm-workflow-automation
+- Role: `Koad (PM)`
+- Context ref: `gemini`
+- Objective: Persist PM automation upgrades.
+- Actions:
+  - Added koad dispatch command
+  - Added koad task-complete command
+- Artifacts:
+  - `.koad/scripts/koad_cli.py`
+- Risks/Unknowns:
+  - none

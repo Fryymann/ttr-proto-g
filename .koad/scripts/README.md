@@ -123,6 +123,46 @@ Force global ledger for a lane context:
 .koad/scripts/koad saveup ... --global-ledger
 ```
 
+### `context`
+
+Dump a consolidated boot context for a specific role to stdout.
+Reads Identity, Mission, Memory, Role definitions, Backlog, and Risks.
+
+Example:
+
+```bash
+.koad/scripts/koad context --role "Koad (PM)"
+```
+
+### `saveup-reconcile`
+
+Merge lane-isolated saveup journals into the global `SAVEUP_CALLS.md` and `LOG.md` ledgers.
+Moves processed journals to `.koad/.agent-core/sessions/lane-saveups/archive/`.
+Must be run on `koad-os` branch unless `--force` is used.
+
+Example:
+
+```bash
+.koad/scripts/koad saveup-reconcile
+```
+
+Dry-run to see what would be merged:
+
+```bash
+.koad/scripts/koad saveup-reconcile --dry-run
+```
+
+### `standards-check`
+
+Verify standards freshness and required source presence.
+Replaces the legacy `standards_sync_status.py` script.
+
+Example:
+
+```bash
+.koad/scripts/koad standards-check --max-age-hours 24
+```
+
 ### `progress-sync`
 
 Generate/update a root project progress dashboard against backlog + roadmap + sprint references.

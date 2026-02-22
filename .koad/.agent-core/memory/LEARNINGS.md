@@ -98,3 +98,8 @@ Append-only record of durable lessons.
 - Observation: CLI scene symbol clarity depends on combining `AuthOk`, `RoomState`, and `WhoList` identity hints instead of relying on scene occupant IDs alone.
 - Why it matters: Without identity hydration, player actors are misclassified as generic NPCs and movement feedback becomes harder to interpret in multiplayer sessions.
 - Behavior update: Keep a client-side identity cache hydrated from auth/room/who messages and drive map symbol mapping (`@`/`P`/`N`) from that cache.
+
+### Execution Environment
+- Observation: Codex team-role agents in this workspace run inside WSL2 (typically Ubuntu), not Windows-native shells.
+- Why it matters: Prompt packets that direct Codex agents to `C:\...` paths can fail or target the wrong filesystem context.
+- Behavior update: Use `/mnt/c/...` workspace paths in Codex task packets; keep Windows-native pathing only for Antigravity-specific workflows if re-enabled.

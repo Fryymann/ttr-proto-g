@@ -44,3 +44,7 @@ Append-only record of confirmed durable facts.
 - Saveup flow now supports lane-isolated journals under `.koad/.agent-core/sessions/lane-saveups/` (local gitignored artifacts) to reduce cross-lane merge conflicts.
 - `S3-G1` is merged to `v1` (PR #13); backlog items `BL-005` and `BL-015` are complete.
 - Active next task packet is `S3-P1` (Platform), with `S3-E1` queued after protocol/interface confirmation.
+
+## 2026-02-22 (execution environment update)
+- Codex team-role agents in this repository run inside WSL2 (typically Ubuntu).
+- For Codex task packets in this repository, workspace paths should use `/mnt/c/data/ttrpg` rather than `C:\data\ttrpg`.

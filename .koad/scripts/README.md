@@ -67,6 +67,22 @@ If all gates pass, auto-check `Koad git review approved` in PR body and add a Ko
 .koad/scripts/koad pr-gate --pr 25 --watch --apply-koad-approved --comment
 ```
 
+### `pr-finish`
+
+Merge a PR only when merge gates and review checkboxes are ready.
+
+Example:
+
+```bash
+.koad/scripts/koad pr-finish --pr 25 --watch
+```
+
+Dry-run merge readiness and selected strategy:
+
+```bash
+.koad/scripts/koad pr-finish --pr 25 --watch --dry-run
+```
+
 ### `saveup`
 
 Append a role-aware saveup record.
@@ -135,4 +151,5 @@ Refresh dashboard first:
 
 - `pr-open` uses `gh pr create`; ensure GitHub CLI is authenticated.
 - `pr-gate` reads GitHub PR metadata and can patch PR body/comments via `gh api`/`gh pr comment`.
+- `pr-finish` uses `gh pr merge` and auto-selects an allowed strategy when `--strategy auto` is used.
 - Use `--dry-run` on each command to preview actions without writing.

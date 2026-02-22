@@ -19,6 +19,11 @@ ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience", "User")
 SAVEUP_ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience")
 KOAD_OS_BRANCH = "koad-os"
 REQUIRED_PR_GATE_CHECKS = ("validate-pr-governance", "validate-koad-os-scope")
+REVIEW_GATE_LABELS = (
+    "Coding agent self-review completed",
+    "Koad git review approved",
+    "Ian review approved",
+)
 KOAD_OS_EXACT_FILES = {
     "AGENTS.md",
     "CODEX_ROLE_PROMPTS.md",
@@ -682,6 +687,28 @@ def set_checkbox_line(body: str, label: str, checked: bool) -> tuple[str, bool, 
     return new_body, True, True
 
 
+def checkbox_state(body: str, label: str) -> str:
+    pattern = re.compile(rf"^- \[([ xX])\] {re.escape(label)}\s*$", flags=re.MULTILINE)
+    match = pattern.search(body)
+    if not match:
+        return "missing"
+    value = match.group(1).lower()
+    return "checked" if value == "x" else "unchecked"
+
+
+def unchecked_review_gate_labels(body: str, require_ian: bool) -> list[str]:
+    required = ["Coding agent self-review completed", "Koad git review approved"]
+    if require_ian:
+        required.append("Ian review approved")
+
+    missing_or_unchecked: list[str] = []
+    for label in required:
+        state = checkbox_state(body, label)
+        if state != "checked":
+            missing_or_unchecked.append(f"`{label}` ({state})")
+    return missing_or_unchecked
+
+
 def patch_pr_body(root: Path, pr_number: int, body: str) -> None:
     name_with_owner = run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], cwd=root).stdout.strip()
     payload_path = Path(tempfile.gettempdir()) / f"koad-pr-{pr_number}-body-patch.json"
@@ -871,6 +898,121 @@ def cmd_pr_gate(args: argparse.Namespace) -> int:
             run(["gh", "pr", "comment", str(payload["number"]), "--body", comment], cwd=root)
             print("Posted Koad PM approval comment.")
 
+    return 0
+
+
+def choose_merge_strategy(root: Path, requested: str) -> str:
+    if requested in {"squash", "rebase", "merge"}:
+        return requested
+
+    if requested != "auto":
+        raise ValueError(f"Unsupported merge strategy: {requested}")
+
+    repo_info = gh_json(
+        root,
+        [
+            "repo",
+            "view",
+            "--json",
+            "squashMergeAllowed,rebaseMergeAllowed,mergeCommitAllowed",
+        ],
+    )
+
+    if repo_info.get("squashMergeAllowed"):
+        return "squash"
+    if repo_info.get("rebaseMergeAllowed"):
+        return "rebase"
+    if repo_info.get("mergeCommitAllowed"):
+        return "merge"
+    raise ValueError("Repository does not allow squash/rebase/merge strategies.")
+
+
+def merge_flag(strategy: str) -> str:
+    if strategy == "squash":
+        return "--squash"
+    if strategy == "rebase":
+        return "--rebase"
+    if strategy == "merge":
+        return "--merge"
+    raise ValueError(f"Unsupported merge strategy: {strategy}")
+
+
+def cmd_pr_finish(args: argparse.Namespace) -> int:
+    root = repo_root()
+    if args.watch_timeout_seconds < 1:
+        raise ValueError("--watch-timeout-seconds must be >= 1")
+    if args.poll_seconds < 1:
+        raise ValueError("--poll-seconds must be >= 1")
+
+    start = time.monotonic()
+    deadline = start + float(args.watch_timeout_seconds)
+    payload = fetch_pr_gate_payload(root, args.pr)
+    evaluation = evaluate_pr_gate_payload(payload)
+    watch_used = False
+
+    while args.watch and evaluation["verdict"] != "approve":
+        blockers = list(evaluation["blockers"])
+        if blockers and not all(blocker_is_transient_for_watch(b) for b in blockers):
+            break
+
+        now = time.monotonic()
+        if now >= deadline:
+            break
+
+        watch_used = True
+        remaining = int(deadline - now)
+        blocker_text = "; ".join(blockers) if blockers else "pending state reconciliation"
+        print(
+            f"[pr-finish watch] waiting ({remaining}s remaining): {blocker_text}",
+            file=sys.stderr,
+        )
+        time.sleep(max(1.0, float(args.poll_seconds)))
+        payload = fetch_pr_gate_payload(root, args.pr)
+        evaluation = evaluate_pr_gate_payload(payload)
+
+    if watch_used:
+        elapsed = int(time.monotonic() - start)
+        print(f"[pr-finish watch] final evaluation after {elapsed}s.", file=sys.stderr)
+
+    blockers = list(evaluation["blockers"])
+    if evaluation["verdict"] != "approve":
+        print("Cannot finish PR: merge gates not satisfied.", file=sys.stderr)
+        for item in blockers:
+            print(f"- {item}", file=sys.stderr)
+        return 2
+
+    body = str(evaluation["body"])
+    review_gate_blockers = unchecked_review_gate_labels(body, require_ian=not args.skip_ian_checkbox)
+    if review_gate_blockers:
+        print("Cannot finish PR: review gate checkboxes are not fully approved.", file=sys.stderr)
+        for item in review_gate_blockers:
+            print(f"- {item}", file=sys.stderr)
+        return 2
+
+    strategy = choose_merge_strategy(root, args.strategy)
+    flag = merge_flag(strategy)
+    pr_url = str(payload.get("url") or f"#{args.pr}")
+
+    if args.dry_run:
+        print(f"Dry run: PR {pr_url} is merge-ready.")
+        print(f"Dry run: would run `gh pr merge {args.pr} {flag}`")
+        if args.delete_branch:
+            print("Dry run: would include `--delete-branch`.")
+        return 0
+
+    cmd = ["gh", "pr", "merge", str(args.pr), flag]
+    if args.delete_branch:
+        cmd.append("--delete-branch")
+    run(cmd, cwd=root)
+
+    merged = gh_json(root, ["pr", "view", str(args.pr), "--json", "state,mergedAt,mergeCommit,url"])
+    if str(merged.get("state")) != "MERGED":
+        print(f"Merge command completed but PR state is `{merged.get('state')}`.", file=sys.stderr)
+        return 1
+
+    oid = (merged.get("mergeCommit") or {}).get("oid", "unknown")
+    print(f"Merged {merged.get('url')} with strategy `{strategy}`.")
+    print(f"merge_commit={oid} merged_at={merged.get('mergedAt')}")
     return 0
 
 
@@ -1179,6 +1321,40 @@ def build_parser() -> argparse.ArgumentParser:
     )
     gate.add_argument("--dry-run", action="store_true", help="Do not write PR body/comment changes")
     gate.set_defaults(func=cmd_pr_gate)
+
+    finish = sub.add_parser("pr-finish", help="Verify merge gates/review boxes and merge PR with allowed strategy")
+    finish.add_argument("--pr", required=True, type=int, help="PR number to merge")
+    finish.add_argument(
+        "--strategy",
+        choices=("auto", "squash", "rebase", "merge"),
+        default="auto",
+        help="Merge strategy (default: auto, prefer squash then rebase then merge)",
+    )
+    finish.add_argument(
+        "--watch",
+        action="store_true",
+        help="Poll until required checks settle or timeout before merge evaluation",
+    )
+    finish.add_argument(
+        "--watch-timeout-seconds",
+        type=int,
+        default=600,
+        help="Max watch duration in seconds (default: 600)",
+    )
+    finish.add_argument(
+        "--poll-seconds",
+        type=int,
+        default=8,
+        help="Polling interval in seconds when --watch is enabled (default: 8)",
+    )
+    finish.add_argument(
+        "--skip-ian-checkbox",
+        action="store_true",
+        help="Allow merge even if `Ian review approved` checkbox is unchecked",
+    )
+    finish.add_argument("--delete-branch", action="store_true", help="Request branch deletion after merge")
+    finish.add_argument("--dry-run", action="store_true")
+    finish.set_defaults(func=cmd_pr_finish)
 
     save = sub.add_parser("saveup", help="Append role-aware saveup ledger/session entries")
     save.add_argument("--role", required=True, choices=SAVEUP_ROLE_VALUES)

@@ -476,3 +476,14 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified with `python3 -m py_compile .koad/scripts/koad_cli.py`, `bash .koad/scripts/koad pr-gate --help`, and `bash .koad/scripts/koad pr-gate --pr 26 --watch --watch-timeout-seconds 5 --poll-seconds 1`.
+
+## 2026-02-22 - `pr-finish` merge-finalization automation
+- Scope:
+  - Offload PR merge-finalization checks and strategy handling from manual PM steps.
+- Changes:
+  - Added `pr-finish` subcommand to `.koad/scripts/koad_cli.py`.
+  - Command validates merge gates via existing PR-gate evaluation, enforces review checkbox readiness, supports check-settle waiting, and merges with repo-allowed strategy selection.
+  - Updated script docs/readme to include `pr-finish` usage.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified with `python3 -m py_compile .koad/scripts/koad_cli.py`, `bash .koad/scripts/koad pr-finish --help`, and dry-run checks against PR state.

@@ -363,3 +363,14 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified script compiles: `python3 -m py_compile .koad/scripts/koad_cli.py`.
+
+## 2026-02-22 - Experience lane S2-E1 continuity checkpoint
+- Scope:
+  - Preserve role-scoped continuity for Experience lane delivery of CLI scene rendering (`S2-E1` / `BL-003`).
+- Changes:
+  - Landed scene renderer module and wired `SceneSnapshot`/`SceneDelta` paths to terminal map rendering with stable `@`/`P`/`N` symbols.
+  - Added Experience-focused learning for multiplayer identity hydration in scene-symbol classification.
+  - Opened Experience lane PR for review/merge against `v1`.
+- Evidence:
+  - Updated `crates/ttrpg-client-cli/src/render_scene.rs`, `crates/ttrpg-client-cli/src/main.rs`, `.koad/.agent-core/memory/LEARNINGS.md`.
+  - PR: `https://github.com/Fryymann/ttr-proto-g/pull/11`.

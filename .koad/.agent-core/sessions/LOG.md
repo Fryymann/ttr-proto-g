@@ -104,3 +104,19 @@
   - `/tmp/ttrpg-s3-p1`
 - Risks/Unknowns:
   - Intermittent DNS resolution to github.com currently blocks fetch/push operations from this environment.
+
+## 2026-02-22 - s2-e1-cli-scene-render
+- Role: `Experience`
+- Context ref: `S2-E1/pr-11`
+- Objective: Persist Experience lane continuity after delivering S2-E1 scene renderer
+- Actions:
+  - Implemented scene snapshot/delta renderer with symbol legend and actor roster.
+  - Wired identity hydration from AuthOk, RoomState, and WhoList for stable symbol mapping.
+  - Pushed lane branch and opened PR #11 targeting v1.
+- Artifacts:
+  - `crates/ttrpg-client-cli/src/render_scene.rs`
+  - `crates/ttrpg-client-cli/src/main.rs`
+  - `.koad/.agent-core/memory/LEARNINGS.md`
+  - `.koad/.agent-ops/sessions/SESSION_LOG.md`
+- Risks/Unknowns:
+  - Runtime socket permission in sandbox prevented end-to-end multiplayer manual capture; unit/integration evidence used instead.

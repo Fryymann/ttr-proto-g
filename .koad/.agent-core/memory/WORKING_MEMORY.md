@@ -15,6 +15,7 @@ Last updated: 2026-02-22
 - Startup now requires role selection routing via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
 - Codex agents execute inside WSL2 (Ubuntu), so lane prompt workspace paths should use `/mnt/c/...` instead of `C:\...`.
 - `koad-os` branch sync from `v1` is now automated via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual maintenance.
+- `koad-os` -> `v1` promotion PR lifecycle is now automated via `.github/workflows/promote-koad-os-to-v1.yml`.
 - V1 status dashboard publishing is merge-driven via `.github/workflows/update-v1-dashboard.yml` (managed issue `V1 Project Dashboard`) to avoid per-change status commit overhead.
 
 ## Open Unknowns

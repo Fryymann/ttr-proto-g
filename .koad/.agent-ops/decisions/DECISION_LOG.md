@@ -449,3 +449,16 @@
   - Manual local snapshots remain available via `.koad/scripts/koad progress-sync`.
 - Revisit trigger:
   - If dashboard consumers need a different publication surface (e.g., Pages/Notion) or multi-branch views beyond `v1`.
+
+## 2026-02-22 - Auto-manage koad-os promotion PR lifecycle
+- Decision:
+  - Add workflow automation to create/update one managed `koad-os` -> `v1` promotion PR when effective support/process deltas exist.
+  - Auto-close the managed promotion PR when `koad-os` no longer has effective delta vs `v1`.
+- Why:
+  - User requested additional offload of repetitive PM operations that slow development flow.
+- Impact:
+  - Promotion PR creation/maintenance no longer requires manual PM actions for routine `koad-os` updates.
+  - Existing review/merge authority remains unchanged (Koad git review + Ian review + required checks).
+  - Manual promotion PRs remain supported; automation avoids overriding non-managed PR bodies.
+- Revisit trigger:
+  - If future release-line branching adds multiple active release branches and promotion target routing must become dynamic.

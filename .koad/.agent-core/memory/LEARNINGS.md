@@ -118,3 +118,8 @@ Append-only record of durable lessons.
 - Observation: Status dashboards create recurring maintenance friction when they require separate status commits during active lane delivery.
 - Why it matters: Extra status-only commits and PR noise slow development flow and distract from roadmap execution.
 - Behavior update: Publish the V1 dashboard automatically after merges to `v1` via workflow-managed issue updates; keep manual dashboard generation on-demand.
+
+### Process
+- Observation: Even with branch sync automation, manually opening recurring `koad-os` promotion PRs still adds PM overhead and context switching.
+- Why it matters: Repetitive promotion steps slow flow and increase risk of support updates lingering on `koad-os`.
+- Behavior update: Auto-manage one `koad-os` -> `v1` promotion PR from a workflow keyed off effective branch deltas.

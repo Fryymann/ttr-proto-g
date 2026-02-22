@@ -24,6 +24,7 @@ Any coding agent instance started in this workspace must initialize context befo
 - Enforce PR completion gate: Koad git review + Ian review + merged PR before marking lane task complete.
 - Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
 - Keep `koad-os` synchronized from `v1` via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual sync overhead.
+- Keep `koad-os` promotion to `v1` low-friction via `.github/workflows/promote-koad-os-to-v1.yml` (managed promotion PR lifecycle).
 
 ## Saveup Rule
 - When user says `saveup`, execute `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`.

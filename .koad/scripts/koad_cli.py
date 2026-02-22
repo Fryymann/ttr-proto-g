@@ -521,6 +521,7 @@ def build_pr_body(args: argparse.Namespace, root: Path, head: str, changed_files
 ## Review Gates
 {checks[0]}
 {checks[1]}
+{checks[2]}
 
 ## Risks / Deferred Work
 - Risks:

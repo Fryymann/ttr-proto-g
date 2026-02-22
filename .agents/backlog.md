@@ -19,8 +19,8 @@ Owner: Project Manager
 
 ## Active Focus Window
 
-- `Now` (M2 closeout + M3 entry): `BL-012`, `BL-005`, `BL-015`
-- `Next` (M3 execution): `BL-006`, `BL-007`, `BL-013`, `BL-018`
+- `Now` (M2 closeout + M3 execution): `BL-012`, `BL-006`, `BL-007`
+- `Next` (M3 follow-on): `BL-013`, `BL-018`, `BL-008`, `BL-014`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
 ## Backlog Items
@@ -31,7 +31,7 @@ Owner: Project Manager
 | BL-002 | P0 | Platform | done | M2 | Add protocol messages for scene snapshot/delta | Protocol types added, server sends valid scene updates |
 | BL-003 | P0 | Experience | done | M2 | Render scene grid in CLI with player/NPC symbols | Client shows map updates for movement in multiplayer test |
 | BL-004 | P0 | Platform | done | M2 | Implement deterministic scene command queue | Stable ordering test passes with same input stream |
-| BL-005 | P1 | Gameplay | todo | M3 | Implement encounter skeleton (start, party-scoped participants, initiative, turns) | Encounter can start/end, includes only the initiating actor's party in V1, and cycles turns correctly |
+| BL-005 | P1 | Gameplay | done | M3 | Implement encounter skeleton (start, party-scoped participants, initiative, turns) | Encounter can start/end, includes only the initiating actor's party in V1, and cycles turns correctly |
 | BL-006 | P1 | Platform | todo | M3 | Add turn timer + timeout fallback action | Timed-out actor auto-resolves with configured fallback |
 | BL-007 | P1 | Experience | todo | M3 | Show turn tracker and active actor in client | Turn indicator updates for all participants |
 | BL-008 | P1 | Gameplay | todo | M3 | Implement core combat actions (`move`, `attack`, `dodge`, `help`) | Action legality and resolution tests pass |
@@ -41,7 +41,7 @@ Owner: Project Manager
 | BL-012 | P0 | Platform | in_progress | M2 | Implement account + character persistence model with account-authenticated login and campaign lock metadata | User logs into an account session first, character create/login is scoped to authenticated account ownership, campaign lock is enforced on join, and admin unlock events are audited |
 | BL-013 | P1 | Platform | todo | M3 | Implement single-save campaign storage with rollback-safe snapshot strategy | Campaign progress persists and recovery test passes after simulated crash |
 | BL-014 | P1 | Gameplay | todo | M3 | Define and implement staged quit/disconnect in encounter rules | Defensive-only fallback for configured rounds then limited AI behavior is deterministic and covered by integration tests |
-| BL-015 | P1 | Gameplay | todo | M3 | Implement V1 party-based encounter participation rules | Non-party players in the scene are not auto-pulled, party members are included deterministically, and tests cover join edge cases |
+| BL-015 | P1 | Gameplay | done | M3 | Implement V1 party-based encounter participation rules | Non-party players in the scene are not auto-pulled, party members are included deterministically, and tests cover join edge cases |
 | BL-016 | P2 | Experience | todo | M4 | Design split-feed client mode (map/combat/chat panels) while preserving terminal-first mode | Optional multi-panel view works without breaking baseline CLI flow |
 | BL-017 | P2 | Platform | todo | M4 | Add character export endpoint/command with standardized JSON schema | Exported JSON validates against schema and round-trip import validation passes |
 | BL-018 | P1 | Platform | todo | M3 | Implement admin campaign-unlock tooling with guardrails | Unlock requires explicit reason, is permission-gated, and emits immutable audit log entries |

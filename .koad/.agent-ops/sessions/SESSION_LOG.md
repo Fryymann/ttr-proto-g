@@ -340,3 +340,14 @@
   - Updated saveup protocol, startup guidance, standards, and agent docs for the new mode.
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/AGENTS.md`, `AGENTS.md`, `.koad/scripts/README.md`, `.koad/README.md`.
+
+## 2026-02-22 - Post-S3-G1 merge queue + status progression
+- Scope:
+  - Reflect S3-G1 completion and prepare next task dispatch.
+- Changes:
+  - Updated backlog states (`BL-005`, `BL-015` -> `done`) and re-ranked focus window.
+  - Updated queue statuses (`S3-G1` done, `S3-P1` active next, `S3-E1` queued after S3-P1 interface confirmation).
+  - Updated sprint status notes and durable queue decision log entry.
+  - Regenerated root progress dashboard snapshot.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `PROJECT_PROGRESS.md`.

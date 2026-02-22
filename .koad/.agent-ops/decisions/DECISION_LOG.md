@@ -355,3 +355,17 @@
   - Standards/startup/agent docs now include lane-isolated saveup expectations (`STD-013`).
 - Revisit trigger:
   - If saveup reconciliation is fully automated and global ledgers can be updated conflict-free from all lanes.
+
+## 2026-02-22 - Advance queue to S3-P1 after S3-G1 merge
+- Decision:
+  - Mark `S3-G1` complete and merged to `v1` (PR #13).
+  - Promote `S3-P1` to active next dispatch packet.
+  - Keep `S3-E1` queued pending `S3-P1` protocol/interface confirmation.
+- Why:
+  - S3 Gameplay foundation is landed (`BL-005`, `BL-015`), so the critical path now moves to deterministic timeout/fallback infrastructure (`BL-006`).
+- Impact:
+  - Operator dispatch shortcut is now:
+    - `Your next task is S3-P1.`
+  - Backlog/progress artifacts now reflect `BL-005` and `BL-015` as `done`.
+- Revisit trigger:
+  - If merge follow-up defects from S3-G1 require temporary Gameplay hotfix prioritization ahead of S3-P1.

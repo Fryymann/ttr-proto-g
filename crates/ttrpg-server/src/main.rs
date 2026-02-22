@@ -18,7 +18,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
-use admin::{AdminCommandError, AdminUnlockCommand};
+use admin::{AdminCommandError, AdminPolicy, AdminUnlockCommand};
 use campaign::{CampaignCatalog, CampaignManifestEntry};
 use encounter::{
     capture_participants, deterministic_initiative_for_actor, resolve_timeout_fallback,
@@ -76,6 +76,7 @@ struct ServerState {
     active_campaign: CampaignManifestEntry,
     turn_timer_config: TurnTimerConfig,
     timeout_fallback_action: TimeoutFallbackAction,
+    admin_policy: AdminPolicy,
 }
 
 impl ServerState {
@@ -124,12 +125,16 @@ impl ServerState {
             active_campaign,
             turn_timer_config: TurnTimerConfig::from_env(),
             timeout_fallback_action: TimeoutFallbackAction::from_env(),
+            admin_policy: AdminPolicy::from_env(),
         }
     }
 
     #[cfg(test)]
     fn new_for_tests(active_campaign: CampaignManifestEntry) -> Self {
-        Self::new_with_persistence(active_campaign, Box::new(InMemoryPersistence::default()))
+        let mut state =
+            Self::new_with_persistence(active_campaign, Box::new(InMemoryPersistence::default()));
+        state.admin_policy = AdminPolicy::for_tests(&["acct:admin_ops"], "test-admin-token");
+        state
     }
 }
 
@@ -926,7 +931,7 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
             send_to_client(
                 tx,
                 ServerMessage::Info {
-                    text: "Commands: look, encounter <start|end|status>, end_turn, go <dir>, say <msg>, who, sheet, admin unlock <character> <campaign> --reason <text>, help".to_owned(),
+                    text: "Commands: look, encounter <start|end|status>, end_turn, go <dir>, say <msg>, who, sheet, admin unlock <character> <campaign> --token <token> --reason <text>, help".to_owned(),
                 },
             );
         }
@@ -946,7 +951,8 @@ async fn run_admin_command(args: Vec<&str>, player_id: u64, tx: &ClientTx, state
         send_to_client(
             tx,
             ServerMessage::Error {
-                text: "Usage: admin unlock <character> <campaign> --reason <text>".to_owned(),
+                text: "Usage: admin unlock <character> <campaign> --token <token> --reason <text>"
+                    .to_owned(),
             },
         );
         return;
@@ -958,7 +964,18 @@ async fn run_admin_command(args: Vec<&str>, player_id: u64, tx: &ClientTx, state
             send_to_client(
                 tx,
                 ServerMessage::Error {
-                    text: "Usage: admin unlock <character> <campaign> --reason <text>".to_owned(),
+                    text:
+                        "Usage: admin unlock <character> <campaign> --token <token> --reason <text>"
+                            .to_owned(),
+                },
+            );
+            return;
+        }
+        Err(AdminCommandError::TokenRequired) => {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Admin unlock requires a non-empty --token value.".to_owned(),
                 },
             );
             return;
@@ -988,19 +1005,27 @@ async fn run_admin_command(args: Vec<&str>, player_id: u64, tx: &ClientTx, state
             }
         };
 
-        if !admin::is_admin_authorized(&actor_handle) {
-            let _ = locked.persistence.record_campaign_unlock_attempt(
+        if !locked
+            .admin_policy
+            .is_authorized(&actor_handle, &unlock.token)
+        {
+            match locked.persistence.record_campaign_unlock_attempt(
                 &unlock.character_name_key,
                 &unlock.target_campaign_id,
                 &actor_handle,
                 &unlock.reason,
                 CampaignUnlockAuditOutcome::DeniedUnauthorized,
                 "account is not authorized for admin unlock",
-            );
-            (
-                "Admin unlock denied: authenticated account is not authorized.".to_owned(),
-                true,
-            )
+            ) {
+                Err(err) => (
+                    format!("Admin unlock failed: audit write failed: {}", err),
+                    true,
+                ),
+                Ok(_) => (
+                    "Admin unlock denied: authenticated account is not authorized.".to_owned(),
+                    true,
+                ),
+            }
         } else {
             match locked.persistence.admin_override_campaign_lock(
                 &unlock.character_name_key,
@@ -1016,18 +1041,24 @@ async fn run_admin_command(args: Vec<&str>, player_id: u64, tx: &ClientTx, state
                     false,
                 ),
                 Err(CampaignUnlockError::CharacterNotFound) => {
-                    let _ = locked.persistence.record_campaign_unlock_attempt(
+                    if let Err(err) = locked.persistence.record_campaign_unlock_attempt(
                         &unlock.character_name_key,
                         &unlock.target_campaign_id,
                         &actor_handle,
                         &unlock.reason,
                         CampaignUnlockAuditOutcome::DeniedCharacterNotFound,
                         "character does not exist",
-                    );
-                    (
-                        "Admin unlock failed: character does not exist.".to_owned(),
-                        true,
-                    )
+                    ) {
+                        (
+                            format!("Admin unlock failed: audit write failed: {}", err),
+                            true,
+                        )
+                    } else {
+                        (
+                            "Admin unlock failed: character does not exist.".to_owned(),
+                            true,
+                        )
+                    }
                 }
                 Err(CampaignUnlockError::ActorRequired) => (
                     "Admin unlock failed: actor identity is required.".to_owned(),
@@ -2587,7 +2618,7 @@ mod tests {
         }
 
         run_command(
-            "admin unlock target ashfall --reason ticket-77".to_owned(),
+            "admin unlock target ashfall --token test-admin-token --reason ticket-77".to_owned(),
             1,
             &tx_actor,
             &state,
@@ -2640,7 +2671,8 @@ mod tests {
         }
 
         run_command(
-            "admin unlock target ashfall --reason support-ticket-91".to_owned(),
+            "admin unlock target ashfall --token test-admin-token --reason support-ticket-91"
+                .to_owned(),
             1,
             &tx_actor,
             &state,

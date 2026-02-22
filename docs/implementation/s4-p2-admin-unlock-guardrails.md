@@ -9,19 +9,24 @@
 
 ### User-visible
 
-- Added admin command path: `admin unlock <character> <campaign> --reason <text>`.
+- Added admin command path: `admin unlock <character> <campaign> --token <token> --reason <text>`.
 - Non-admin actors now receive deterministic rejection for unlock attempts.
 - Successful admin unlock returns confirmation with updated campaign binding.
 
 ### Internal
 
 - Added a dedicated admin command parser/authorization module.
+- Replaced prefix-based auth with policy-based authorization requiring both:
+  - explicit account allowlist membership (`TTRPG_ADMIN_ACCOUNTS`)
+  - matching admin unlock token (`TTRPG_ADMIN_UNLOCK_TOKEN`)
 - Expanded persistence API to record immutable unlock-attempt audit events for denied and success outcomes.
 - Wired unlock command execution to:
   - enforce permission checks before mutation
+  - require admin token in command parsing
   - require reason text in command parsing
   - audit denied unauthorized attempts
   - audit denied character-not-found attempts
+  - fail closed when denied-path audit persistence fails
   - audit success and bind the audit id to `unlock_audit_ref`
 - Added deterministic tests for denied and allowed unlock flows.
 
@@ -43,6 +48,7 @@
 
 - Verify command parser accepts valid unlock syntax and rejects malformed input.
 - Verify non-admin unlock attempts are rejected, audited, and do not mutate campaign lock.
+- Verify authorization requires both allowlisted account and matching admin token.
 - Verify authorized admin unlock succeeds, audits success, and rebinds campaign lock.
 - Re-run server and workspace checks to validate no regressions.
 
@@ -62,7 +68,7 @@
 ### Coverage
 
 - Changed-line coverage: 93%
-- Evidence basis: new paths in `admin` command parsing/authorization and unlock audit outcomes are covered by focused unit/integration tests in `main.rs`, `admin/mod.rs`, and `persistence/mod.rs`.
+- Evidence basis: new paths in token + allowlist authorization and unlock audit outcomes are covered by focused unit/integration tests in `main.rs`, `admin/mod.rs`, and `persistence/mod.rs`.
 
 ### Regression
 
@@ -92,21 +98,21 @@
 
 ## Risks and Mitigations
 
-- Risk: default authorization policy allows handles prefixed with `acct:admin`, which is convention-based.
-- Mitigation: explicit override list support via `TTRPG_ADMIN_ACCOUNTS` is included; follow-up can move to role/permission store.
-- Risk: malformed unlock commands currently return usage errors without persisted invalid-request audit rows.
-- Mitigation: all authorization failures and character-not-found failures are audited; follow-up can add invalid-syntax telemetry if required.
+- Risk: authorization now depends on correctly configured env vars (`TTRPG_ADMIN_ACCOUNTS`, `TTRPG_ADMIN_UNLOCK_TOKEN`); missing config blocks all unlocks.
+- Mitigation: fail-closed behavior is intentional for security; deployment docs should include required admin env setup.
+- Risk: malformed unlock commands return usage errors without persisted invalid-request audit rows.
+- Mitigation: authorization failures and character-not-found failures are audited and denied-path audit persistence failures now surface explicit errors.
 
 ## Deferred Follow-ups
 
-- Introduce durable role/permission model instead of naming convention + env allowlist.
+- Introduce durable role/permission model instead of env allowlist + shared token.
 - Add dedicated admin command observability counters for accepted/denied unlock events.
-- Add integration test path for `TTRPG_ADMIN_ACCOUNTS` env-based authorization matrix.
+- Add integration test path for env-configured authorization matrix and startup config validation.
 
 ## PM Extraction Notes
 
 - Acceptance checklist:
-  - `PASS` - Unlock requires explicit reason + actor identity via `admin unlock <character> <campaign> --reason <text>` and authenticated actor context (`crates/ttrpg-server/src/admin/mod.rs`, `crates/ttrpg-server/src/main.rs`).
+  - `PASS` - Unlock requires explicit token + reason + actor identity via `admin unlock <character> <campaign> --token <token> --reason <text>` and authenticated actor context (`crates/ttrpg-server/src/admin/mod.rs`, `crates/ttrpg-server/src/main.rs`).
   - `PASS` - Unauthorized attempts are deterministically rejected and audited (`tests::admin_unlock_denied_for_non_admin_and_attempt_is_audited`, audit outcome `denied_unauthorized` in `crates/ttrpg-server/src/persistence/mod.rs`).
   - `PASS` - Successful unlock emits immutable audit record with actor/reason metadata and binds `unlock_audit_ref` (`persistence::tests::admin_override_rebinds_lock_and_appends_audit_event`).
 - Sample audit payload (success): `{"character_name_key":"target","target_campaign_id":"ashfall","reason":"support-ticket-91","outcome":"success",...}`

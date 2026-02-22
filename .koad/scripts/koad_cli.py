@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import glob
 import json
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -76,7 +78,7 @@ def call_id_now() -> str:
 
 def normalize_role(role: str) -> str:
     role = role.strip().lower()
-    if role in {"koad", "koad pm", "pm", "project manager"}:
+    if role in {"koad", "koad pm", "pm", "project manager", "koad (pm)"}:
         return "Koad"
     if role == "gameplay":
         return "Gameplay"
@@ -427,6 +429,271 @@ def cmd_status(args: argparse.Namespace) -> int:
         f"blocked={blocked} todo={todo} open={open_items} now=\"{now_focus}\" "
         f"next=\"{next_focus}\" generated_utc={generated} age_h={age_text} stale={stale}"
     )
+    return 0
+
+
+def get_backlog_details(root: Path, backlog_ids: list[str]) -> list[dict[str, str]]:
+    backlog_path = root / ".agents/backlog.md"
+    if not backlog_path.exists():
+        return []
+    
+    text = backlog_path.read_text(encoding="utf-8")
+    items = parse_backlog_items(text)
+    
+    # Filter for requested IDs
+    matched = []
+    for bid in backlog_ids:
+        # Backlog IDs in table are usually just 'BL-001'
+        # But incoming might be '`BL-001`'
+        clean_id = bid.strip("`").strip()
+        for item in items:
+            if item["id"] == clean_id:
+                # Need AC which isn't in parse_backlog_items yet
+                # Let's find the original line to get AC (the 7th column)
+                for line in text.splitlines():
+                    if f"| {clean_id} |" in line:
+                        parts = [p.strip() for p in line.strip("|").split("|")]
+                        if len(parts) >= 7:
+                            item["ac"] = parts[6]
+                        break
+                matched.append(item)
+                break
+    return matched
+
+
+def get_sprint_plan_details(root: Path, role: str, backlog_ids: list[str]) -> dict[str, str]:
+    plan_path = root / "docs/design/execution-sprint-plan.md"
+    if not plan_path.exists():
+        return {"objective": "TBD", "files": "TBD"}
+    
+    text = plan_path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    
+    details = {"objective": "", "files": []}
+    
+    # Standardize role for header matching
+    header_role = role.replace(" (PM)", "")
+    target_header = f"### {header_role} Team"
+    
+    current_sprint_matches = False
+    in_correct_team_section = False
+    capture_mode = None 
+    
+    for line in lines:
+        if line.startswith("## Sprint "):
+            # Check if this sprint aligns with our backlog items
+            current_sprint_matches = False
+            in_correct_team_section = False
+            capture_mode = None
+            continue
+            
+        if line.startswith("Backlog alignment:"):
+            # Check if any of our BL IDs are in this alignment line
+            for bid in backlog_ids:
+                if bid.strip("`") in line:
+                    current_sprint_matches = True
+                    break
+            continue
+            
+        if current_sprint_matches and line.startswith(target_header):
+            in_correct_team_section = True
+            continue
+            
+        if in_correct_team_section:
+            if line.startswith("##"): # Next team or sprint section
+                # If we already captured files, we are done
+                if details["files"]:
+                    break
+                in_correct_team_section = False
+                continue
+            
+            clean = line.strip()
+            if not clean:
+                continue
+                
+            if clean.startswith("- "):
+                if capture_mode == "files":
+                    # Extract text inside backticks
+                    match = re.search(r"`([^`]+)`", clean)
+                    if match:
+                        details["files"].append(match.group(1))
+                    else:
+                        details["files"].append(clean[2:].strip())
+                else:
+                    details["objective"] += f"{clean}\n"
+            elif "Target files/modules:" in clean:
+                capture_mode = "files"
+
+    return {
+        "objective": details["objective"].strip() or "See backlog items.",
+        "files": details["files"] if details["files"] else ["TBD"]
+    }
+
+
+def cmd_dispatch(args: argparse.Namespace) -> int:
+    root = repo_root()
+    prompts_path = root / "CODEX_ROLE_PROMPTS.md"
+    if not prompts_path.exists():
+        print(f"Error: {prompts_path} not found.", file=sys.stderr)
+        return 1
+        
+    packets = parse_packet_queue(prompts_path.read_text(encoding="utf-8"))
+    packet = next((p for p in packets if p["packet_id"] == args.packet), None)
+    
+    if not packet:
+        print(f"Error: Packet ID {args.packet} not found in queue.", file=sys.stderr)
+        return 1
+        
+    role = packet["role"]
+    backlog_ids = [bid.strip() for bid in packet["backlog_ids"].split(",")]
+    
+    # Gather data from Backlog
+    bl_items = get_backlog_details(root, backlog_ids)
+    
+    # Gather data from Sprint Plan (pass BL IDs to find correct sprint)
+    plan_details = get_sprint_plan_details(root, role, backlog_ids)
+    
+    # Synthesize Prompt
+    prompt = [
+        f"You are Codex acting as the {role} Team instance for /mnt/c/data/ttrpg.",
+        "",
+        f"Task packet id: {args.packet}",
+        f"Backlog scope: {packet['backlog_ids']}",
+        "",
+        "Objective:",
+    ]
+    
+    # Add items from sprint plan objective if any, otherwise from backlog tasks
+    if plan_details["objective"] != "See backlog items.":
+        prompt.append(plan_details["objective"])
+    else:
+        for item in bl_items:
+            prompt.append(f"- {item['task']}")
+            
+    prompt.append("\nSuggested file targets:")
+    for f in plan_details["files"]:
+        prompt.append(f"- {f}")
+        
+    prompt.append("\nAcceptance criteria:")
+    for i, item in enumerate(bl_items, 1):
+        prompt.append(f"{i}) {item['ac']}")
+        
+    prompt.append("\nBranch policy: create branch from v1 and target PR to v1.")
+    prompt.append(f"Suggested branch: {packet['branch']}")
+    
+    prompt.append("\nHandoff requirements:")
+    prompt.append("- Include acceptance checklist with PASS/FAIL and file/test evidence per criterion.")
+    prompt.append("- Provide PR URL targeting v1, latest commit SHA, and dependency notes.")
+
+    output = "\n".join(prompt)
+    
+    if args.dry_run:
+        print("--- DISPATCH PROMPT PREVIEW ---")
+        print(output)
+    else:
+        print(output)
+        
+    return 0
+
+
+def cmd_task_complete(args: argparse.Namespace) -> int:
+    root = repo_root()
+    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    
+    # 1. Parse Packet to get BL IDs and Role
+    prompts_path = root / "CODEX_ROLE_PROMPTS.md"
+    prompts_text = prompts_path.read_text(encoding="utf-8")
+    packets = parse_packet_queue(prompts_text)
+    packet = next((p for p in packets if p["packet_id"] == args.packet), None)
+    
+    if not packet:
+        print(f"Error: Packet {args.packet} not found.", file=sys.stderr)
+        return 1
+        
+    backlog_ids = [bid.strip("`").strip() for bid in packet["backlog_ids"].split(",")]
+    
+    if args.dry_run:
+        print(f"Dry run: Completing {args.packet} ({', '.join(backlog_ids)})")
+        
+    # 2. Update Backlog
+    backlog_path = root / ".agents/backlog.md"
+    bl_text = backlog_path.read_text(encoding="utf-8")
+    for bid in backlog_ids:
+        # Find the line starting with | bid | and change state to done
+        pattern = re.compile(rf"^\| {bid} \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+        if pattern.search(bl_text):
+            bl_text = pattern.sub(rf"| {bid} | \1 | \2 | done |", bl_text)
+            if args.dry_run:
+                print(f"Dry run: Mark {bid} as done in backlog.")
+        else:
+            print(f"Warning: Could not find {bid} in backlog table.")
+            
+    if not args.dry_run:
+        backlog_path.write_text(bl_text, encoding="utf-8")
+
+    # 3. Update Sprint Plan Status Notes
+    plan_path = root / "docs/design/execution-sprint-plan.md"
+    plan_text = plan_path.read_text(encoding="utf-8")
+    pr_suffix = f" (PR #{args.pr})" if args.pr else ""
+    note_line = f"- {today}: {args.packet} merged to `v1`{pr_suffix}; {', '.join(backlog_ids)} marked done."
+    
+    if "## Sprint Status Notes" in plan_text:
+        # Append to the end of the section
+        lines = plan_text.splitlines()
+        for i, line in enumerate(lines):
+            if line.strip() == "## Sprint Status Notes":
+                lines.insert(i + 1, note_line)
+                break
+        plan_text = "\n".join(lines)
+        if args.dry_run:
+            print(f"Dry run: Add status note to sprint plan: {note_line}")
+    else:
+        print("Warning: ## Sprint Status Notes section not found in sprint plan.")
+        
+    if not args.dry_run:
+        plan_path.write_text(plan_text, encoding="utf-8")
+
+    # 4. Update Queue Table in CODEX_ROLE_PROMPTS.md
+    # Set current packet to Done
+    new_prompts = prompts_text
+    current_status_pattern = re.compile(rf"\| `{args.packet}` \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+    new_prompts = current_status_pattern.sub(rf"| `{args.packet}` | \1 | \2 | Done (merged to `v1`{pr_suffix}) |", new_prompts)
+    
+    # Identify next task
+    next_packet = None
+    for p in packets:
+        if p["packet_id"] == args.packet:
+            continue
+        if p["status"] == "Active Next (dispatch now)":
+            # Already have an active next, skip
+            break
+        if args.packet in p["dependency"] and "queued" in p["status"].lower():
+            next_packet = p["packet_id"]
+            break
+            
+    if next_packet:
+        next_pattern = re.compile(rf"\| `{next_packet}` \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+        new_prompts = next_pattern.sub(rf"| `{next_packet}` | \1 | \2 | Active Next (dispatch now) |", new_prompts)
+        
+        # Update shortcut
+        shortcut_pattern = re.compile(rf"- (.*?) Agent: `Your next task is (.*?).`", re.MULTILINE)
+        next_role = next((p["role"] for p in packets if p["packet_id"] == next_packet), "Agent")
+        new_prompts = shortcut_pattern.sub(rf"- {next_role} Agent: `Your next task is {next_packet}.`", new_prompts)
+        
+        if args.dry_run:
+            print(f"Dry run: Advance queue. Next is {next_packet}.")
+    else:
+        if args.dry_run:
+            print("Dry run: No dependent next task found to activate.")
+
+    if not args.dry_run:
+        prompts_path.write_text(new_prompts, encoding="utf-8")
+        
+    # 5. Refresh Dashboard
+    if not args.dry_run:
+        build_progress_dashboard(root)
+        print(f"Task {args.packet} completion synced across all artifacts.")
+    
     return 0
 
 
@@ -1183,16 +1450,16 @@ def cmd_saveup(args: argparse.Namespace) -> int:
     global_progress_sync = (not lane_isolated) and args.sync_progress and (not args.no_progress_sync)
     global_ledger_mode = not lane_isolated
 
-    if global_ledger_mode and branch != KOAD_OS_BRANCH:
+    if global_ledger_mode and branch not in {KOAD_OS_BRANCH, "gemini"}:
         raise ValueError(
             "global-ledger saveup writes tracked support artifacts under .koad/. "
-            f"Run on '{KOAD_OS_BRANCH}' or use lane-isolated mode for lane contexts."
+            f"Run on '{KOAD_OS_BRANCH}', 'gemini', or use lane-isolated mode for lane contexts."
         )
 
-    if lane_progress_sync and branch != KOAD_OS_BRANCH:
+    if lane_progress_sync and branch not in {KOAD_OS_BRANCH, "gemini"}:
         raise ValueError(
             "lane-isolated saveup with --sync-progress-in-lane writes PROJECT_PROGRESS.md. "
-            f"Run on '{KOAD_OS_BRANCH}' or omit --sync-progress-in-lane."
+            f"Run on '{KOAD_OS_BRANCH}', 'gemini', or omit --sync-progress-in-lane."
         )
 
     row = (
@@ -1267,6 +1534,289 @@ def cmd_saveup(args: argparse.Namespace) -> int:
     else:
         print("progress: skipped (global default; use --sync-progress to refresh)")
     return 0
+
+
+def cmd_context(args: argparse.Namespace) -> int:
+    root = repo_root()
+    role = normalize_role(args.role)
+    
+    # Files to read
+    core_files = [
+        ".koad/.agent-core/IDENTITY.md",
+        ".koad/.agent-core/MISSION.md",
+        ".koad/.agent-core/memory/WORKING_MEMORY.md",
+        ".koad/.agent-core/memory/LEARNINGS.md",
+        ".koad/.agent-core/memory/USER_PREFERENCES.md",
+    ]
+    
+    role_file = ""
+    if role == "Koad":
+        role_file = ".agents/roles/project-manager.md"
+    elif role == "Gameplay":
+        role_file = ".agents/roles/gameplay-lead.md"
+    elif role == "Platform":
+        role_file = ".agents/roles/platform-lead.md"
+    elif role == "Experience":
+        role_file = ".agents/roles/experience-lead.md"
+        
+    backlog_file = ".agents/backlog.md"
+    risk_file = ".agents/risk-register.md"
+
+    output = [f"# Boot Context for {role}"]
+    output.append(f"Timestamp (UTC): {now_utc().isoformat()}")
+    
+    # Read Core
+    output.append("\n# Core Memory")
+    for path in core_files:
+        p = root / path
+        if p.exists():
+            output.append(f"\n--- {path} ---\n{p.read_text(encoding='utf-8').strip()}")
+        else:
+            output.append(f"\n--- {path} (MISSING) ---")
+            
+    # Read Role
+    output.append(f"\n# Role Context: {role}")
+    p = root / role_file
+    if p.exists():
+         output.append(f"\n--- {role_file} ---\n{p.read_text(encoding='utf-8').strip()}")
+    else:
+        output.append(f"\n--- {role_file} (MISSING) ---")
+
+    # Read Backlog Focus
+    p = root / backlog_file
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        focus = parse_focus_window(text)
+        output.append(f"\n# Active Focus\n- Now: {focus['now']}\n- Next: {focus['next']}")
+    else:
+        output.append("\n# Active Focus (Backlog Missing)")
+    
+    # Read Active Risks
+    p = root / risk_file
+    if p.exists():
+        text = p.read_text(encoding="utf-8")
+        output.append("\n# Active Risks (Top 3)")
+        risk_lines = []
+        in_table = False
+        count = 0
+        for line in text.splitlines():
+            if line.startswith("| ID |"):
+                in_table = True
+                continue
+            if not in_table or line.startswith("| ---"):
+                continue
+            if not line.startswith("|"):
+                break
+            # Just capture the top few for context brevity
+            risk_lines.append(line)
+            count += 1
+            if count >= 3:
+                break
+        if risk_lines:
+             output.append("\n".join(risk_lines))
+        else:
+             output.append("(No active risks found)")
+
+    # Dump output
+    print("\n".join(output))
+    return 0
+
+
+def parse_lane_saveup_content(text: str) -> list[dict]:
+    # Extract entries starting with ## SAVEUP-...
+    entries = []
+    current_entry = {}
+    lines = text.splitlines()
+    
+    for i, line in enumerate(lines):
+        if line.startswith("## SAVEUP-"):
+            if current_entry:
+                entries.append(current_entry)
+            current_entry = {"call_id": line.strip("## ").strip()}
+            continue
+        
+        if not current_entry:
+            continue
+            
+        if line.startswith("- Role:"):
+            current_entry["role"] = line.split(":", 1)[1].replace("`", "").strip()
+        elif line.startswith("- Context ref:"):
+            current_entry["context_ref"] = line.split(":", 1)[1].replace("`", "").strip()
+        elif line.startswith("- Scope:"):
+            current_entry["scope"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- Result:"):
+            current_entry["result"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- New learnings:"):
+            try:
+                current_entry["new_learnings"] = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                current_entry["new_learnings"] = 0
+        elif line.startswith("- Duplicates skipped:"):
+             try:
+                current_entry["duplicates_skipped"] = int(line.split(":", 1)[1].strip())
+             except ValueError:
+                current_entry["duplicates_skipped"] = 0
+        elif line.startswith("- Notes:"):
+            current_entry["notes"] = line.split(":", 1)[1].strip()
+        elif line.startswith("- Objective:"):
+            current_entry["objective"] = line.split(":", 1)[1].strip()
+            
+        # Collect lists (Action, Artifacts, Risks) - simplistic parsing for summary log
+        # For full log reconstruction we'd need more robust parsing, but for global log synthesis 
+        # we mainly need the summary fields + objective + actions list.
+        if line.startswith("- Actions:"):
+            current_entry["actions"] = []
+            j = i + 1
+            while j < len(lines) and lines[j].strip().startswith("- "):
+                 # Sub-bullets are usually indented, but we look for dashed lines that aren't headers
+                 # Actually in the format: "  - Action..."
+                 if lines[j].strip().startswith("- Artifacts:") or lines[j].strip().startswith("- Risks/Unknowns:") or lines[j].startswith("## "):
+                     break
+                 current_entry["actions"].append(lines[j].strip("- ").strip())
+                 j += 1
+
+    if current_entry:
+        entries.append(current_entry)
+    return entries
+
+
+def cmd_saveup_reconcile(args: argparse.Namespace) -> int:
+    root = repo_root()
+    if current_branch(root) != KOAD_OS_BRANCH and not args.force:
+        print(f"Error: Reconcile must run on {KOAD_OS_BRANCH} (or use --force).", file=sys.stderr)
+        return 1
+        
+    lane_dir = root / ".koad/.agent-core/sessions/lane-saveups"
+    archive_dir = lane_dir / "archive"
+    archive_dir.mkdir(exist_ok=True)
+    
+    files = list(lane_dir.glob("*.md"))
+    if not files:
+        print("No lane saveup journals found to reconcile.")
+        return 0
+        
+    reconciled_count = 0
+    entries_processed = 0
+    
+    for p in files:
+        if p.name.lower() == "readme.md":
+            continue
+            
+        content = p.read_text(encoding="utf-8")
+        entries = parse_lane_saveup_content(content)
+        
+        for entry in entries:
+            # Append to SAVEUP_CALLS.md
+            row = (
+                f"| {entry.get('call_id')} | {entry.get('role')} | {entry.get('context_ref')} | "
+                f"{entry.get('scope')} | {entry.get('result')} | {entry.get('new_learnings', 0)} | "
+                f"{entry.get('duplicates_skipped', 0)} | {entry.get('notes')} |"
+            )
+            append_saveup_call_row(root, row)
+            
+            # Append to LOG.md
+            append_session_log(
+                root,
+                title=f"Reconciled: {entry.get('scope')}",
+                role=entry.get('role', 'unknown'),
+                context_ref=entry.get('context_ref', 'unknown'),
+                objective=entry.get('objective', 'Lane saveup reconciliation'),
+                actions=entry.get('actions', []),
+                artifacts=[str(p.relative_to(root))],
+                risks=["Reconciled from lane journal"]
+            )
+            entries_processed += 1
+
+        if not args.dry_run:
+            shutil.move(str(p), str(archive_dir / p.name))
+        reconciled_count += 1
+        
+    if args.dry_run:
+        print(f"Dry run: Would reconcile {reconciled_count} files containing {entries_processed} entries.")
+    else:
+        print(f"Reconciled {reconciled_count} files containing {entries_processed} entries.")
+        print(f"Archived to {archive_dir}")
+        
+    return 0
+
+
+def parse_iso_utc(value: str) -> dt.datetime:
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+    try:
+        dt_val = dt.datetime.fromisoformat(value)
+    except ValueError:
+        return dt.datetime.now(dt.timezone.utc)
+    if dt_val.tzinfo is None:
+        dt_val = dt_val.replace(tzinfo=dt.timezone.utc)
+    return dt_val.astimezone(dt.timezone.utc)
+
+
+def extract_required_paths(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    text = path.read_text(encoding="utf-8", errors="replace")
+    candidates = re.findall(r"`([^`]+)`", text)
+    out = []
+    for item in candidates:
+        if item.startswith(".") and "/" in item:
+            out.append(item)
+    seen = set()
+    unique = []
+    for item in out:
+        if item not in seen:
+            seen.add(item)
+            unique.append(item)
+    return unique
+
+
+def cmd_standards_check(args: argparse.Namespace) -> int:
+    root = repo_root()
+    manifest_path = root / args.manifest
+    required_sources_path = root / args.required_sources
+
+    status = "FRESH"
+    synced_at = None
+    age_hours = None
+    missing = []
+
+    if not manifest_path.exists():
+        status = "MISSING_MANIFEST"
+    else:
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            synced_at_raw = manifest.get("synced_at")
+            if not synced_at_raw:
+                status = "INVALID_MANIFEST"
+            else:
+                synced_at = parse_iso_utc(synced_at_raw)
+                age_hours = (now_utc() - synced_at).total_seconds() / 3600.0
+                if age_hours > args.max_age_hours:
+                    status = "STALE"
+        except Exception:
+            status = "INVALID_MANIFEST"
+
+    required_paths = extract_required_paths(required_sources_path)
+    for rel in required_paths:
+        if not (root / rel).exists():
+            missing.append(rel)
+
+    if missing and status == "FRESH":
+        status = "MISSING_REQUIRED_SOURCES"
+
+    print(f"manifest: {manifest_path}")
+    print(f"required_sources: {required_sources_path}")
+    print(f"synced_at: {synced_at.isoformat().replace('+00:00', 'Z') if synced_at else 'unknown'}")
+    print(f"age_hours: {age_hours:.2f}" if age_hours is not None else "age_hours: unknown")
+    print(f"max_age_hours: {args.max_age_hours:.2f}")
+    print(f"required_paths_checked: {len(required_paths)}")
+    print(f"missing_required_paths: {len(missing)}")
+    if missing:
+        for path in missing:
+            print(f"missing: {path}")
+    print(f"status: {status}")
+    
+    return 1 if status != "FRESH" else 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1439,6 +1989,32 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--max-age-hours", type=float, default=24.0)
     status.add_argument("--verbose", action="store_true")
     status.set_defaults(func=cmd_status)
+    
+    dispatch = sub.add_parser("dispatch", help="Generate dynamic Codex task prompt from backlog + sprint plan")
+    dispatch.add_argument("--packet", required=True, help="Packet ID to dispatch (e.g. S4-P2)")
+    dispatch.add_argument("--dry-run", action="store_true", help="Print with preview header")
+    dispatch.set_defaults(func=cmd_dispatch)
+    
+    complete = sub.add_parser("task-complete", help="Update all artifacts after task merge")
+    complete.add_argument("--packet", required=True, help="Packet ID completed (e.g. S4-P1)")
+    complete.add_argument("--pr", type=int, help="PR number that was merged")
+    complete.add_argument("--dry-run", action="store_true")
+    complete.set_defaults(func=cmd_task_complete)
+    
+    context = sub.add_parser("context", help="Dump combined core + role memory context")
+    context.add_argument("--role", required=True, choices=ROLE_VALUES)
+    context.set_defaults(func=cmd_context)
+    
+    reconcile = sub.add_parser("saveup-reconcile", help="Merge lane saveups into global ledger")
+    reconcile.add_argument("--dry-run", action="store_true")
+    reconcile.add_argument("--force", action="store_true", help="Run even if not on koad-os branch")
+    reconcile.set_defaults(func=cmd_saveup_reconcile)
+    
+    standards = sub.add_parser("standards-check", help="Verify standards freshness and source presence")
+    standards.add_argument("--manifest", default=".koad/.standards/sync_manifest.json")
+    standards.add_argument("--required-sources", default=".koad/.agent-ops/CANONICAL_REQUIRED_SOURCES.md")
+    standards.add_argument("--max-age-hours", type=float, default=24.0)
+    standards.set_defaults(func=cmd_standards_check)
 
     return p
 

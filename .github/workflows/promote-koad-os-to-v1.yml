@@ -102,6 +102,11 @@ jobs:
 
             const existing = prs.data[0];
             const isManaged = existing && (existing.body || "").includes(managedTag);
+            const emit = (result, prNumber = "", prUrl = "") => ({
+              result,
+              pr_number: prNumber ? String(prNumber) : "",
+              pr_url: prUrl || "",
+            });
 
             try {
               if (!hasChanges) {
@@ -113,14 +118,11 @@ jobs:
                     state: "closed",
                   });
                   core.info(`Closed managed promotion PR #${existing.number} (no deltas).`);
-                  core.setOutput("result", "closed");
-                  core.setOutput("pr_number", String(existing.number));
-                  return;
+                  return emit("closed", existing.number, existing.html_url);
                 }
 
                 core.info("No promotion PR action needed (no deltas).");
-                core.setOutput("result", "noop");
-                return;
+                return emit("noop");
               }
 
               const title = "koad-os promotion: sync support/process updates into v1";
@@ -190,16 +192,11 @@ jobs:
                     body,
                   });
                   core.info(`Updated managed promotion PR #${existing.number}.`);
-                  core.setOutput("result", "updated");
-                  core.setOutput("pr_number", String(existing.number));
-                  core.setOutput("pr_url", existing.html_url);
+                  return emit("updated", existing.number, existing.html_url);
                 } else {
                   core.info(`Found non-managed open promotion PR #${existing.number}; leaving unchanged.`);
-                  core.setOutput("result", "existing_non_managed");
-                  core.setOutput("pr_number", String(existing.number));
-                  core.setOutput("pr_url", existing.html_url);
+                  return emit("existing_non_managed", existing.number, existing.html_url);
                 }
-                return;
               }
 
               const created = await github.rest.pulls.create({
@@ -211,9 +208,7 @@ jobs:
                 body,
               });
               core.info(`Created managed promotion PR #${created.data.number}.`);
-              core.setOutput("result", "created");
-              core.setOutput("pr_number", String(created.data.number));
-              core.setOutput("pr_url", created.data.html_url);
+              return emit("created", created.data.number, created.data.html_url);
             } catch (err) {
               if (isBlocked(err)) {
                 core.warning(
@@ -221,29 +216,36 @@ jobs:
                   "Enable repository setting: Settings > Actions > General > Workflow permissions > " +
                   "\"Allow GitHub Actions to create and approve pull requests\"."
                 );
-                core.setOutput("result", "blocked_actions_pr_creation");
-                if (existing) {
-                  core.setOutput("pr_number", String(existing.number));
-                  core.setOutput("pr_url", existing.html_url);
-                }
-                return;
+                return emit(
+                  "blocked_actions_pr_creation",
+                  existing ? existing.number : "",
+                  existing ? existing.html_url : ""
+                );
               }
               throw err;
             }
 
       - name: Write workflow summary
         run: |
+          OUTCOME='${{ steps.upsert.outputs.result }}'
+          RESULT="$(printf '%s' "$OUTCOME" | jq -r '.result // empty' 2>/dev/null || true)"
+          PR_NUMBER="$(printf '%s' "$OUTCOME" | jq -r '.pr_number // empty' 2>/dev/null || true)"
+          PR_URL="$(printf '%s' "$OUTCOME" | jq -r '.pr_url // empty' 2>/dev/null || true)"
+          if [ -z "$RESULT" ] && [ -n "$OUTCOME" ]; then
+            RESULT="$OUTCOME"
+          fi
+
           {
             echo "## koad-os Promotion PR"
             echo ""
-            echo "- Result: ${{ steps.upsert.outputs.result }}"
-            if [ "${{ steps.upsert.outputs.result }}" = "blocked_actions_pr_creation" ]; then
+            echo "- Result: ${RESULT:-unknown}"
+            if [ "$RESULT" = "blocked_actions_pr_creation" ]; then
               echo "- Action required: enable GitHub Actions PR creation in repository settings."
             fi
-            if [ -n "${{ steps.upsert.outputs.pr_number }}" ]; then
-              echo "- PR: #${{ steps.upsert.outputs.pr_number }}"
+            if [ -n "$PR_NUMBER" ]; then
+              echo "- PR: #$PR_NUMBER"
             fi
-            if [ -n "${{ steps.upsert.outputs.pr_url }}" ]; then
-              echo "- URL: ${{ steps.upsert.outputs.pr_url }}"
+            if [ -n "$PR_URL" ]; then
+              echo "- URL: $PR_URL"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

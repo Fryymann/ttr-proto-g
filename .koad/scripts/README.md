@@ -197,4 +197,7 @@ Refresh dashboard first:
 - `pr-open` uses `gh pr create`; ensure GitHub CLI is authenticated.
 - `pr-gate` reads GitHub PR metadata and can patch PR body/comments via `gh api`/`gh pr comment`.
 - `pr-finish` uses `gh pr merge` and auto-selects an allowed strategy when `--strategy auto` is used.
+- GitHub MCP operating guidance is defined in `.koad/.agent-ops/runbooks/github-mcp-workflow.md`.
+- Preferred policy for agent-led GitHub actions is MCP first, with `gh` CLI as fallback.
+- Current `koad` script commands remain `gh`-backed; use them as the standard fallback/operator path.
 - Use `--dry-run` on each command to preview actions without writing.

@@ -27,5 +27,6 @@ Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups 
 | SAVEUP-20260222-044326Z | Koad (PM) | koad-os | post-pr20-automation-baseline | completed | 0 | 1 | savepoint after PR #20 merge; automation baseline active |
 | SAVEUP-20260222-071006Z | Koad (PM) | koad-os | post-pr28-merge-automation-offload | completed | 0 | 3 | automation-offload checkpoint complete after PR #27/#28 merges; no open blockers |
 | SAVEUP-20260222-091019Z | Koad (PM) | koad-os | post-pr36-ian-intake-scope-split | partial | 1 | 1 | PR #37 is Koad-approved; dedicated v1 docs lane branch is prepared but push is blocked by intermittent DNS resolution to github.com. |
+| SAVEUP-20260222-175648Z | Koad (PM) | koad-os | post-pr40-pm-sync-saveup | completed | 1 | 2 | saveup finalized after PR40; queue advanced to S4-G1 and worktree-verification lesson captured. |
 | SAVEUP-20260222-225121Z | Koad (PM) | gemini | koad-os-v2-upgrade | completed | 0 | 0 | KoadOS v2 core automation and memory improvements completed and committed to gemini branch. |
 | SAVEUP-20260222-230026Z | Koad (PM) | gemini | pm-workflow-automation | completed | 0 | 0 | Implemented dispatch and task-complete commands for dynamic prompt generation and multi-artifact synchronization. |

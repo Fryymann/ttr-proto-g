@@ -284,7 +284,7 @@ jobs:
             const headRef = String(pr.data.head.ref || "");
 
             const isKoadOsFile = (path) => {
-              if (path.startsWith(".koad/") || path.startsWith(".agents/")) {
+              if (path.startsWith(".koad/") || path.startsWith(".agents/") || path.startsWith(".codex/")) {
                 return true;
               }
               const exact = new Set([

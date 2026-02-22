@@ -189,6 +189,25 @@
 - Risks/Unknowns:
   - Network/DNS instability is currently blocking push of lane/PM/ian-v2-spec-intake and opening its v1 PR.
 
+## 2026-02-22 - post-pr40 pm sync saveup
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Persist continuity after PR #40 merge and PM queue advancement for the next S4 lane.
+- Actions:
+  - Verified release-line state includes PR #38 merge and support promotion via PR #40.
+  - Synced PM artifacts to mark `BL-018` done and advanced active dispatch to `S4-G1` (`BL-014`).
+  - Regenerated `PROJECT_PROGRESS.md` and committed/pushed support-scope updates on `koad-os`.
+  - Recorded this saveup call with role/context metadata.
+- Artifacts:
+  - `.agents/backlog.md`
+  - `CODEX_ROLE_PROMPTS.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `PROJECT_PROGRESS.md`
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/sessions/LOG.md`
+- Risks/Unknowns:
+  - Intermittent DNS/API connectivity to GitHub remains unresolved and may delay future merge/review operations.
+
 ## 2026-02-22 - koad-os-v2-upgrade
 - Role: `Koad (PM)`
 - Context ref: `gemini`

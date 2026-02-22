@@ -32,7 +32,7 @@ Each Codex instance must:
 - Lane branches must be cut from `v1` and PRs must target `v1`.
 - Hard gate: team-role development edits are forbidden on `v1` and `koad-os`; those branches are integration/support contexts only.
 - If current branch is not `lane/<ROLE>/<task-slug>`, stop and relocate to the assigned lane worktree before editing any files.
-- `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
+- `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `.codex/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
 - Sync path:
   - Promote approved support/process updates with PRs from `koad-os` -> `v1`.
@@ -60,6 +60,13 @@ Each Codex instance must:
 11. PR body must include `Persona signature` in `Role + Task Packet`.
 12. Non-`koad-os` lane PRs with source changes must update `docs/implementation/<id>.md` with required headings and file-level change mapping.
 13. Non-`koad-os` lane PRs with source changes must include changed-line coverage evidence >=80% and explicit automated/negative-path/regression test evidence.
+
+## GitHub Operations Policy
+
+- For agent-run GitHub operations (PR read/check/comment/merge), prefer GitHub MCP per `.koad/.agent-ops/runbooks/github-mcp-workflow.md`.
+- Keep local repository operations (branch/worktree/status/diff/tests) in shell/git.
+- CLI fallback is allowed when MCP is unavailable: use existing `.koad/scripts/koad` (`pr-open`, `pr-gate`, `pr-finish`) backed by `gh`.
+- Governance authority remains unchanged: required checks + required approvals determine mergeability.
 
 ## Required Team-Agent Onboarding Evidence
 

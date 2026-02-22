@@ -19,7 +19,7 @@ Owner: Project Manager
 
 ## Active Focus Window
 
-- `Now` (S4 stability + governance hardening): `BL-012`, `BL-018`, `BL-014`
+- `Now` (S4 stability + governance hardening): `BL-012`, `BL-014`
 - `Next` (S4 follow-on): `BL-008`, `BL-020`, `BL-010`
 - `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`, `BL-027`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
@@ -45,7 +45,7 @@ Owner: Project Manager
 | BL-015 | P1 | Gameplay | done | M3 | Implement V1 party-based encounter participation rules | Non-party players in the scene are not auto-pulled, party members are included deterministically, and tests cover join edge cases |
 | BL-016 | P2 | Experience | todo | M4 | Design split-feed client mode (map/combat/chat panels) while preserving terminal-first mode | Optional multi-panel view works without breaking baseline CLI flow |
 | BL-017 | P2 | Platform | todo | M4 | Add character export endpoint/command with standardized JSON schema | Exported JSON validates against schema and round-trip import validation passes |
-| BL-018 | P1 | Platform | todo | M3 | Implement admin campaign-unlock tooling with guardrails | Unlock requires explicit reason, is permission-gated, and emits immutable audit log entries |
+| BL-018 | P1 | Platform | done | M3 | Implement admin campaign-unlock tooling with guardrails | Unlock requires explicit reason, is permission-gated, and emits immutable audit log entries |
 | BL-019 | P0 | Gameplay | done | M2 | Define and enforce SRD-only mechanics/content scope for V1 | V1 rules/content references map to SRD or original content only, with a committed compliance checklist |
 | BL-020 | P1 | Gameplay | todo | M3 | Implement DM-agent advisory channel for semi-scripted NPC behavior | AI output is suggestions-only, scripted policy remains authoritative, and acceptance/override behavior is covered by tests |
 | BL-021 | P2 | Gameplay | todo | V2 | Add chained movement grammar for free-roam and encounter-aware movement budgets (`go e 3`, `go e 3, s 3`) | Parser supports chained vectors, movement cost is validated per segment, and encounter turns enforce legal movement budget |

@@ -18,11 +18,14 @@ Preserve continuity with two outputs:
 - Determine saveup mode before writes:
   - `global-ledger` (default for `Koad (PM)` and non-lane contexts)
   - `lane-isolated` (default for team-role calls where `context_ref` starts with `lane/`)
+- Branch-scope guardrail:
+  - Any saveup mode that writes tracked support artifacts (`.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `PROJECT_PROGRESS.md`) must run on `koad-os`.
+  - Team-role developer lanes on feature branches should use `lane-isolated` mode without progress sync.
 
 ## Steps
 1. Call Registration
 - Create call id: `SAVEUP-YYYYMMDD-HHMMSSZ` (UTC).
-- If mode is `global-ledger`, append row to `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with:
+- If mode is `global-ledger` (on `koad-os`), append row to `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with:
   - `role`
   - `context_ref`
   - `result=partial`
@@ -79,6 +82,7 @@ Preserve continuity with two outputs:
   - Record proposed backlog/risk updates in ops logs for PM review.
 - Merge-conflict guardrail:
   - Team-role developer lanes should prefer `lane-isolated` saveup mode to avoid touching shared saveup ledgers on feature branches.
+  - Team-role developer lanes must not check in tracked `.koad/**` saveup artifacts from non-`koad-os` branches.
   - Lane journals under `.koad/.agent-core/sessions/lane-saveups/` are local continuity artifacts and should not be included in feature-lane PRs.
   - Reconcile lane saveup records into PM/global artifacts on `koad-os` during support sync.
 

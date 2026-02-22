@@ -21,3 +21,4 @@ Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups 
 | SAVEUP-20260221-073905Z | Koad (PM) | n/a | worktree-policy-rollout | completed | 1 | 0 | continuity checkpoint completed; S2 queue/runtime live wiring remains deferred until post-S2-E1 |
 | SAVEUP-20260221-213545Z | Koad (PM) | koad-os | koad-os-governance-sync | completed | 4 | 0 | continuity checkpoint completed; PR #3 open with passing governance checks; apply branch protection runbook in GitHub UI |
 | SAVEUP-20260222-002034Z | Koad (PM) | S2-E1 | post-merge docs+saveup-prep | completed | 2 | 0 | Synced post-PR#11 roadmap docs/status and shipped lane-isolated saveup journaling defaults to reduce cross-lane merge conflicts. |
+| SAVEUP-20260222-020839Z | Koad (PM) | S3-G1 | post-merge status + S3-P1 prep | partial | 1 | 0 | S3-G1 merged and S3-P1 lane prepared; koad-os status docs committed locally but push blocked by intermittent github DNS resolution. |

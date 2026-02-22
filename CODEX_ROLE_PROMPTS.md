@@ -33,6 +33,7 @@ Each Codex instance must:
 - `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
 - Sync path: open PRs from `koad-os` -> `v1` when promoting approved support/process updates into the active release line.
+- Saveup scope rule: if saveup writes tracked `.koad/**` files or `PROJECT_PROGRESS.md`, those edits must be committed from `koad-os`; team-role lane branches should use lane-isolated saveup journals only.
 - Every lane must ship through a PR before it can be marked complete.
 - Default PR shape: one PR per lane.
 - Koad may batch low-risk docs/chore updates only when they still flow through a single reviewable PR.

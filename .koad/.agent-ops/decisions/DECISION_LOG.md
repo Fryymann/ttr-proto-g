@@ -369,3 +369,17 @@
   - Backlog/progress artifacts now reflect `BL-005` and `BL-015` as `done`.
 - Revisit trigger:
   - If merge follow-up defects from S3-G1 require temporary Gameplay hotfix prioritization ahead of S3-P1.
+
+## 2026-02-22 - Enforce saveup tracked-artifact branch scope on `koad-os`
+- Decision:
+  - Treat tracked saveup artifacts (`.koad/**` saveup ledgers/logs and `PROJECT_PROGRESS.md`) as `koad-os`-only commit scope.
+  - Enforce this at tooling level by blocking global-ledger saveup writes outside `koad-os`.
+- Why:
+  - Team-role developer lanes should not carry tracked `.koad/**` continuity artifacts in feature branches.
+  - Policy-only guidance is insufficient; CLI enforcement prevents accidental branch-scope drift.
+- Impact:
+  - `koad saveup` now errors when global-ledger mode is invoked off `koad-os`.
+  - `koad saveup --sync-progress-in-lane` now requires `koad-os` because it writes `PROJECT_PROGRESS.md`.
+  - Saveup/standards/agent prompt docs now explicitly direct developer lanes to lane-isolated journals and `koad-os` reconciliation for tracked artifacts.
+- Revisit trigger:
+  - If saveup artifacts are migrated to an external continuity store and no longer tracked in git.

@@ -351,3 +351,15 @@
   - Regenerated root progress dashboard snapshot.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Saveup tracked-artifact scope enforcement (`koad-os` only)
+- Scope:
+  - Enforce user-requested branch-scope rule for developer saveup behavior around tracked `.koad/**` artifacts.
+- Changes:
+  - Added CLI guard in `.koad/scripts/koad_cli.py` so global-ledger saveup writes are blocked outside `koad-os`.
+  - Added CLI guard for `--sync-progress-in-lane` to require `koad-os` because it writes `PROJECT_PROGRESS.md`.
+  - Updated saveup protocol, standards registries, AGENTS docs, and Codex role prompts to require tracked saveup artifacts to be committed via `koad-os`.
+  - Recorded explicit user preference for saveup tracked-artifact branch scope.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified script compiles: `python3 -m py_compile .koad/scripts/koad_cli.py`.

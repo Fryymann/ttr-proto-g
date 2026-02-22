@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience", "User")
 SAVEUP_ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience")
+KOAD_OS_BRANCH = "koad-os"
 
 
 def run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -707,12 +708,28 @@ def append_session_log(
 
 def cmd_saveup(args: argparse.Namespace) -> int:
     root = repo_root()
+    branch = current_branch(root)
     cid = call_id_now()
     lane_isolated = args.lane_isolated or (
         (not args.global_ledger)
         and args.role != "Koad (PM)"
         and args.context_ref.startswith("lane/")
     )
+    lane_progress_sync = lane_isolated and (not args.no_progress_sync) and args.sync_progress_in_lane
+    global_ledger_mode = not lane_isolated
+
+    if global_ledger_mode and branch != KOAD_OS_BRANCH:
+        raise ValueError(
+            "global-ledger saveup writes tracked support artifacts under .koad/. "
+            f"Run on '{KOAD_OS_BRANCH}' or use lane-isolated mode for lane contexts."
+        )
+
+    if lane_progress_sync and branch != KOAD_OS_BRANCH:
+        raise ValueError(
+            "lane-isolated saveup with --sync-progress-in-lane writes PROJECT_PROGRESS.md. "
+            f"Run on '{KOAD_OS_BRANCH}' or omit --sync-progress-in-lane."
+        )
+
     row = (
         f"| {cid} | {args.role} | {args.context_ref} | {args.scope} | {args.result} | "
         f"{args.new_learnings} | {args.duplicates_skipped} | {args.notes} |"
@@ -846,7 +863,7 @@ def build_parser() -> argparse.ArgumentParser:
     save.add_argument(
         "--global-ledger",
         action="store_true",
-        help="Force global SAVEUP_CALLS/LOG writes even for lane contexts",
+        help="Force global SAVEUP_CALLS/LOG writes even for lane contexts (requires koad-os branch)",
     )
     save.add_argument(
         "--lane-file",
@@ -855,7 +872,7 @@ def build_parser() -> argparse.ArgumentParser:
     save.add_argument(
         "--sync-progress-in-lane",
         action="store_true",
-        help="Allow PROJECT_PROGRESS.md refresh in lane-isolated mode (default: skipped)",
+        help="Allow PROJECT_PROGRESS.md refresh in lane-isolated mode (requires koad-os branch)",
     )
     save.add_argument("--progress-file", default="PROJECT_PROGRESS.md")
     save.add_argument("--no-progress-sync", action="store_true")

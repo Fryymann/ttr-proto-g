@@ -465,3 +465,14 @@
 - Evidence:
   - Updated `.github/workflows/promote-koad-os-to-v1.yml`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified YAML parse with `python3 -c "import yaml; yaml.safe_load(...)"`.
+
+## 2026-02-22 - `pr-gate --watch` check-settle automation
+- Scope:
+  - Remove manual PR-check polling from PM gate review loop.
+- Changes:
+  - Extended `.koad/scripts/koad_cli.py` `pr-gate` command with `--watch`, `--watch-timeout-seconds`, and `--poll-seconds`.
+  - Added transient-blocker detection so watch mode waits for pending/missing check states but exits immediately on hard blockers.
+  - Updated script docs to include watch-mode usage in review flow examples.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified with `python3 -m py_compile .koad/scripts/koad_cli.py`, `bash .koad/scripts/koad pr-gate --help`, and `bash .koad/scripts/koad pr-gate --pr 26 --watch --watch-timeout-seconds 5 --poll-seconds 1`.

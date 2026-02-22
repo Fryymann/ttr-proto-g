@@ -1,7 +1,7 @@
 # Backlog
 
 Status: Active
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 Owner: Project Manager
 
 ## Priority Legend
@@ -19,8 +19,8 @@ Owner: Project Manager
 
 ## Active Focus Window
 
-- `Now` (M2 critical path): `BL-012`, `BL-003`
-- `Next` (M3 entry): `BL-005`, `BL-006`, `BL-015`, `BL-007`
+- `Now` (M2 closeout + M3 entry): `BL-012`, `BL-005`, `BL-015`
+- `Next` (M3 execution): `BL-006`, `BL-007`, `BL-013`, `BL-018`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
 ## Backlog Items
@@ -29,7 +29,7 @@ Owner: Project Manager
 | --- | --- | --- | --- | --- | --- | --- |
 | BL-001 | P0 | Gameplay | done | M2 | Define `Scene` data model and tile occupancy rules in code | Scene structs compile, occupancy checks unit-tested |
 | BL-002 | P0 | Platform | done | M2 | Add protocol messages for scene snapshot/delta | Protocol types added, server sends valid scene updates |
-| BL-003 | P0 | Experience | todo | M2 | Render scene grid in CLI with player/NPC symbols | Client shows map updates for movement in multiplayer test |
+| BL-003 | P0 | Experience | done | M2 | Render scene grid in CLI with player/NPC symbols | Client shows map updates for movement in multiplayer test |
 | BL-004 | P0 | Platform | done | M2 | Implement deterministic scene command queue | Stable ordering test passes with same input stream |
 | BL-005 | P1 | Gameplay | todo | M3 | Implement encounter skeleton (start, party-scoped participants, initiative, turns) | Encounter can start/end, includes only the initiating actor's party in V1, and cycles turns correctly |
 | BL-006 | P1 | Platform | todo | M3 | Add turn timer + timeout fallback action | Timed-out actor auto-resolves with configured fallback |

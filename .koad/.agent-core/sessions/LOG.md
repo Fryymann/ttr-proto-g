@@ -71,3 +71,19 @@
   - `.koad/.agent-core/memory/FACTS_LEDGER.md`
 - Risks/Unknowns:
   - Final governance behavior depends on applying branch protection settings in GitHub UI as documented.
+
+## 2026-02-22 - Post-S2-E1 docs sync + lane saveup hardening
+- Role: `Koad (PM)`
+- Context ref: `S2-E1`
+- Objective: Prepare v1 for S3 agent handoff with conflict-resistant saveup flow.
+- Actions:
+  - Merged origin/v1 into koad-os and updated queue/backlog/status docs.
+  - Added lane-isolated saveup mode with global override flags.
+- Artifacts:
+  - `CODEX_ROLE_PROMPTS.md`
+  - `PROJECT_PROGRESS.md`
+  - `.koad/scripts/koad_cli.py`
+  - `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`
+  - `.koad/.standards/standards_registry.md`
+- Risks/Unknowns:
+  - Behavioral change in saveup defaults; mitigated by --global-ledger override and docs.

@@ -1,7 +1,7 @@
 # Codex Team Starter Prompts
 
 Status: Active (living)
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 Owner: Koad (Project Manager)
 
 ## Purpose
@@ -77,11 +77,16 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | --- | --- | --- | --- | --- | --- |
 | `S1-P2` | Platform | `BL-012` | Done (merged to `v1`) | none | `lane/Platform/s1-p2-persistence-lock-audit` |
 | `S2-P1` | Platform | `BL-004`, `BL-002` | Done (merged to `v1`) | `S1-P2` merged to `v1` | `lane/Platform/s2-p1-scene-queue-protocol` |
-| `S2-E1` | Experience | `BL-003` | Active Next (dispatch now) | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
+| `S2-E1` | Experience | `BL-003` | Done (merged to `v1`) | `S2-P1` merged to `v1` | `lane/Experience/s2-e1-cli-scene-render` |
+| `S3-G1` | Gameplay | `BL-005`, `BL-015` | Active Next (dispatch now) | `S2-E1` merged to `v1` | `lane/Gameplay/s3-g1-encounter-skeleton-party-capture` |
+| `S3-P1` | Platform | `BL-006` | Queued (blocked on `S3-G1` merge) | `S3-G1` merged to `v1` | `lane/Platform/s3-p1-turn-timer-fallback` |
+| `S3-E1` | Experience | `BL-007` | Queued (blocked on `S3-G1` merge) | `S3-G1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
 
 ### Operator Dispatch Shortcut
 
-- Experience Agent: `Your next task is S2-E1.`
+- Gameplay Agent: `Your next task is S3-G1.`
+- Platform Agent (after `S3-G1` merge): `Your next task is S3-P1.`
+- Experience Agent (after `S3-G1` merge): `Your next task is S3-E1.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
@@ -214,6 +219,134 @@ Minimum verification:
 Handoff requirements:
 - Include before/after CLI output notes or screenshots in PR description.
 - Provide PR URL targeting v1, latest commit SHA, and any UX follow-up risks.
+```
+
+### Task Packet `S3-G1` (Gameplay: Encounter Skeleton + Party Capture)
+
+```text
+You are Codex acting as the Gameplay Team instance for C:\data\ttrpg.
+
+Task packet id: S3-G1
+Backlog scope: BL-005, BL-015
+Milestone/Sprint: M3 / S3
+Dependency: start after S2-E1 is merged to v1.
+Branch policy: create branch from v1 and target PR to v1.
+
+Objective:
+- Implement encounter skeleton and party-scoped participant capture rules for V1.
+
+In scope:
+- Add encounter state machine scaffolding (start/resolve/end + turn ownership basics).
+- Implement deterministic party-based encounter participant inclusion.
+- Add deterministic initiative ordering tie-break behavior contract.
+
+Suggested file targets:
+- crates/ttrpg-server/src/encounter/mod.rs
+- crates/ttrpg-server/src/encounter/state.rs
+- crates/ttrpg-server/src/party/mod.rs
+- crates/ttrpg-server/src/main.rs (integration glue only as needed)
+
+Out of scope:
+- Turn timer/fallback automation (S3-P1)
+- Client turn tracker UI (S3-E1)
+
+Acceptance criteria:
+1) Encounter can start/end and includes only triggering party members + relevant NPCs (BL-005/BL-015).
+2) Non-party actors are not auto-pulled by default in V1 (BL-015).
+3) Turn ownership and initiative ordering are deterministic with test evidence (BL-005).
+
+Minimum verification:
+- cargo test -p ttrpg-server
+- cargo check
+
+Handoff requirements:
+- Include participant-capture edge-case evidence and initiative tie-break notes.
+- Provide PR URL targeting v1, latest commit SHA, and dependency notes for S3-P1/S3-E1.
+```
+
+### Task Packet `S3-P1` (Platform: Turn Timer + Timeout Fallback)
+
+```text
+You are Codex acting as the Platform Team instance for C:\data\ttrpg.
+
+Task packet id: S3-P1
+Backlog scope: BL-006
+Milestone/Sprint: M3 / S3
+Dependency: start only after S3-G1 is merged to v1.
+Branch policy: create branch from v1 and target PR to v1.
+
+Objective:
+- Add deterministic turn timer and timeout fallback infrastructure for encounter runtime.
+
+In scope:
+- Implement timeout scheduling/expiration path in encounter runtime.
+- Apply deterministic fallback action on timeout and advance turn safely.
+- Emit protocol/update events needed by client experience layer.
+
+Suggested file targets:
+- crates/ttrpg-server/src/encounter/timer.rs
+- crates/ttrpg-server/src/encounter/fallback.rs
+- crates/ttrpg-server/src/encounter/mod.rs
+- crates/ttrpg-server/src/main.rs (integration glue only as needed)
+
+Out of scope:
+- Gameplay encounter participant semantics (S3-G1)
+- Client turn tracker rendering (S3-E1)
+
+Acceptance criteria:
+1) Timed-out actor auto-resolves through configured fallback action deterministically (BL-006).
+2) Turn advances safely after timeout with deterministic ordering.
+3) Timeout behavior has test evidence and does not break existing encounter transitions.
+
+Minimum verification:
+- cargo test -p ttrpg-server
+- cargo check
+
+Handoff requirements:
+- Include timeout configuration defaults and deterministic behavior notes.
+- Provide PR URL targeting v1, latest commit SHA, and any follow-up compatibility risks.
+```
+
+### Task Packet `S3-E1` (Experience: Turn Tracker + Active Actor Indicator)
+
+```text
+You are Codex acting as the Experience Team instance for C:\data\ttrpg.
+
+Task packet id: S3-E1
+Backlog scope: BL-007
+Milestone/Sprint: M3 / S3
+Dependency: start only after S3-G1 is merged to v1 (and confirm message shape from S3-P1 if landed).
+Branch policy: create branch from v1 and target PR to v1.
+
+Objective:
+- Add turn tracker and active actor indicator to CLI encounter presentation.
+
+In scope:
+- Render current round/turn owner in an at-a-glance tracker.
+- Show clear active-actor cue and update on turn changes.
+- Preserve baseline command ergonomics and scene readability.
+
+Suggested file targets:
+- crates/ttrpg-client-cli/src/turn_ui.rs
+- crates/ttrpg-client-cli/src/main.rs
+
+Out of scope:
+- Authoritative encounter resolution logic
+- Timer fallback algorithm changes
+
+Acceptance criteria:
+1) Turn indicator updates for all participants when turn ownership changes (BL-007).
+2) Active actor cue is visible and consistent across turn transitions.
+3) Existing CLI interaction flow remains usable after tracker integration.
+
+Minimum verification:
+- cargo test -p ttrpg-client-cli
+- cargo check
+- Manual playtest notes for readability.
+
+Handoff requirements:
+- Include CLI output samples for turn transitions.
+- Provide PR URL targeting v1, latest commit SHA, and UX follow-up risks.
 ```
 
 ## Role Prompt: Gameplay Instance

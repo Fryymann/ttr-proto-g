@@ -54,3 +54,11 @@ Last updated: 2026-02-21
   - Maintain `PROJECT_PROGRESS.md` in repo root.
   - Regenerate dashboard after backlog/sprint/queue/merge state changes using `.koad/scripts/koad progress-sync` (or default `saveup` sync path).
   - Dashboard content must be sourced from canonical planning artifacts (`.agents/backlog.md`, `docs/design/game-system-roadmap.md`, `docs/design/execution-sprint-plan.md`, `CODEX_ROLE_PROMPTS.md`).
+
+### STD-013 - Lane-Isolated Saveup Journaling
+- Intent: Prevent cross-lane merge conflicts from concurrent developer saveup activity.
+- Enforcement:
+  - Team-role saveups with lane context (`context_ref` starts with `lane/`) should write to lane journal files under `.koad/.agent-core/sessions/lane-saveups/`.
+  - Lane journal files are local continuity artifacts and should be excluded from feature-lane PR scope.
+  - Shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) should be updated from PM/global mode or reconciliation on `koad-os`.
+  - Lane-isolated saveup entries must still include `role` and `context_ref` metadata.

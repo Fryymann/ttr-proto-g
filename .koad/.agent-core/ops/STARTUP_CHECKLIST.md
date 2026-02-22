@@ -38,5 +38,6 @@
 - State risk level (`Low|Medium|High`).
 - State selected role and planned scope.
 - Carry selected role label into any `saveup` call metadata (`role` + `context_ref` in `SAVEUP_CALLS.md`).
+- For team-role lane contexts (`context_ref` starts with `lane/`), use lane-isolated saveup journaling (`.koad/.agent-core/sessions/lane-saveups/`) unless global ledger mode is explicitly required.
 - If acting as Koad/PM and work resembles sprint implementation, verify explicit user authorization first; otherwise remain in planning/delegation mode.
 - For parallel team-role execution, require one lane per dedicated worktree/branch and a defined PR strategy before launch.

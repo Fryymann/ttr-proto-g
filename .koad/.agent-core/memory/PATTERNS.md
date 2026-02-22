@@ -69,3 +69,14 @@ Track recurring workflows and known effective approaches.
   - Merge PR after review to keep release line current with support workflow updates.
 - Validation:
   - PR head is `koad-os`, files are support-scope only, and `validate-pr-governance` + `validate-koad-os-scope` are green.
+
+## Pattern: Lane-Isolated Saveup
+- Trigger:
+  - Team-role lane agent needs a continuity checkpoint while feature lane is active.
+- Steps:
+  - Run `.koad/scripts/koad saveup` with lane `context_ref` (e.g., `lane/Platform/...`).
+  - Let default lane-isolated mode write to `.koad/.agent-core/sessions/lane-saveups/<context-ref>.md`.
+  - Avoid shared global saveup ledgers in feature lanes unless explicitly required.
+  - Reconcile PM/global saveup summaries on `koad-os` during support sync.
+- Validation:
+  - Feature-lane PRs avoid touching shared `SAVEUP_CALLS.md`/`LOG.md` while still preserving role/context continuity records.

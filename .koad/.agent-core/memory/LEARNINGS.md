@@ -87,3 +87,9 @@ Append-only record of durable lessons.
 - Observation: Human+agent shared workflows need explicit PR-level authorship labeling for unambiguous review context.
 - Why it matters: Reviewers can otherwise lose attribution clarity on governance/meta updates.
 - Behavior update: Require a `Persona signature` line in PR bodies and enforce it via governance validation.
+
+## 2026-02-22
+### Operational
+- Observation: Shared saveup ledgers create avoidable merge conflicts when multiple developer lanes append continuity records in parallel.
+- Why it matters: Saveup conflicts slow merge flow and can hide or drop continuity metadata during conflict resolution.
+- Behavior update: Default team-role lane saveups to lane-isolated journals and reconcile global PM logs on `koad-os`.

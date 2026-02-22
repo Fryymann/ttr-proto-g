@@ -47,7 +47,13 @@ Example:
 
 ### `saveup`
 
-Append a role-aware saveup row and session log entry.
+Append a role-aware saveup record.
+
+Mode behavior:
+- Global ledger mode: writes `.koad/.agent-core/sessions/SAVEUP_CALLS.md` + `.koad/.agent-core/sessions/LOG.md`
+- Lane-isolated mode: writes `.koad/.agent-core/sessions/lane-saveups/<context-ref>.md`
+- Team-role lane contexts (`--role Gameplay|Platform|Experience` + `--context-ref lane/...`) default to lane-isolated mode to reduce merge conflicts.
+- Lane journals live in `.koad/.agent-core/sessions/lane-saveups/` and are gitignored local artifacts (not for feature-lane PR inclusion).
 
 Example:
 
@@ -65,6 +71,13 @@ Example:
 ```
 
 By default, `saveup` also refreshes `PROJECT_PROGRESS.md`. Use `--no-progress-sync` to skip.
+In lane-isolated mode, dashboard refresh is skipped by default; use `--sync-progress-in-lane` to force it.
+
+Force global ledger for a lane context:
+
+```bash
+.koad/scripts/koad saveup ... --global-ledger
+```
 
 ### `progress-sync`
 

@@ -576,6 +576,88 @@ def append_line(path: Path, line: str) -> None:
         f.write(line + "\n")
 
 
+def slug_for_path(value: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip())
+    slug = re.sub(r"-{2,}", "-", slug).strip("-").lower()
+    return slug or "unknown-context"
+
+
+def default_lane_saveup_path(root: Path, context_ref: str) -> Path:
+    lane_dir = root / ".koad/.agent-core/sessions/lane-saveups"
+    lane_dir.mkdir(parents=True, exist_ok=True)
+    return lane_dir / f"{slug_for_path(context_ref)}.md"
+
+
+def append_lane_saveup_entry(
+    path: Path,
+    cid: str,
+    role: str,
+    context_ref: str,
+    scope: str,
+    result: str,
+    new_learnings: int,
+    duplicates_skipped: int,
+    notes: str,
+    objective: str,
+    actions: list[str],
+    artifacts: list[str],
+    risks: list[str],
+) -> None:
+    if not path.exists():
+        header = [
+            "# Lane Saveup Journal",
+            "",
+            "Append-only lane-scoped saveup records for conflict-resistant team-role continuity.",
+            "",
+            "## Fields",
+            "- call_id",
+            "- role",
+            "- context_ref",
+            "- scope",
+            "- result",
+            "- new_learnings",
+            "- duplicates_skipped",
+            "- notes",
+        ]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(header) + "\n", encoding="utf-8")
+
+    timestamp = now_utc().strftime("%Y-%m-%d %H:%M:%SZ")
+    lines = [
+        "",
+        f"## {cid}",
+        f"- Timestamp (UTC): {timestamp}",
+        f"- Role: `{role}`",
+        f"- Context ref: `{context_ref}`",
+        f"- Scope: {scope}",
+        f"- Result: {result}",
+        f"- New learnings: {new_learnings}",
+        f"- Duplicates skipped: {duplicates_skipped}",
+        f"- Notes: {notes}",
+        f"- Objective: {objective}",
+        "- Actions:",
+    ]
+    if actions:
+        lines.extend([f"  - {a}" for a in actions])
+    else:
+        lines.append("  - none")
+
+    lines.append("- Artifacts:")
+    if artifacts:
+        lines.extend([f"  - `{a}`" for a in artifacts])
+    else:
+        lines.append("  - none")
+
+    lines.append("- Risks/Unknowns:")
+    if risks:
+        lines.extend([f"  - {r}" for r in risks])
+    else:
+        lines.append("  - none")
+
+    with path.open("a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def append_saveup_call_row(root: Path, row: str) -> None:
     calls = root / ".koad/.agent-core/sessions/SAVEUP_CALLS.md"
     append_line(calls, row)
@@ -626,6 +708,11 @@ def append_session_log(
 def cmd_saveup(args: argparse.Namespace) -> int:
     root = repo_root()
     cid = call_id_now()
+    lane_isolated = args.lane_isolated or (
+        (not args.global_ledger)
+        and args.role != "Koad (PM)"
+        and args.context_ref.startswith("lane/")
+    )
     row = (
         f"| {cid} | {args.role} | {args.context_ref} | {args.scope} | {args.result} | "
         f"{args.new_learnings} | {args.duplicates_skipped} | {args.notes} |"
@@ -633,7 +720,43 @@ def cmd_saveup(args: argparse.Namespace) -> int:
 
     if args.dry_run:
         print("Dry run:")
+        print(f"mode: {'lane-isolated' if lane_isolated else 'global-ledger'}")
         print(row)
+        return 0
+
+    if lane_isolated:
+        lane_path = root / args.lane_file if args.lane_file else default_lane_saveup_path(root, args.context_ref)
+        append_lane_saveup_entry(
+            path=lane_path,
+            cid=cid,
+            role=args.role,
+            context_ref=args.context_ref,
+            scope=args.scope,
+            result=args.result,
+            new_learnings=args.new_learnings,
+            duplicates_skipped=args.duplicates_skipped,
+            notes=args.notes,
+            objective=args.objective,
+            actions=args.action or [],
+            artifacts=args.artifact or [],
+            risks=args.risk or [],
+        )
+
+        should_sync_progress = (not args.no_progress_sync) and args.sync_progress_in_lane
+        if should_sync_progress:
+            dashboard = build_progress_dashboard(root)
+            progress_path = root / args.progress_file
+            progress_path.write_text(dashboard, encoding="utf-8")
+
+        print(f"saveup call id: {cid}")
+        print("mode: lane-isolated")
+        print(f"lane journal: {lane_path}")
+        print("global ledger: skipped (.koad/.agent-core/sessions/SAVEUP_CALLS.md)")
+        print("global session log: skipped (.koad/.agent-core/sessions/LOG.md)")
+        if should_sync_progress:
+            print(f"progress: {args.progress_file}")
+        else:
+            print("progress: skipped (lane-isolated default)")
         return 0
 
     append_saveup_call_row(root, row)
@@ -654,6 +777,7 @@ def cmd_saveup(args: argparse.Namespace) -> int:
         progress_path.write_text(dashboard, encoding="utf-8")
 
     print(f"saveup call id: {cid}")
+    print("mode: global-ledger")
     print(f"ledger: .koad/.agent-core/sessions/SAVEUP_CALLS.md")
     print(f"session log: .koad/.agent-core/sessions/LOG.md")
     if not args.no_progress_sync:
@@ -714,6 +838,25 @@ def build_parser() -> argparse.ArgumentParser:
     save.add_argument("--action", action="append", help="Action line (repeatable)")
     save.add_argument("--artifact", action="append", help="Artifact path line (repeatable)")
     save.add_argument("--risk", action="append", help="Risk/unknown line (repeatable)")
+    save.add_argument(
+        "--lane-isolated",
+        action="store_true",
+        help="Write saveup entry to lane journal instead of shared global ledger",
+    )
+    save.add_argument(
+        "--global-ledger",
+        action="store_true",
+        help="Force global SAVEUP_CALLS/LOG writes even for lane contexts",
+    )
+    save.add_argument(
+        "--lane-file",
+        help="Explicit lane journal path (repo-relative) when using lane-isolated mode",
+    )
+    save.add_argument(
+        "--sync-progress-in-lane",
+        action="store_true",
+        help="Allow PROJECT_PROGRESS.md refresh in lane-isolated mode (default: skipped)",
+    )
     save.add_argument("--progress-file", default="PROJECT_PROGRESS.md")
     save.add_argument("--no-progress-sync", action="store_true")
     save.add_argument("--dry-run", action="store_true")

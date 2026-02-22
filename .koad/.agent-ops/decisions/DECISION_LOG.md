@@ -329,3 +329,29 @@
   - Backlog and progress dashboard now reflect completed `BL-002`/`BL-004` and updated focus window.
 - Revisit trigger:
   - If regression/production defects from S2-P1 require hotfix reprioritization before S2-E1 starts.
+
+## 2026-02-22 - Advance queue to S3-G1 after S2-E1 merge
+- Decision:
+  - Mark `S2-E1` complete and merged to `v1`.
+  - Promote `S3-G1` to active next dispatch packet with `S3-P1` and `S3-E1` dependency-queued behind it.
+- Why:
+  - S2 scene-render baseline is complete, so the roadmap now enters S3 encounter-loop implementation.
+- Impact:
+  - Queue and packet docs now support immediate Gameplay dispatch:
+    - `Your next task is S3-G1.`
+  - Backlog/progress artifacts reflect `BL-003` done and updated Now/Next focus.
+- Revisit trigger:
+  - If urgent post-S2 stabilization issues force short-term reprioritization.
+
+## 2026-02-22 - Enable lane-isolated saveup journaling for developer lanes
+- Decision:
+  - Default team-role lane saveups to lane-scoped journals instead of shared global saveup ledgers.
+  - Keep global saveup ledgers for PM/global mode and explicit forced global calls.
+- Why:
+  - Shared saveup files create avoidable merge conflicts when multiple developer lanes run in parallel.
+- Impact:
+  - `koad saveup` now supports lane-isolated mode and auto-selects it for team-role `lane/...` contexts.
+  - Lane journals are kept as local/gitignored continuity artifacts to stay outside feature PR scope.
+  - Standards/startup/agent docs now include lane-isolated saveup expectations (`STD-013`).
+- Revisit trigger:
+  - If saveup reconciliation is fully automated and global ledgers can be updated conflict-free from all lanes.

@@ -319,3 +319,24 @@
   - Added sprint status note and durable queue decision log entry.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-22 - Post-S2-E1 merge queue + status progression
+- Scope:
+  - Reflect S2-E1 completion and advance active queue into S3.
+- Changes:
+  - Marked `BL-003` as `done` in backlog and updated focus window.
+  - Updated queue statuses (`S2-E1` done, `S3-G1` active next, `S3-P1`/`S3-E1` queued on dependency).
+  - Added/updated S3 task packets in role prompt pack and sprint status notes.
+  - Regenerated root progress dashboard.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Lane-isolated saveup prep for parallel developer lanes
+- Scope:
+  - Reduce saveup merge conflicts during concurrent team-role lane execution.
+- Changes:
+  - Updated `koad saveup` to support lane-isolated journaling and default it for team-role `lane/...` contexts.
+  - Added lane saveup journal path `.koad/.agent-core/sessions/lane-saveups/` as local gitignored artifact storage.
+  - Updated saveup protocol, startup guidance, standards, and agent docs for the new mode.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/AGENTS.md`, `AGENTS.md`, `.koad/scripts/README.md`, `.koad/README.md`.

@@ -1,6 +1,6 @@
 # Working Memory
 
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 
 ## Active Context
 - Project is a Rust multiplayer terminal RPG moving from M1 scaffold to scene-based combat architecture.
@@ -13,6 +13,7 @@ Last updated: 2026-02-21
 - Antigravity execution is paused; `ANTIGRAVITY_SPRINT_PROMPTS.md` is archival unless explicitly re-enabled.
 - Codex team-role workflow defaults to one lane per dedicated git worktree/branch with lightweight PR policy.
 - Startup now requires role selection routing via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
+- Codex agents execute inside WSL2 (Ubuntu), so lane prompt workspace paths should use `/mnt/c/...` instead of `C:\...`.
 
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.

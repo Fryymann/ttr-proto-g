@@ -374,3 +374,13 @@
 - Evidence:
   - Updated `crates/ttrpg-client-cli/src/render_scene.rs`, `crates/ttrpg-client-cli/src/main.rs`, `.koad/.agent-core/memory/LEARNINGS.md`.
   - PR: `https://github.com/Fryymann/ttr-proto-g/pull/11`.
+
+## 2026-02-22 - Codex WSL pathing correction for prompt pack and core memory
+- Scope:
+  - Correct Codex execution environment assumptions after user clarification that Codex runs inside WSL2.
+- Changes:
+  - Updated Codex prompt pack workspace paths from `C:\data\ttrpg` to `/mnt/c/data/ttrpg`.
+  - Updated core memory artifacts (`WORKING_MEMORY`, `USER_PREFERENCES`, `LEARNINGS`, `FACTS_LEDGER`) to encode WSL pathing as the durable default for Codex agents.
+  - Logged durable PM decision for WSL path standardization.
+- Evidence:
+  - Updated `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

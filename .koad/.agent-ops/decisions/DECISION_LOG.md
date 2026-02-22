@@ -383,3 +383,15 @@
   - Saveup/standards/agent prompt docs now explicitly direct developer lanes to lane-isolated journals and `koad-os` reconciliation for tracked artifacts.
 - Revisit trigger:
   - If saveup artifacts are migrated to an external continuity store and no longer tracked in git.
+
+## 2026-02-22 - Codex execution path standard set to WSL paths
+- Decision:
+  - Standardize Codex team-role prompt workspace paths to WSL mount paths for this repository (`/mnt/c/data/ttrpg`).
+  - Retire Windows-native `C:\...` path guidance for Codex prompts.
+- Why:
+  - Codex agents in this environment execute inside WSL2 (Ubuntu), so Windows-native paths are error-prone and can fail resolution.
+- Impact:
+  - Updated Codex task packet/path prompts to `/mnt/c/data/ttrpg`.
+  - Updated memory/preferences/facts to preserve the environment assumption for future sessions.
+- Revisit trigger:
+  - If execution moves from WSL2 to a Windows-native shell environment.

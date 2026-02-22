@@ -33,7 +33,7 @@ Last updated: 2026-02-21
 ### STD-009 - Dual Review + Merge Completion Gate
 - Intent: Require PR-based dual review (Koad git review + Ian GitHub review) and merged PR confirmation before task closure.
 - Enforcement:
-  - Use PR template and required `validate-pr-governance` status check under branch protection.
+  - Use PR template and required `validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, and `validate-test-evidence` checks under branch protection.
   - Governance validation requires review-gate lines to be present; checkbox states are informational audit metadata.
   - Merge authority remains GitHub review approvals plus required status checks.
 
@@ -72,3 +72,10 @@ Last updated: 2026-02-21
   - Team-role lanes on non-`koad-os` branches should not use global-ledger saveup writes.
   - Shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) should be updated from PM/global mode or reconciliation on `koad-os`.
   - Lane-isolated saveup entries must still include `role` and `context_ref` metadata.
+
+### STD-014 - Developer Documentation + Test Evidence Gate
+- Intent: Require non-`koad-os` source PRs to include robust implementation documentation and high-confidence automated test evidence.
+- Enforcement:
+  - Source-code PRs must update `docs/implementation/*.md` with required headings and file-level change mapping.
+  - Changed-line coverage evidence must be >=80%.
+  - PR evidence must include automated test command/results plus negative-path and regression testing details.

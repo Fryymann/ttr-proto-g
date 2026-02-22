@@ -54,8 +54,10 @@ Each Codex instance must:
 7. Task is complete only after PR merge to `v1` (or a replacement base branch explicitly declared by Koad).
 8. Lane PR must use `.github/pull_request_template.md`.
 9. Keep PR review-gate checkboxes current for handoff audit clarity.
-10. PRs must pass both `validate-pr-governance` and `validate-koad-os-scope`.
+10. PRs must pass `validate-pr-governance`, `validate-koad-os-scope`, `validate-implementation-doc`, and `validate-test-evidence`.
 11. PR body must include `Persona signature` in `Role + Task Packet`.
+12. Non-`koad-os` lane PRs with source changes must update `docs/implementation/<id>.md` with required headings and file-level change mapping.
+13. Non-`koad-os` lane PRs with source changes must include changed-line coverage evidence >=80% and explicit automated/negative-path/regression test evidence.
 
 ## Required Team-Agent Onboarding Evidence
 
@@ -72,9 +74,11 @@ Each Codex instance must:
 2. Files changed
 3. Tests/verification run
 4. Acceptance checklist with `PASS`/`FAIL` evidence
-5. Out-of-scope files touched (or `none`)
-6. Branch/worktree and PR metadata (URL, title, base/head, latest commit, dependency order)
-7. Risks/deferred work
+5. Implementation doc path (`docs/implementation/<id>.md`) and summary of sections updated
+6. Changed-line coverage evidence (>=80%) and automated/negative-path/regression test results
+7. Out-of-scope files touched (or `none`)
+8. Branch/worktree and PR metadata (URL, title, base/head, latest commit, dependency order)
+9. Risks/deferred work
 
 ## Active Task Packet Queue (`v1`)
 

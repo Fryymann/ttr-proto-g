@@ -509,3 +509,17 @@
   - `--strategy auto` now chooses an allowed repository merge method in preference order (squash, rebase, merge).
 - Revisit trigger:
   - If merge authority moves to queue-managed merges with repository-native readiness gating.
+
+## 2026-02-22 - Tighten developer documentation and test evidence gates
+- Decision:
+  - Add required CI checks `validate-implementation-doc` and `validate-test-evidence` for non-`koad-os` source-code PRs.
+  - Require implementation-doc metadata in PR template/governance for non-`koad-os` PRs.
+  - Enforce changed-line coverage evidence floor at 80% and explicit automated/negative-path/regression test evidence in implementation docs.
+- Why:
+  - User requested stricter documentation and test coverage discipline to improve review quality and reduce ambiguity in developer-lane handoffs.
+- Impact:
+  - New workflow gates now validate implementation-doc structure/file mapping and test/coverage evidence contract.
+  - PM review tooling (`koad pr-gate`/`koad pr-finish`) now expects the expanded required check set.
+  - Branch-protection runbook and role prompts now include the expanded required checks and handoff contract.
+- Revisit trigger:
+  - If future CI introduces true changed-line coverage computation from test instrumentation, replace evidence-line validation with direct measured thresholds.

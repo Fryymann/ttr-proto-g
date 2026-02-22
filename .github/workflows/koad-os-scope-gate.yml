@@ -33,7 +33,7 @@ jobs:
           is_koad_os_file() {
             local path="$1"
             case "$path" in
-              .koad/*|.agents/*|AGENTS.md|CODEX_ROLE_PROMPTS.md|ANTIGRAVITY_SPRINT_PROMPTS.md|PROJECT_PROGRESS.md|docs/ops/github-branch-protection.md|docs/design/execution-sprint-plan.md|.github/pull_request_template.md|.github/workflows/pr-template-gate.yml|.github/workflows/koad-os-scope-gate.yml|.github/workflows/sync-koad-os-from-v1.yml|.github/workflows/update-v1-dashboard.yml|.github/workflows/promote-koad-os-to-v1.yml)
+              .koad/*|.agents/*|AGENTS.md|CODEX_ROLE_PROMPTS.md|ANTIGRAVITY_SPRINT_PROMPTS.md|PROJECT_PROGRESS.md|docs/ops/github-branch-protection.md|docs/design/execution-sprint-plan.md|.github/pull_request_template.md|.github/workflows/pr-template-gate.yml|.github/workflows/koad-os-scope-gate.yml|.github/workflows/sync-koad-os-from-v1.yml|.github/workflows/update-v1-dashboard.yml|.github/workflows/promote-koad-os-to-v1.yml|.github/workflows/implementation-doc-gate.yml|.github/workflows/test-evidence-gate.yml)
                 return 0
                 ;;
               *)

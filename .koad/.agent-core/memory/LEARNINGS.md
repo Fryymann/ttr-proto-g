@@ -143,3 +143,8 @@ Append-only record of durable lessons.
 - Observation: Final merge execution still failed intermittently when the default merge strategy conflicted with repository merge-method restrictions.
 - Why it matters: Manual retries and ad-hoc strategy switching add friction at the exact completion checkpoint.
 - Behavior update: Use `koad pr-finish` with strategy auto-selection to enforce readiness and merge in one deterministic step.
+
+### Process
+- Observation: Documentation guidance alone does not reliably produce consistent implementation notes and test evidence across developer lanes.
+- Why it matters: Missing or weak docs/test evidence slows PM review and increases merge risk on release-line PRs.
+- Behavior update: Enforce implementation-doc and test-evidence contracts through required CI gates with explicit heading/evidence validation and coverage threshold checks.

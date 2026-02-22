@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`, `STD-012`, `STD-013`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`, `STD-012`, `STD-013`, `STD-014`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon

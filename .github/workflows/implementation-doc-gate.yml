@@ -1,0 +1,137 @@
+name: Implementation Doc Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-implementation-doc:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate implementation documentation contract
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          base_ref = os.environ["BASE_REF"]
+          head_ref = os.environ["HEAD_REF"]
+          base_sha = os.environ["BASE_SHA"]
+          head_sha = os.environ["HEAD_SHA"]
+
+          if base_ref == "koad-os" or head_ref == "koad-os":
+              print("Support-scope PR detected (koad-os base/head); implementation doc gate is not required.")
+              sys.exit(0)
+
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", base_sha, head_sha],
+              text=True,
+          ).splitlines()
+          changed = [p.strip() for p in changed if p.strip()]
+          if not changed:
+              print("No changed files detected.")
+              sys.exit(0)
+
+          def is_source_file(path: str) -> bool:
+              if path in {
+                  "Cargo.toml",
+                  "Cargo.lock",
+                  "package.json",
+                  "pyproject.toml",
+                  "requirements.txt",
+                  "go.mod",
+                  "go.sum",
+              }:
+                  return True
+              if path.endswith("/Cargo.toml"):
+                  return True
+              source_prefix = (
+                  "crates/",
+                  "src/",
+                  "tests/",
+                  "apps/",
+                  "services/",
+                  "packages/",
+                  "scripts/",
+              )
+              if not path.startswith(source_prefix):
+                  return False
+              return bool(
+                  re.search(
+                      r"\.(rs|py|ts|tsx|js|jsx|go|java|kt|swift|sh|sql)$",
+                      path,
+                  )
+              )
+
+          source_files = [p for p in changed if is_source_file(p)]
+          if not source_files:
+              print("No source-code file changes detected; implementation doc gate skipped.")
+              sys.exit(0)
+
+          impl_docs = [p for p in changed if re.fullmatch(r"docs/implementation/.+\.md", p)]
+          if not impl_docs:
+              print("Missing implementation doc update under docs/implementation/*.md for source changes.")
+              sys.exit(1)
+
+          required_headings = [
+              "## Scope",
+              "## Behavior Changes",
+              "### User-visible",
+              "### Internal",
+              "## File-Level Change Map",
+              "## Test Plan",
+              "## Test Results",
+              "### Automated Tests",
+              "### Coverage",
+              "### Regression",
+              "### Negative Paths",
+              "### Manual Validation",
+              "## Backward Compatibility",
+              "## Risks and Mitigations",
+              "## Deferred Follow-ups",
+              "## PM Extraction Notes",
+          ]
+
+          doc_texts = {}
+          missing = False
+          for doc in impl_docs:
+              p = Path(doc)
+              if not p.exists():
+                  print(f"Implementation doc listed in diff but missing on disk: {doc}")
+                  missing = True
+                  continue
+              text = p.read_text(encoding="utf-8")
+              doc_texts[doc] = text
+              for heading in required_headings:
+                  if heading not in text:
+                      print(f"Implementation doc missing heading `{heading}`: {doc}")
+                      missing = True
+
+          for src in source_files:
+              needle = f"`{src}`"
+              if not any(needle in text for text in doc_texts.values()):
+                  print(f"Source file missing from implementation doc file-level map: {src}")
+                  missing = True
+
+          if missing:
+              print("Implementation documentation validation failed.")
+              sys.exit(1)
+
+          print("Implementation documentation validation passed.")
+          PY

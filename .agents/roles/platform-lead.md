@@ -47,7 +47,9 @@ Own server authority, reliability, data integrity, and operational stability for
 4. Monitoring hooks added/updated.
 5. Lane branch/worktree and PR metadata included for coder-agent execution.
 6. PR includes latest commit SHA and target branch.
-7. Review status placeholders included for:
+7. Implementation doc updated at `docs/implementation/<id>.md` with required headings and file-level change map.
+8. Test evidence includes changed-line coverage >=80%, negative-path tests, and regression notes.
+9. Review status placeholders included for:
    - Koad git review
    - Ian review
    - Merge status

@@ -1,0 +1,203 @@
+name: Test Evidence Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-test-evidence:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate test and coverage evidence contract
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          base_ref = os.environ["BASE_REF"]
+          head_ref = os.environ["HEAD_REF"]
+          base_sha = os.environ["BASE_SHA"]
+          head_sha = os.environ["HEAD_SHA"]
+
+          if base_ref == "koad-os" or head_ref == "koad-os":
+              print("Support-scope PR detected (koad-os base/head); test evidence gate is not required.")
+              sys.exit(0)
+
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", base_sha, head_sha],
+              text=True,
+          ).splitlines()
+          changed = [p.strip() for p in changed if p.strip()]
+          if not changed:
+              print("No changed files detected.")
+              sys.exit(0)
+
+          def is_source_file(path: str) -> bool:
+              if path in {
+                  "Cargo.toml",
+                  "Cargo.lock",
+                  "package.json",
+                  "pyproject.toml",
+                  "requirements.txt",
+                  "go.mod",
+                  "go.sum",
+              }:
+                  return True
+              if path.endswith("/Cargo.toml"):
+                  return True
+              source_prefix = (
+                  "crates/",
+                  "src/",
+                  "tests/",
+                  "apps/",
+                  "services/",
+                  "packages/",
+                  "scripts/",
+              )
+              if not path.startswith(source_prefix):
+                  return False
+              return bool(
+                  re.search(
+                      r"\.(rs|py|ts|tsx|js|jsx|go|java|kt|swift|sh|sql)$",
+                      path,
+                  )
+              )
+
+          source_files = [p for p in changed if is_source_file(p)]
+          if not source_files:
+              print("No source-code file changes detected; test evidence gate skipped.")
+              sys.exit(0)
+
+          impl_docs = [p for p in changed if re.fullmatch(r"docs/implementation/.+\.md", p)]
+          if not impl_docs:
+              print("Missing implementation doc update under docs/implementation/*.md for source changes.")
+              sys.exit(1)
+
+          docs = []
+          for doc in impl_docs:
+              p = Path(doc)
+              if not p.exists():
+                  print(f"Implementation doc listed in diff but missing on disk: {doc}")
+                  sys.exit(1)
+              docs.append(p.read_text(encoding="utf-8"))
+
+          combined = "\n\n".join(docs)
+
+          required_sections = [
+              "### Automated Tests",
+              "### Coverage",
+              "### Regression",
+              "### Negative Paths",
+              "### Manual Validation",
+          ]
+          missing_sections = [s for s in required_sections if s not in combined]
+          if missing_sections:
+              for section in missing_sections:
+                  print(f"Missing test-evidence section in implementation doc: {section}")
+              sys.exit(1)
+
+          patch = subprocess.check_output(
+              ["git", "diff", "--unified=0", base_sha, head_sha],
+              text=True,
+          )
+          test_marker_patterns = [
+              r"^\+.*#\[(tokio::)?test\]",
+              r"^\+.*cfg\(test\)",
+              r"^\+.*mod tests",
+              r"^\+.*\bdescribe\(",
+              r"^\+.*\bit\(",
+          ]
+          has_test_delta_marker = any(
+              re.search(pattern, patch, flags=re.MULTILINE)
+              for pattern in test_marker_patterns
+          )
+
+          def is_test_file(path: str) -> bool:
+              return bool(
+                  re.search(
+                      r"(^|/)(tests?/|test_).+|(_test|_spec)\.(rs|py|ts|tsx|js|jsx)$",
+                      path,
+                  )
+              )
+
+          test_files = [p for p in changed if is_test_file(p)]
+          if not test_files and not has_test_delta_marker:
+              print(
+                  "Source changes require automated test additions/updates. "
+                  "No test-file changes or recognizable in-file test deltas were detected."
+              )
+              sys.exit(1)
+
+          coverage_values = [
+              float(m.group(1))
+              for m in re.finditer(
+                  r"Changed-line coverage:\s*([0-9]{1,3}(?:\.[0-9]+)?)%",
+                  combined,
+                  flags=re.IGNORECASE,
+              )
+          ]
+          if not coverage_values:
+              print("Missing `Changed-line coverage: <N>%` evidence in implementation doc.")
+              sys.exit(1)
+          if min(coverage_values) < 80.0:
+              print(f"Changed-line coverage below required floor (80%): {coverage_values}")
+              sys.exit(1)
+
+          if not re.search(r"### Automated Tests[\s\S]*`[^`]+`", combined, flags=re.IGNORECASE):
+              print("Automated tests section must include explicit test command evidence in backticks.")
+              sys.exit(1)
+          if not re.search(r"### Automated Tests[\s\S]*(PASS|FAIL|success|ok)", combined, flags=re.IGNORECASE):
+              print("Automated tests section must include PASS/FAIL outcome evidence.")
+              sys.exit(1)
+
+          negative_lines = re.findall(r"^- Negative-path tests:\s*(.+)$", combined, flags=re.IGNORECASE | re.MULTILINE)
+          if not negative_lines:
+              print("Missing `- Negative-path tests:` evidence line.")
+              sys.exit(1)
+          bad_negative = {"none", "n/a", "na", "not run", "not applicable"}
+          if any(line.strip().lower() in bad_negative for line in negative_lines):
+              print("Negative-path tests must be executed; `none`/`n/a` is not allowed.")
+              sys.exit(1)
+
+          regression_lines = re.findall(r"^- Regression tests:\s*(.+)$", combined, flags=re.IGNORECASE | re.MULTILINE)
+          if not regression_lines:
+              print("Missing `- Regression tests:` evidence line.")
+              sys.exit(1)
+          if any(not line.strip() for line in regression_lines):
+              print("Regression tests evidence line cannot be empty.")
+              sys.exit(1)
+
+          skipped_lines = re.findall(r"^- Skipped tests:\s*(.+)$", combined, flags=re.IGNORECASE | re.MULTILINE)
+          if not skipped_lines:
+              print("Missing `- Skipped tests:` evidence line.")
+              sys.exit(1)
+          for line in skipped_lines:
+              value = line.strip().lower()
+              if value in {"none", "n/a", "na"}:
+                  continue
+              if "reason" not in value and "(" not in value:
+                  print("Skipped tests must include a reason (include `reason:` or parenthetical rationale).")
+                  sys.exit(1)
+
+          if not re.search(r"### Manual Validation[\s\S]*`[^`]+`", combined, flags=re.IGNORECASE):
+              print("Manual Validation section must include exact commands executed in backticks.")
+              sys.exit(1)
+
+          print("Test and coverage evidence validation passed.")
+          PY

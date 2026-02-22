@@ -19,6 +19,14 @@
 - Tests run:
 - Manual checks:
 
+## Implementation Documentation
+- Primary implementation doc: `docs/implementation/<id>.md`
+- Changed-line coverage evidence:
+- Automated test updates included:
+- Regression tests included:
+- Negative-path tests included:
+- Skipped tests (must include reason or `none`):
+
 ## Files Changed
 - Primary files:
 - Out-of-scope files touched (`none` if none):

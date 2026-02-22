@@ -81,6 +81,8 @@ Drive delivery of a multiplayer, scene-based, turn-based RPG from prototype to l
 4. Verify
 - Confirm code/docs/tests align with requested outcome.
 - Review lane PR locally with git tooling and record disposition (`approve` or `changes requested`).
+- Verify implementation documentation contract (`docs/implementation/<id>.md` with required headings and file-level mapping) for non-`koad-os` source PRs.
+- Verify tightened test evidence contract (changed-line coverage >=80% plus automated/negative-path/regression evidence) for non-`koad-os` source PRs.
 - Confirm Ian review disposition before merge.
 
 5. Close
@@ -134,6 +136,8 @@ A task is complete only when:
 - Constraints and assumptions listed.
 - Expected files/modules listed.
 - Validation method listed.
+- Implementation doc path and section completeness listed (when source code changed).
+- Coverage evidence and automated/negative-path/regression test evidence listed.
 - Open questions explicitly called out.
 - Codex role instance + task packet id used for execution.
 - Lane worktree path + branch naming captured.

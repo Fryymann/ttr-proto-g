@@ -409,3 +409,17 @@
   - `koad pr-open` now emits the self-review checkbox as checked and supports `--ian-approved` (with `--user-approved` alias retained for compatibility).
 - Revisit trigger:
   - If final approver identity or review sequencing policy changes again.
+
+## 2026-02-22 - Reduce koad-os sync friction with automation + non-blocking review checkboxes
+- Decision:
+  - Add automated `v1` -> `koad-os` synchronization workflow (`.github/workflows/sync-koad-os-from-v1.yml`) triggered on pushes to `v1`.
+  - Change `validate-pr-governance` to require review-gate line presence, not checked-state enforcement.
+  - Keep checkbox states as human audit metadata while relying on GitHub approvals + required checks as authoritative merge gates.
+- Why:
+  - Manual koad-os maintenance and checkbox-driven CI failures were creating avoidable delivery drag.
+- Impact:
+  - `koad-os` stays near-current with `v1` without repeated manual merge choreography.
+  - Conflict scenarios route to explicit `v1` -> `koad-os` sync PR handling instead of silent branch drift.
+  - PR body governance checks remain structured while reducing merge friction from administrative checkbox timing.
+- Revisit trigger:
+  - If automated sync causes recurring conflict churn or if branch-scope policy is simplified further.

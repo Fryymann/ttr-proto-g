@@ -14,6 +14,7 @@ Last updated: 2026-02-22
 - Codex team-role workflow defaults to one lane per dedicated git worktree/branch with lightweight PR policy.
 - Startup now requires role selection routing via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
 - Codex agents execute inside WSL2 (Ubuntu), so lane prompt workspace paths should use `/mnt/c/...` instead of `C:\...`.
+- `koad-os` branch sync from `v1` is now automated via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual maintenance.
 
 ## Open Unknowns
 - Default `defensive_rounds_before_ai` for disconnect fallback.

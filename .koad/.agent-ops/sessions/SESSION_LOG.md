@@ -397,3 +397,16 @@
 - Evidence:
   - Updated `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.agents/roles/platform-lead.md`, `.agents/roles/gameplay-lead.md`, `.agents/roles/experience-lead.md`, `.agents/teams.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/scripts/koad_cli.py`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified CLI syntax with `python3 -m py_compile .koad/scripts/koad_cli.py`.
+
+## 2026-02-22 - koad-os sync friction reduction rollout
+- Scope:
+  - Reduce recurring branch-maintenance overhead while preserving koad-os support-branch governance.
+- Changes:
+  - Added workflow automation to sync `koad-os` from `v1` on every push (`.github/workflows/sync-koad-os-from-v1.yml`), including conflict fallback PR creation (`v1` -> `koad-os`).
+  - Updated PR governance check to require review-gate line presence rather than checked-state enforcement.
+  - Updated scope-gate allowlist for the new sync workflow and added `v1` -> `koad-os` sync exception.
+  - Updated PM/operator docs and prompts to reflect automated sync and informational checkbox semantics.
+  - Updated standards source/registry and user preference memory for durable continuity.
+- Evidence:
+  - Updated `.github/workflows/sync-koad-os-from-v1.yml`, `.github/workflows/pr-template-gate.yml`, `.github/workflows/koad-os-scope-gate.yml`, `.github/pull_request_template.md`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Updated `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-core/memory/LEARNINGS.md`.

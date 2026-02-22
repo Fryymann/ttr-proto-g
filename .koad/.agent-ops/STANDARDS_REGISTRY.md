@@ -88,6 +88,8 @@ Purpose: codable representation of standards for this workspace.
   - Require one PR for every execution lane (code/docs/chore), with clear base/head and latest commit metadata.
   - Require `.github/pull_request_template.md` usage for lane PRs.
   - Require `validate-pr-governance` status check to pass before merge.
+  - Require PR review-gate lines to exist in PR body; checkbox states are informational audit metadata, not merge authority.
+  - Treat GitHub approval + required checks as authoritative merge gates.
   - Require Koad git-side review disposition and Ian review disposition before approval.
   - If either review requests changes, keep lane state `in_progress`.
   - Mark lane/backlog task complete only after PR merge confirmation.
@@ -98,6 +100,8 @@ Purpose: codable representation of standards for this workspace.
 - Intent: Keep Koad/agent support and workflow-governance artifacts isolated from development-lane feature code.
 - Local interpretation:
   - Treat `koad-os` as support-only branch scope for `.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, root `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks.
+  - Keep `koad-os` synchronized from `v1` via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual branch maintenance.
+  - Allow `v1` -> `koad-os` sync PRs as explicit scope-gate exception when automatic sync encounters merge conflicts.
   - For PRs targeting `koad-os`, reject out-of-scope runtime/feature files.
   - For PRs sourced from `koad-os` (support sync PRs), allow only in-scope Koad/agent support files.
   - For other PRs targeting non-`koad-os` branches, reject in-scope Koad/agent support files and route them to `koad-os`.

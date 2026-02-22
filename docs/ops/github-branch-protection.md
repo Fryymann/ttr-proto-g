@@ -1,15 +1,15 @@
 # GitHub Branch Protection (PR Workflow)
 
-Status: Active  
-Last updated: 2026-02-21  
+Status: Active
+Last updated: 2026-02-22
 Owner: Project Manager (Koad)
 
 ## Goal
 
 Enforce lane completion through PR review + merge:
 
-1. Koad local git review approved.
-2. Ian review approved.
+1. Koad local git review completed.
+2. Ian GitHub review approved.
 3. PR merged to target branch.
 
 ## Target Branches
@@ -23,6 +23,7 @@ Use split governance:
 - `.github/pull_request_template.md`
 - `.github/workflows/pr-template-gate.yml`
 - `.github/workflows/koad-os-scope-gate.yml`
+- `.github/workflows/sync-koad-os-from-v1.yml`
 
 ## Branch Protection Settings (GitHub UI)
 
@@ -59,17 +60,28 @@ For `koad-os`:
 ## Operational Flow
 
 1. Lane agent opens PR using the template.
-2. Lane agent performs self-review and checks `Coding agent self-review completed` in PR body.
-3. Koad performs local git review; once approved, checks `Koad git review approved` and notifies Ian.
-4. Ian performs final review in GitHub and checks `Ian review approved` in PR body.
+2. Lane agent performs self-review and keeps review-gate checkboxes accurate in PR body.
+3. Koad performs local git review and records disposition.
+4. Ian performs final review in GitHub and records approval.
 5. `validate-pr-governance` and `validate-koad-os-scope` pass and GitHub approval requirement is satisfied.
 6. PR is merged.
 7. Only then mark task/backlog item complete.
 
+## koad-os Sync Automation
+
+- Workflow: `.github/workflows/sync-koad-os-from-v1.yml`
+- Trigger: every push to `v1` (and manual `workflow_dispatch`).
+- Behavior:
+  - Attempts to merge `origin/v1` into `koad-os` and push the updated `koad-os` head.
+  - If merge conflicts occur, opens (or reuses) a `v1` -> `koad-os` sync PR for manual resolution.
+- This keeps `koad-os` near-current with `v1` and reduces manual sync maintenance between development merges.
+
 ## Notes
 
-- The workflow enforces that all three review-gate checkboxes are checked in the PR body.
+- `validate-pr-governance` enforces required PR sections, persona signature, and review-gate line presence.
+- Review-gate checkbox states are informational for human handoff tracking; merge authority comes from GitHub reviews + required checks.
 - Scope gate behavior:
+  - PRs from `v1` to `koad-os` are allowed as an explicit sync exception.
   - PRs targeting `koad-os` may only modify Koad/agent support files.
   - PRs sourced from `koad-os` (e.g., `koad-os` -> `v1`) may only modify Koad/agent support files.
   - Other PRs targeting non-`koad-os` branches must not modify Koad/agent support files.

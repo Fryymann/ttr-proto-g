@@ -87,3 +87,36 @@
   - `.koad/.standards/standards_registry.md`
 - Risks/Unknowns:
   - Behavioral change in saveup defaults; mitigated by --global-ledger override and docs.
+
+## 2026-02-22 - Post-S3-G1 queue sync and handoff checkpoint
+- Role: `Koad (PM)`
+- Context ref: `S3-G1`
+- Objective: Capture durable PM state before thread reload with next-dispatch readiness and known blocker.
+- Actions:
+  - Reviewed merged S3-G1 state and confirmed queue advancement to S3-P1.
+  - Updated backlog/queue/progress artifacts and committed on koad-os (aa923a1).
+  - Provisioned Platform lane worktree /tmp/ttrpg-s3-p1 from v1 baseline 2b229f9.
+- Artifacts:
+  - `.agents/backlog.md`
+  - `CODEX_ROLE_PROMPTS.md`
+  - `PROJECT_PROGRESS.md`
+  - `docs/design/execution-sprint-plan.md`
+  - `/tmp/ttrpg-s3-p1`
+- Risks/Unknowns:
+  - Intermittent DNS resolution to github.com currently blocks fetch/push operations from this environment.
+
+## 2026-02-22 - s2-e1-cli-scene-render
+- Role: `Experience`
+- Context ref: `S2-E1/pr-11`
+- Objective: Persist Experience lane continuity after delivering S2-E1 scene renderer
+- Actions:
+  - Implemented scene snapshot/delta renderer with symbol legend and actor roster.
+  - Wired identity hydration from AuthOk, RoomState, and WhoList for stable symbol mapping.
+  - Pushed lane branch and opened PR #11 targeting v1.
+- Artifacts:
+  - `crates/ttrpg-client-cli/src/render_scene.rs`
+  - `crates/ttrpg-client-cli/src/main.rs`
+  - `.koad/.agent-core/memory/LEARNINGS.md`
+  - `.koad/.agent-ops/sessions/SESSION_LOG.md`
+- Risks/Unknowns:
+  - Runtime socket permission in sandbox prevented end-to-end multiplayer manual capture; unit/integration evidence used instead.

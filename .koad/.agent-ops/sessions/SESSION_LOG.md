@@ -340,3 +340,37 @@
   - Updated saveup protocol, startup guidance, standards, and agent docs for the new mode.
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/AGENTS.md`, `AGENTS.md`, `.koad/scripts/README.md`, `.koad/README.md`.
+
+## 2026-02-22 - Post-S3-G1 merge queue + status progression
+- Scope:
+  - Reflect S3-G1 completion and prepare next task dispatch.
+- Changes:
+  - Updated backlog states (`BL-005`, `BL-015` -> `done`) and re-ranked focus window.
+  - Updated queue statuses (`S3-G1` done, `S3-P1` active next, `S3-E1` queued after S3-P1 interface confirmation).
+  - Updated sprint status notes and durable queue decision log entry.
+  - Regenerated root progress dashboard snapshot.
+- Evidence:
+  - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Saveup tracked-artifact scope enforcement (`koad-os` only)
+- Scope:
+  - Enforce user-requested branch-scope rule for developer saveup behavior around tracked `.koad/**` artifacts.
+- Changes:
+  - Added CLI guard in `.koad/scripts/koad_cli.py` so global-ledger saveup writes are blocked outside `koad-os`.
+  - Added CLI guard for `--sync-progress-in-lane` to require `koad-os` because it writes `PROJECT_PROGRESS.md`.
+  - Updated saveup protocol, standards registries, AGENTS docs, and Codex role prompts to require tracked saveup artifacts to be committed via `koad-os`.
+  - Recorded explicit user preference for saveup tracked-artifact branch scope.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `AGENTS.md`, `.koad/AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified script compiles: `python3 -m py_compile .koad/scripts/koad_cli.py`.
+
+## 2026-02-22 - Experience lane S2-E1 continuity checkpoint
+- Scope:
+  - Preserve role-scoped continuity for Experience lane delivery of CLI scene rendering (`S2-E1` / `BL-003`).
+- Changes:
+  - Landed scene renderer module and wired `SceneSnapshot`/`SceneDelta` paths to terminal map rendering with stable `@`/`P`/`N` symbols.
+  - Added Experience-focused learning for multiplayer identity hydration in scene-symbol classification.
+  - Opened Experience lane PR for review/merge against `v1`.
+- Evidence:
+  - Updated `crates/ttrpg-client-cli/src/render_scene.rs`, `crates/ttrpg-client-cli/src/main.rs`, `.koad/.agent-core/memory/LEARNINGS.md`.
+  - PR: `https://github.com/Fryymann/ttr-proto-g/pull/11`.

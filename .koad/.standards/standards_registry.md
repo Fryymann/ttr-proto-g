@@ -45,6 +45,7 @@ Last updated: 2026-02-21
 - Intent: Ensure continuity checkpoints remain attributable and usable across PM and team-role agents.
 - Enforcement:
   - Every `saveup` entry must include `role` and `context_ref`.
+  - Any saveup operation that writes tracked support artifacts (`.koad/**` ledgers/logs or `PROJECT_PROGRESS.md`) must execute on `koad-os`.
   - `saveup` operational mirror behavior must follow role boundaries (`Koad (PM)` may sync `.agents/*`; team roles log proposed PM deltas without reprioritizing directly).
   - `saveup` session summary must include role and context metadata.
 
@@ -60,5 +61,6 @@ Last updated: 2026-02-21
 - Enforcement:
   - Team-role saveups with lane context (`context_ref` starts with `lane/`) should write to lane journal files under `.koad/.agent-core/sessions/lane-saveups/`.
   - Lane journal files are local continuity artifacts and should be excluded from feature-lane PR scope.
+  - Team-role lanes on non-`koad-os` branches should not use global-ledger saveup writes.
   - Shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) should be updated from PM/global mode or reconciliation on `koad-os`.
   - Lane-isolated saveup entries must still include `role` and `context_ref` metadata.

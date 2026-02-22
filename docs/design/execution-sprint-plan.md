@@ -230,3 +230,4 @@ For each backlog item completed:
 - 2026-02-21: `S2-P1` merged to `v1` with deterministic queue + scene protocol evidence; queue advanced to `S2-E1` as active next dispatch (Experience).
 - 2026-02-22: `S2-E1` merged to `v1`; M2 scene-render baseline landed and queue advanced to S3 entry (`S3-G1` active next).
 - 2026-02-22: Saveup process updated for lane-isolated developer journaling to reduce cross-lane merge conflicts (`STD-013`).
+- 2026-02-22: `S3-G1` merged to `v1` (PR #13); `BL-005` + `BL-015` marked done and queue advanced to `S3-P1` as active next dispatch (Platform).

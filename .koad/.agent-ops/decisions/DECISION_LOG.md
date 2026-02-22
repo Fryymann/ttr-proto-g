@@ -476,3 +476,14 @@
   - Script docs now include `pr-gate` usage for operator/agent review flow.
 - Revisit trigger:
   - If PR gate policy adds new required checks or review authority shifts away from checkbox/callout audit trail.
+
+## 2026-02-22 - Seed required checks for auto-created promotion PRs
+- Decision:
+  - When `promote-koad-os-to-v1` creates/updates the managed promotion PR, also publish check-runs named `validate-pr-governance` and `validate-koad-os-scope` on the PR head SHA.
+- Why:
+  - PRs created by workflows using `GITHUB_TOKEN` do not reliably trigger downstream `pull_request` workflows immediately, leaving required checks missing and merge blocked.
+- Impact:
+  - Auto-created promotion PRs become merge-gate ready without requiring a follow-up push just to trigger checks.
+  - Seeded checks run the same governance marker and scope-policy logic used by PM review tooling/workflows.
+- Revisit trigger:
+  - If repository policy changes to use reusable workflows/workflow_call for canonical gate execution across all PR creation paths.

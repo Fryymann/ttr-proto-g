@@ -454,3 +454,14 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
   - Verified with `python3 -m py_compile .koad/scripts/koad_cli.py`, `bash .koad/scripts/koad pr-gate --help`, and `bash .koad/scripts/koad pr-gate --pr 25 --dry-run`.
+
+## 2026-02-22 - Promotion PR required-check seeding fix
+- Scope:
+  - Remove missing-check deadlock on workflow-created `koad-os` promotion PRs.
+- Changes:
+  - Updated `.github/workflows/promote-koad-os-to-v1.yml` with `checks: write` permission and a new step that seeds `validate-pr-governance` + `validate-koad-os-scope` check-runs for managed promotion PR create/update outcomes.
+  - Seeded check logic validates governance marker presence and branch-scope policy against live PR body/file list before publishing pass/fail conclusions.
+  - Logged durable decision for workflow-created PR check seeding.
+- Evidence:
+  - Updated `.github/workflows/promote-koad-os-to-v1.yml`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified YAML parse with `python3 -c "import yaml; yaml.safe_load(...)"`.

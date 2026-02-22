@@ -456,3 +456,13 @@
 - Evidence:
   - Updated `.koad/scripts/koad_cli.py`, `.github/workflows/*.yml`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/scripts/README.md`.
   - Verified `koad context` and `koad standards-check` functionality.
+
+## 2026-02-22 - PM workflow automation: dispatch and task-complete
+- Scope:
+  - Automate the manual synchronization overhead of project progress tracking and task packet generation.
+- Changes:
+  - Implemented `koad dispatch --packet <ID>` to dynamically synthesize task prompts from backlog and sprint plan sources.
+  - Implemented `koad task-complete --packet <ID>` to automate backlog state updates, sprint plan status logging, and queue advancement across artifacts.
+- Evidence:
+  - Updated `.koad/scripts/koad_cli.py`.
+  - Verified with dry-run `dispatch` for S4-P2 and `task-complete` for S4-P1.

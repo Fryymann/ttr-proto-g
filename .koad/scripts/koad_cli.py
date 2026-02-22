@@ -432,6 +432,271 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def get_backlog_details(root: Path, backlog_ids: list[str]) -> list[dict[str, str]]:
+    backlog_path = root / ".agents/backlog.md"
+    if not backlog_path.exists():
+        return []
+    
+    text = backlog_path.read_text(encoding="utf-8")
+    items = parse_backlog_items(text)
+    
+    # Filter for requested IDs
+    matched = []
+    for bid in backlog_ids:
+        # Backlog IDs in table are usually just 'BL-001'
+        # But incoming might be '`BL-001`'
+        clean_id = bid.strip("`").strip()
+        for item in items:
+            if item["id"] == clean_id:
+                # Need AC which isn't in parse_backlog_items yet
+                # Let's find the original line to get AC (the 7th column)
+                for line in text.splitlines():
+                    if f"| {clean_id} |" in line:
+                        parts = [p.strip() for p in line.strip("|").split("|")]
+                        if len(parts) >= 7:
+                            item["ac"] = parts[6]
+                        break
+                matched.append(item)
+                break
+    return matched
+
+
+def get_sprint_plan_details(root: Path, role: str, backlog_ids: list[str]) -> dict[str, str]:
+    plan_path = root / "docs/design/execution-sprint-plan.md"
+    if not plan_path.exists():
+        return {"objective": "TBD", "files": "TBD"}
+    
+    text = plan_path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    
+    details = {"objective": "", "files": []}
+    
+    # Standardize role for header matching
+    header_role = role.replace(" (PM)", "")
+    target_header = f"### {header_role} Team"
+    
+    current_sprint_matches = False
+    in_correct_team_section = False
+    capture_mode = None 
+    
+    for line in lines:
+        if line.startswith("## Sprint "):
+            # Check if this sprint aligns with our backlog items
+            current_sprint_matches = False
+            in_correct_team_section = False
+            capture_mode = None
+            continue
+            
+        if line.startswith("Backlog alignment:"):
+            # Check if any of our BL IDs are in this alignment line
+            for bid in backlog_ids:
+                if bid.strip("`") in line:
+                    current_sprint_matches = True
+                    break
+            continue
+            
+        if current_sprint_matches and line.startswith(target_header):
+            in_correct_team_section = True
+            continue
+            
+        if in_correct_team_section:
+            if line.startswith("##"): # Next team or sprint section
+                # If we already captured files, we are done
+                if details["files"]:
+                    break
+                in_correct_team_section = False
+                continue
+            
+            clean = line.strip()
+            if not clean:
+                continue
+                
+            if clean.startswith("- "):
+                if capture_mode == "files":
+                    # Extract text inside backticks
+                    match = re.search(r"`([^`]+)`", clean)
+                    if match:
+                        details["files"].append(match.group(1))
+                    else:
+                        details["files"].append(clean[2:].strip())
+                else:
+                    details["objective"] += f"{clean}\n"
+            elif "Target files/modules:" in clean:
+                capture_mode = "files"
+
+    return {
+        "objective": details["objective"].strip() or "See backlog items.",
+        "files": details["files"] if details["files"] else ["TBD"]
+    }
+
+
+def cmd_dispatch(args: argparse.Namespace) -> int:
+    root = repo_root()
+    prompts_path = root / "CODEX_ROLE_PROMPTS.md"
+    if not prompts_path.exists():
+        print(f"Error: {prompts_path} not found.", file=sys.stderr)
+        return 1
+        
+    packets = parse_packet_queue(prompts_path.read_text(encoding="utf-8"))
+    packet = next((p for p in packets if p["packet_id"] == args.packet), None)
+    
+    if not packet:
+        print(f"Error: Packet ID {args.packet} not found in queue.", file=sys.stderr)
+        return 1
+        
+    role = packet["role"]
+    backlog_ids = [bid.strip() for bid in packet["backlog_ids"].split(",")]
+    
+    # Gather data from Backlog
+    bl_items = get_backlog_details(root, backlog_ids)
+    
+    # Gather data from Sprint Plan (pass BL IDs to find correct sprint)
+    plan_details = get_sprint_plan_details(root, role, backlog_ids)
+    
+    # Synthesize Prompt
+    prompt = [
+        f"You are Codex acting as the {role} Team instance for /mnt/c/data/ttrpg.",
+        "",
+        f"Task packet id: {args.packet}",
+        f"Backlog scope: {packet['backlog_ids']}",
+        "",
+        "Objective:",
+    ]
+    
+    # Add items from sprint plan objective if any, otherwise from backlog tasks
+    if plan_details["objective"] != "See backlog items.":
+        prompt.append(plan_details["objective"])
+    else:
+        for item in bl_items:
+            prompt.append(f"- {item['task']}")
+            
+    prompt.append("\nSuggested file targets:")
+    for f in plan_details["files"]:
+        prompt.append(f"- {f}")
+        
+    prompt.append("\nAcceptance criteria:")
+    for i, item in enumerate(bl_items, 1):
+        prompt.append(f"{i}) {item['ac']}")
+        
+    prompt.append("\nBranch policy: create branch from v1 and target PR to v1.")
+    prompt.append(f"Suggested branch: {packet['branch']}")
+    
+    prompt.append("\nHandoff requirements:")
+    prompt.append("- Include acceptance checklist with PASS/FAIL and file/test evidence per criterion.")
+    prompt.append("- Provide PR URL targeting v1, latest commit SHA, and dependency notes.")
+
+    output = "\n".join(prompt)
+    
+    if args.dry_run:
+        print("--- DISPATCH PROMPT PREVIEW ---")
+        print(output)
+    else:
+        print(output)
+        
+    return 0
+
+
+def cmd_task_complete(args: argparse.Namespace) -> int:
+    root = repo_root()
+    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    
+    # 1. Parse Packet to get BL IDs and Role
+    prompts_path = root / "CODEX_ROLE_PROMPTS.md"
+    prompts_text = prompts_path.read_text(encoding="utf-8")
+    packets = parse_packet_queue(prompts_text)
+    packet = next((p for p in packets if p["packet_id"] == args.packet), None)
+    
+    if not packet:
+        print(f"Error: Packet {args.packet} not found.", file=sys.stderr)
+        return 1
+        
+    backlog_ids = [bid.strip("`").strip() for bid in packet["backlog_ids"].split(",")]
+    
+    if args.dry_run:
+        print(f"Dry run: Completing {args.packet} ({', '.join(backlog_ids)})")
+        
+    # 2. Update Backlog
+    backlog_path = root / ".agents/backlog.md"
+    bl_text = backlog_path.read_text(encoding="utf-8")
+    for bid in backlog_ids:
+        # Find the line starting with | bid | and change state to done
+        pattern = re.compile(rf"^\| {bid} \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+        if pattern.search(bl_text):
+            bl_text = pattern.sub(rf"| {bid} | \1 | \2 | done |", bl_text)
+            if args.dry_run:
+                print(f"Dry run: Mark {bid} as done in backlog.")
+        else:
+            print(f"Warning: Could not find {bid} in backlog table.")
+            
+    if not args.dry_run:
+        backlog_path.write_text(bl_text, encoding="utf-8")
+
+    # 3. Update Sprint Plan Status Notes
+    plan_path = root / "docs/design/execution-sprint-plan.md"
+    plan_text = plan_path.read_text(encoding="utf-8")
+    pr_suffix = f" (PR #{args.pr})" if args.pr else ""
+    note_line = f"- {today}: {args.packet} merged to `v1`{pr_suffix}; {', '.join(backlog_ids)} marked done."
+    
+    if "## Sprint Status Notes" in plan_text:
+        # Append to the end of the section
+        lines = plan_text.splitlines()
+        for i, line in enumerate(lines):
+            if line.strip() == "## Sprint Status Notes":
+                lines.insert(i + 1, note_line)
+                break
+        plan_text = "\n".join(lines)
+        if args.dry_run:
+            print(f"Dry run: Add status note to sprint plan: {note_line}")
+    else:
+        print("Warning: ## Sprint Status Notes section not found in sprint plan.")
+        
+    if not args.dry_run:
+        plan_path.write_text(plan_text, encoding="utf-8")
+
+    # 4. Update Queue Table in CODEX_ROLE_PROMPTS.md
+    # Set current packet to Done
+    new_prompts = prompts_text
+    current_status_pattern = re.compile(rf"\| `{args.packet}` \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+    new_prompts = current_status_pattern.sub(rf"| `{args.packet}` | \1 | \2 | Done (merged to `v1`{pr_suffix}) |", new_prompts)
+    
+    # Identify next task
+    next_packet = None
+    for p in packets:
+        if p["packet_id"] == args.packet:
+            continue
+        if p["status"] == "Active Next (dispatch now)":
+            # Already have an active next, skip
+            break
+        if args.packet in p["dependency"] and "queued" in p["status"].lower():
+            next_packet = p["packet_id"]
+            break
+            
+    if next_packet:
+        next_pattern = re.compile(rf"\| `{next_packet}` \| (.*?) \| (.*?) \| ([^|]+) \|", re.MULTILINE)
+        new_prompts = next_pattern.sub(rf"| `{next_packet}` | \1 | \2 | Active Next (dispatch now) |", new_prompts)
+        
+        # Update shortcut
+        shortcut_pattern = re.compile(rf"- (.*?) Agent: `Your next task is (.*?).`", re.MULTILINE)
+        next_role = next((p["role"] for p in packets if p["packet_id"] == next_packet), "Agent")
+        new_prompts = shortcut_pattern.sub(rf"- {next_role} Agent: `Your next task is {next_packet}.`", new_prompts)
+        
+        if args.dry_run:
+            print(f"Dry run: Advance queue. Next is {next_packet}.")
+    else:
+        if args.dry_run:
+            print("Dry run: No dependent next task found to activate.")
+
+    if not args.dry_run:
+        prompts_path.write_text(new_prompts, encoding="utf-8")
+        
+    # 5. Refresh Dashboard
+    if not args.dry_run:
+        build_progress_dashboard(root)
+        print(f"Task {args.packet} completion synced across all artifacts.")
+    
+    return 0
+
+
 def cmd_lane_start(args: argparse.Namespace) -> int:
     root = repo_root()
     role = normalize_role(args.role)
@@ -1719,6 +1984,17 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--max-age-hours", type=float, default=24.0)
     status.add_argument("--verbose", action="store_true")
     status.set_defaults(func=cmd_status)
+    
+    dispatch = sub.add_parser("dispatch", help="Generate dynamic Codex task prompt from backlog + sprint plan")
+    dispatch.add_argument("--packet", required=True, help="Packet ID to dispatch (e.g. S4-P2)")
+    dispatch.add_argument("--dry-run", action="store_true", help="Print with preview header")
+    dispatch.set_defaults(func=cmd_dispatch)
+    
+    complete = sub.add_parser("task-complete", help="Update all artifacts after task merge")
+    complete.add_argument("--packet", required=True, help="Packet ID completed (e.g. S4-P1)")
+    complete.add_argument("--pr", type=int, help="PR number that was merged")
+    complete.add_argument("--dry-run", action="store_true")
+    complete.set_defaults(func=cmd_task_complete)
     
     context = sub.add_parser("context", help="Dump combined core + role memory context")
     context.add_argument("--role", required=True, choices=ROLE_VALUES)

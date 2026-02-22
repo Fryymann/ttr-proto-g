@@ -6,9 +6,11 @@ use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::TcpStream;
 
 mod render_scene;
+mod turn_ui;
 
 use render_scene::SceneRenderer;
 use ttrpg_protocol::{to_json_line, CharacterDraft, ClientMessage, ServerMessage};
+use turn_ui::TurnTracker;
 
 type StdinLines = tokio::io::Lines<BufReader<io::Stdin>>;
 
@@ -26,6 +28,7 @@ async fn main() -> io::Result<()> {
 
     let read_task = tokio::spawn(async move {
         let mut scene_renderer = SceneRenderer::new();
+        let mut turn_tracker = TurnTracker::new();
         let mut lines = BufReader::new(reader).lines();
 
         while let Ok(Some(line)) = lines.next_line().await {
@@ -35,7 +38,9 @@ async fn main() -> io::Result<()> {
             }
 
             match serde_json::from_str::<ServerMessage>(line) {
-                Ok(message) => render_server_message(message, &mut scene_renderer),
+                Ok(message) => {
+                    render_server_message(message, &mut scene_renderer, &mut turn_tracker)
+                }
                 Err(_) => println!("[raw] {}", line),
             }
         }
@@ -300,10 +305,15 @@ fn render_welcome_screen(addr: &str) {
     println!();
 }
 
-fn render_server_message(message: ServerMessage, scene_renderer: &mut SceneRenderer) {
+fn render_server_message(
+    message: ServerMessage,
+    scene_renderer: &mut SceneRenderer,
+    turn_tracker: &mut TurnTracker,
+) {
     match message {
         ServerMessage::AuthOk { player_id, name } => {
             scene_renderer.remember_local_player_name(&name);
+            turn_tracker.remember_local_player_name(&name);
             println!("✅ Logged in as {} (id {}).", name, player_id);
         }
         ServerMessage::RoomState {
@@ -354,9 +364,15 @@ fn render_server_message(message: ServerMessage, scene_renderer: &mut SceneRende
         }
         ServerMessage::Info { text } => {
             println!("ℹ️ {}", text);
+            if let Some(tracker_line) = turn_tracker.apply_info(&text) {
+                println!("{}", tracker_line);
+            }
         }
         ServerMessage::Error { text } => {
             eprintln!("⚠️ {}", text);
+            if let Some(tracker_line) = turn_tracker.apply_error(&text) {
+                println!("{}", tracker_line);
+            }
         }
         ServerMessage::Pong => {
             println!("🏓 pong");

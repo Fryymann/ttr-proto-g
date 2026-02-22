@@ -579,3 +579,5 @@
   - Updated local `koad` CLI scope checker and policy docs/standards to include `.codex/**` in support scope.
 - Evidence:
   - Updated `.github/workflows/koad-os-scope-gate.yml`, `.koad/scripts/koad_cli.py`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, and `docs/ops/github-branch-protection.md`.
+- Follow-up:
+  - Updated `.github/workflows/promote-koad-os-to-v1.yml` seeded-check allowlist to include `.codex/**` so managed promotion check-runs match scope-gate policy.

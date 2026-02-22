@@ -42,6 +42,8 @@ KOAD_OS_EXACT_FILES = {
     ".github/workflows/sync-koad-os-from-v1.yml",
     ".github/workflows/update-v1-dashboard.yml",
     ".github/workflows/promote-koad-os-to-v1.yml",
+    ".github/workflows/implementation-doc-gate.yml",
+    ".github/workflows/test-evidence-gate.yml",
 }
 
 

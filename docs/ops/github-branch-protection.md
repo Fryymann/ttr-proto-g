@@ -111,8 +111,8 @@ For `koad-os`:
 - Review-gate checkbox states are informational for human handoff tracking; merge authority comes from GitHub reviews + required checks.
 - Scope gate behavior:
   - PRs from `v1` to `koad-os` are allowed as an explicit sync exception.
-  - PRs targeting `koad-os` may only modify Koad/agent support files.
-  - PRs sourced from `koad-os` (e.g., `koad-os` -> `v1`) may only modify Koad/agent support files.
+  - PRs targeting `koad-os` may only modify Koad/agent support files (`.koad/**`, `.agents/**`, `.codex/**`, and approved governance/runbook files).
+  - PRs sourced from `koad-os` (e.g., `koad-os` -> `v1`) may only modify Koad/agent support files (`.koad/**`, `.agents/**`, `.codex/**`, and approved governance/runbook files).
   - Other PRs targeting non-`koad-os` branches must not modify Koad/agent support files.
 - `v1` branch protection enforces PR approval and required status checks before merge.
 - If a different release line becomes active later, copy the `v1` rule to that branch pattern and retain `koad-os` as lightweight support branch.

@@ -570,3 +570,12 @@
   - Updated Koad scripts README notes to include MCP-first policy and clarify current `gh`-backed script behavior.
 - Evidence:
   - Updated `CODEX_ROLE_PROMPTS.md`, `.koad/scripts/README.md`, and `.koad/.agent-ops/sessions/SESSION_LOG.md`.
+
+## 2026-02-22 - koad-os scope gate expanded for .codex support artifacts
+- Scope:
+  - Resolve PR #41 scope-gate failures by aligning CI/local policy to treat `.codex/**` as koad-os support scope.
+- Changes:
+  - Updated `validate-koad-os-scope` workflow allowlist to include `.codex/*`.
+  - Updated local `koad` CLI scope checker and policy docs/standards to include `.codex/**` in support scope.
+- Evidence:
+  - Updated `.github/workflows/koad-os-scope-gate.yml`, `.koad/scripts/koad_cli.py`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, and `docs/ops/github-branch-protection.md`.

@@ -32,7 +32,7 @@ Each Codex instance must:
 - Lane branches must be cut from `v1` and PRs must target `v1`.
 - Hard gate: team-role development edits are forbidden on `v1` and `koad-os`; those branches are integration/support contexts only.
 - If current branch is not `lane/<ROLE>/<task-slug>`, stop and relocate to the assigned lane worktree before editing any files.
-- `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
+- `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `.codex/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
 - Sync path:
   - Promote approved support/process updates with PRs from `koad-os` -> `v1`.

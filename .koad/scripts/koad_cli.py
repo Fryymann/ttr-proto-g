@@ -622,7 +622,12 @@ def gh_json(root: Path, args: list[str]) -> dict:
 
 
 def is_koad_os_file(path: str) -> bool:
-    return path.startswith(".koad/") or path.startswith(".agents/") or path in KOAD_OS_EXACT_FILES
+    return (
+        path.startswith(".koad/")
+        or path.startswith(".agents/")
+        or path.startswith(".codex/")
+        or path in KOAD_OS_EXACT_FILES
+    )
 
 
 def scope_violations(base_ref: str, head_ref: str, files: list[str]) -> list[str]:

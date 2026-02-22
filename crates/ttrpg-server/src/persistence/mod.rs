@@ -1,13 +1,20 @@
+mod snapshot;
+
 use std::collections::HashMap;
 use std::fmt;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tracing::error;
 use ttrpg_protocol::CharacterDraft;
 
 use crate::account::{
     build_campaign_lock, ensure_campaign_lock, AccountRecord, CampaignJoinDecision, CharacterRecord,
 };
+
+pub use snapshot::LoadStatus as SnapshotLoadStatus;
 
 pub trait Persistence: Send + Sync {
     fn ensure_account_session(&mut self, account_handle: &str) -> AccountRecord;
@@ -41,7 +48,7 @@ pub trait Persistence: Send + Sync {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuditEvent {
     pub id: String,
     pub event_type: String,
@@ -199,6 +206,26 @@ impl InMemoryPersistence {
             })
     }
 
+    fn snapshot_state(&self) -> snapshot::PersistenceState {
+        snapshot::PersistenceState {
+            next_account_id: self.next_account_id,
+            next_audit_id: self.next_audit_id,
+            accounts_by_handle: self.accounts_by_handle.clone(),
+            characters_by_name_key: self.characters_by_name_key.clone(),
+            audit_log: self.audit_log.clone(),
+        }
+    }
+
+    fn from_snapshot_state(state: snapshot::PersistenceState) -> Self {
+        Self {
+            next_account_id: state.next_account_id,
+            next_audit_id: state.next_audit_id,
+            accounts_by_handle: state.accounts_by_handle,
+            characters_by_name_key: state.characters_by_name_key,
+            audit_log: state.audit_log,
+        }
+    }
+
     #[allow(dead_code)]
     fn append_audit_event(&mut self, event_type: &str, actor: &str, payload: String) -> String {
         self.next_audit_id += 1;
@@ -214,17 +241,165 @@ impl InMemoryPersistence {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)]
+pub struct FilePersistence {
+    campaign_id: String,
+    save_path: PathBuf,
+    store: InMemoryPersistence,
+}
+
+impl FilePersistence {
+    pub fn open(
+        campaign_id: &str,
+        save_path: impl AsRef<Path>,
+    ) -> Result<(Self, SnapshotLoadStatus), PersistenceInitError> {
+        let save_path = save_path.as_ref().to_path_buf();
+        let loaded = snapshot::load_with_recovery(campaign_id, &save_path)
+            .map_err(PersistenceInitError::Snapshot)?;
+
+        let store = match loaded.state {
+            Some(state) => InMemoryPersistence::from_snapshot_state(state),
+            None => InMemoryPersistence::default(),
+        };
+
+        let persistence = Self {
+            campaign_id: campaign_id.to_owned(),
+            save_path,
+            store,
+        };
+
+        if loaded.status == SnapshotLoadStatus::FreshStart {
+            persistence
+                .persist_now()
+                .map_err(PersistenceInitError::BootstrapPersist)?;
+        }
+
+        Ok((persistence, loaded.status))
+    }
+
+    fn persist_now(&self) -> Result<(), String> {
+        snapshot::persist_state(
+            &self.campaign_id,
+            &self.save_path,
+            &self.store.snapshot_state(),
+        )
+        .map_err(|err| err.to_string())
+    }
+
+    fn persist_or_log(&self, operation: &str) {
+        if let Err(err) = self.persist_now() {
+            error!(
+                operation = operation,
+                campaign_id = %self.campaign_id,
+                save_path = %self.save_path.display(),
+                error = %err,
+                "file persistence write failed"
+            );
+        }
+    }
+}
+
+impl Persistence for FilePersistence {
+    fn ensure_account_session(&mut self, account_handle: &str) -> AccountRecord {
+        let record = self.store.ensure_account_session(account_handle);
+        self.persist_or_log("ensure_account_session");
+        record
+    }
+
+    fn create_character(
+        &mut self,
+        account_handle: &str,
+        character: CharacterDraft,
+        name_key: &str,
+        active_campaign_id: &str,
+    ) -> Result<CharacterRecord, CreateCharacterError> {
+        let pre_mutation = self.store.snapshot_state();
+        let record =
+            self.store
+                .create_character(account_handle, character, name_key, active_campaign_id)?;
+
+        if let Err(err) = self.persist_now() {
+            self.store = InMemoryPersistence::from_snapshot_state(pre_mutation);
+            return Err(CreateCharacterError::PersistFailed(err));
+        }
+
+        Ok(record)
+    }
+
+    fn validate_character_join(
+        &mut self,
+        account_handle: &str,
+        name_key: &str,
+        active_campaign_id: &str,
+    ) -> Result<CharacterRecord, JoinCampaignError> {
+        let pre_mutation = self.store.snapshot_state();
+        let record =
+            self.store
+                .validate_character_join(account_handle, name_key, active_campaign_id)?;
+
+        if let Err(err) = self.persist_now() {
+            self.store = InMemoryPersistence::from_snapshot_state(pre_mutation);
+            return Err(JoinCampaignError::PersistFailed(err));
+        }
+
+        Ok(record)
+    }
+
+    fn admin_override_campaign_lock(
+        &mut self,
+        name_key: &str,
+        target_campaign_id: &str,
+        actor: &str,
+        reason: &str,
+    ) -> Result<CharacterRecord, CampaignUnlockError> {
+        let pre_mutation = self.store.snapshot_state();
+        let record =
+            self.store
+                .admin_override_campaign_lock(name_key, target_campaign_id, actor, reason)?;
+
+        if let Err(err) = self.persist_now() {
+            self.store = InMemoryPersistence::from_snapshot_state(pre_mutation);
+            return Err(CampaignUnlockError::PersistFailed(err));
+        }
+
+        Ok(record)
+    }
+
+    fn audit_events(&self) -> &[AuditEvent] {
+        self.store.audit_events()
+    }
+}
+
+#[derive(Debug)]
+pub enum PersistenceInitError {
+    Snapshot(snapshot::SnapshotError),
+    BootstrapPersist(String),
+}
+
+impl fmt::Display for PersistenceInitError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Snapshot(err) => write!(f, "failed to initialize snapshot persistence: {}", err),
+            Self::BootstrapPersist(err) => {
+                write!(f, "failed to write initial snapshot save file: {}", err)
+            }
+        }
+    }
+}
+
+impl std::error::Error for PersistenceInitError {}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CreateCharacterError {
     CharacterNameExists,
+    PersistFailed(String),
 }
 
 impl fmt::Display for CreateCharacterError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::CharacterNameExists => {
-                write!(f, "character already exists")
-            }
+            Self::CharacterNameExists => write!(f, "character already exists"),
+            Self::PersistFailed(err) => write!(f, "character created but save failed: {}", err),
         }
     }
 }
@@ -243,6 +418,7 @@ pub enum JoinCampaignError {
     LockedToOtherCampaign {
         locked_campaign_id: String,
     },
+    PersistFailed(String),
 }
 
 impl fmt::Display for JoinCampaignError {
@@ -266,6 +442,9 @@ impl fmt::Display for JoinCampaignError {
                 "character is locked to campaign '{}'",
                 locked_campaign_id
             ),
+            Self::PersistFailed(err) => {
+                write!(f, "character join processed but save failed: {}", err)
+            }
         }
     }
 }
@@ -277,6 +456,7 @@ pub enum CampaignUnlockError {
     TargetCampaignRequired,
     ActorRequired,
     ReasonRequired,
+    PersistFailed(String),
 }
 
 impl fmt::Display for CampaignUnlockError {
@@ -286,6 +466,7 @@ impl fmt::Display for CampaignUnlockError {
             Self::TargetCampaignRequired => write!(f, "target campaign is required"),
             Self::ActorRequired => write!(f, "unlock actor is required"),
             Self::ReasonRequired => write!(f, "unlock reason is required"),
+            Self::PersistFailed(err) => write!(f, "unlock applied but save failed: {}", err),
         }
     }
 }
@@ -300,6 +481,9 @@ fn unix_now_secs() -> u64 {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
     use super::*;
 
     #[test]
@@ -439,6 +623,56 @@ mod tests {
             missing_reason,
             Err(CampaignUnlockError::ReasonRequired)
         ));
+    }
+
+    #[test]
+    fn file_persistence_recovers_from_corrupted_primary_snapshot() {
+        let root = unique_temp_dir("file_persistence_recovery");
+        let save_path = root.join("campaign.json");
+
+        let (mut store, first_status) = FilePersistence::open("greenhollow", &save_path)
+            .expect("initial bootstrap should work");
+        assert_eq!(first_status, SnapshotLoadStatus::FreshStart);
+
+        store
+            .create_character("acct:ada", build_character("Ada"), "ada", "greenhollow")
+            .expect("first character should persist");
+        drop(store);
+
+        let (mut store, second_status) =
+            FilePersistence::open("greenhollow", &save_path).expect("primary reload should work");
+        assert_eq!(second_status, SnapshotLoadStatus::LoadedPrimary);
+
+        store
+            .create_character("acct:ada", build_character("Bea"), "bea", "greenhollow")
+            .expect("second snapshot should persist and create rollback");
+        drop(store);
+
+        assert!(snapshot::rollback_path(&save_path).exists());
+        fs::write(&save_path, b"{\"corrupted\":").expect("simulate partial/corrupt write");
+
+        let (mut recovered, recovery_status) = FilePersistence::open("greenhollow", &save_path)
+            .expect("rollback recovery should work");
+        assert_eq!(recovery_status, SnapshotLoadStatus::RecoveredRollback);
+
+        let ada_join = recovered.validate_character_join("acct:ada", "ada", "greenhollow");
+        assert!(ada_join.is_ok());
+
+        let bea_join = recovered.validate_character_join("acct:ada", "bea", "greenhollow");
+        assert!(matches!(
+            bea_join,
+            Err(JoinCampaignError::CharacterNotFound)
+        ));
+    }
+
+    fn unique_temp_dir(prefix: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be monotonic")
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("ttrpg-{}-{}", prefix, nonce));
+        fs::create_dir_all(&dir).expect("temp dir should create");
+        dir
     }
 
     fn build_character(name: &str) -> CharacterDraft {

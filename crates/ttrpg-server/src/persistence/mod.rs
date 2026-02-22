@@ -43,6 +43,16 @@ pub trait Persistence: Send + Sync {
         reason: &str,
     ) -> Result<CharacterRecord, CampaignUnlockError>;
 
+    fn record_campaign_unlock_attempt(
+        &mut self,
+        name_key: &str,
+        target_campaign_id: &str,
+        actor: &str,
+        reason: &str,
+        outcome: CampaignUnlockAuditOutcome,
+        detail: &str,
+    ) -> Result<String, CampaignUnlockError>;
+
     #[allow(dead_code)]
     fn audit_events(&self) -> &[AuditEvent];
 }
@@ -55,6 +65,23 @@ pub struct AuditEvent {
     pub actor: String,
     pub payload: String,
     pub timestamp_epoch_secs: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CampaignUnlockAuditOutcome {
+    Success,
+    DeniedUnauthorized,
+    DeniedCharacterNotFound,
+}
+
+impl CampaignUnlockAuditOutcome {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Success => "success",
+            Self::DeniedUnauthorized => "denied_unauthorized",
+            Self::DeniedCharacterNotFound => "denied_character_not_found",
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -163,26 +190,64 @@ impl Persistence for InMemoryPersistence {
             .campaign_lock
             .as_ref()
             .map(|lock| lock.campaign_id.clone());
-        let payload = json!({
-            "character_id": current_record.character_id,
-            "account_id": current_record.account_id,
-            "previous_campaign_id": previous_campaign_id,
-            "target_campaign_id": target_campaign_id,
-            "reason": reason,
-        })
-        .to_string();
-        let audit_id = self.append_audit_event("campaign_unlock_override", actor, payload);
+        let audit_id = self.record_campaign_unlock_attempt(
+            name_key,
+            target_campaign_id,
+            actor,
+            reason,
+            CampaignUnlockAuditOutcome::Success,
+            "campaign lock override applied",
+        )?;
 
         let record = self
             .characters_by_name_key
             .get_mut(name_key)
             .expect("record must exist after pre-check");
+        let _ = previous_campaign_id;
         record.campaign_lock = Some(build_campaign_lock(
             target_campaign_id,
             Some(audit_id.clone()),
         ));
 
         Ok(record.clone())
+    }
+
+    fn record_campaign_unlock_attempt(
+        &mut self,
+        name_key: &str,
+        target_campaign_id: &str,
+        actor: &str,
+        reason: &str,
+        outcome: CampaignUnlockAuditOutcome,
+        detail: &str,
+    ) -> Result<String, CampaignUnlockError> {
+        if actor.trim().is_empty() {
+            return Err(CampaignUnlockError::ActorRequired);
+        }
+        if reason.trim().is_empty() {
+            return Err(CampaignUnlockError::ReasonRequired);
+        }
+        if target_campaign_id.trim().is_empty() {
+            return Err(CampaignUnlockError::TargetCampaignRequired);
+        }
+
+        let record = self.characters_by_name_key.get(name_key).cloned();
+        let payload = json!({
+            "character_name_key": name_key,
+            "target_campaign_id": target_campaign_id,
+            "reason": reason,
+            "outcome": outcome.as_str(),
+            "detail": detail,
+            "character_id": record.as_ref().map(|item| item.character_id.as_str()),
+            "account_id": record.as_ref().map(|item| item.account_id.as_str()),
+            "previous_campaign_id": record
+                .as_ref()
+                .and_then(|item| item.campaign_lock.as_ref())
+                .map(|lock| lock.campaign_id.as_str()),
+        })
+        .to_string();
+
+        Ok(self.append_audit_event("campaign_unlock_attempt", actor, payload))
     }
 
     fn audit_events(&self) -> &[AuditEvent] {
@@ -363,6 +428,33 @@ impl Persistence for FilePersistence {
         }
 
         Ok(record)
+    }
+
+    fn record_campaign_unlock_attempt(
+        &mut self,
+        name_key: &str,
+        target_campaign_id: &str,
+        actor: &str,
+        reason: &str,
+        outcome: CampaignUnlockAuditOutcome,
+        detail: &str,
+    ) -> Result<String, CampaignUnlockError> {
+        let pre_mutation = self.store.snapshot_state();
+        let audit_id = self.store.record_campaign_unlock_attempt(
+            name_key,
+            target_campaign_id,
+            actor,
+            reason,
+            outcome,
+            detail,
+        )?;
+
+        if let Err(err) = self.persist_now() {
+            self.store = InMemoryPersistence::from_snapshot_state(pre_mutation);
+            return Err(CampaignUnlockError::PersistFailed(err));
+        }
+
+        Ok(audit_id)
     }
 
     fn audit_events(&self) -> &[AuditEvent] {
@@ -592,8 +684,9 @@ mod tests {
         let audit_log = store.audit_events();
         assert_eq!(audit_log.len(), 1);
         assert_eq!(audit_log[0].id, "audit-1");
-        assert_eq!(audit_log[0].event_type, "campaign_unlock_override");
+        assert_eq!(audit_log[0].event_type, "campaign_unlock_attempt");
         assert_eq!(audit_log[0].actor, "admin:ops");
+        assert!(audit_log[0].payload.contains("\"outcome\":\"success\""));
         assert!(audit_log[0]
             .payload
             .contains("\"target_campaign_id\":\"ashfall\""));
@@ -623,6 +716,47 @@ mod tests {
             missing_reason,
             Err(CampaignUnlockError::ReasonRequired)
         ));
+    }
+
+    #[test]
+    fn denied_unlock_attempt_is_audited_without_mutation() {
+        let mut store = InMemoryPersistence::default();
+        store
+            .create_character("acct:ada", build_character("Ada"), "ada", "greenhollow")
+            .expect("character should create");
+
+        let audit_id = store
+            .record_campaign_unlock_attempt(
+                "ada",
+                "ashfall",
+                "acct:not-admin",
+                "unauthorized check",
+                CampaignUnlockAuditOutcome::DeniedUnauthorized,
+                "actor is not in admin allowlist",
+            )
+            .expect("audit append should succeed");
+
+        assert_eq!(audit_id, "audit-1");
+        let record = store
+            .validate_character_join("acct:ada", "ada", "greenhollow")
+            .expect("campaign lock should remain unchanged");
+        assert_eq!(
+            record
+                .campaign_lock
+                .as_ref()
+                .map(|lock| lock.campaign_id.as_str()),
+            Some("greenhollow")
+        );
+        assert_eq!(
+            record.campaign_lock.and_then(|lock| lock.unlock_audit_ref),
+            None
+        );
+
+        let audit_log = store.audit_events();
+        assert_eq!(audit_log.len(), 1);
+        assert!(audit_log[0]
+            .payload
+            .contains("\"outcome\":\"denied_unauthorized\""));
     }
 
     #[test]

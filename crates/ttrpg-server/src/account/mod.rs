@@ -1,9 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use serde::{Deserialize, Serialize};
 use ttrpg_protocol::CharacterDraft;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountRecord {
     pub account_id: String,
     pub handle: String,
@@ -12,14 +13,14 @@ pub struct AccountRecord {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharacterCampaignLock {
     pub campaign_id: String,
     pub locked_at_epoch_secs: u64,
     pub unlock_audit_ref: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharacterRecord {
     pub character_id: String,
     pub account_id: String,

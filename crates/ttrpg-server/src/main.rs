@@ -23,7 +23,11 @@ use encounter::{
     EncounterState, TimeoutFallbackAction, TimeoutFallbackError, TurnTimerConfig, TurnTimerMarker,
 };
 use party::PartyRegistry;
-use persistence::{CreateCharacterError, InMemoryPersistence, JoinCampaignError, Persistence};
+#[cfg(test)]
+use persistence::InMemoryPersistence;
+use persistence::{
+    CreateCharacterError, FilePersistence, JoinCampaignError, Persistence, SnapshotLoadStatus,
+};
 use scene::queue::CommandEnvelope;
 use scene::runtime::SceneRuntime;
 use scene::{Grid, Position, Scene, Tile, TileType};
@@ -71,7 +75,38 @@ struct ServerState {
 }
 
 impl ServerState {
-    fn new(active_campaign: CampaignManifestEntry) -> Self {
+    fn new(active_campaign: CampaignManifestEntry) -> io::Result<Self> {
+        let (persistence, load_status) =
+            FilePersistence::open(&active_campaign.campaign_id, &active_campaign.save_path)
+                .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err.to_string()))?;
+
+        match load_status {
+            SnapshotLoadStatus::FreshStart => info!(
+                "campaign save bootstrap created at {}",
+                active_campaign.save_path
+            ),
+            SnapshotLoadStatus::LoadedPrimary => {
+                info!(
+                    "campaign save loaded from primary {}",
+                    active_campaign.save_path
+                )
+            }
+            SnapshotLoadStatus::RecoveredRollback => info!(
+                "campaign save recovered from rollback snapshot for {}",
+                active_campaign.save_path
+            ),
+        }
+
+        Ok(Self::new_with_persistence(
+            active_campaign,
+            Box::new(persistence),
+        ))
+    }
+
+    fn new_with_persistence(
+        active_campaign: CampaignManifestEntry,
+        persistence: Box<dyn Persistence>,
+    ) -> Self {
         Self {
             next_player_id: 1,
             next_encounter_id: 1,
@@ -81,11 +116,16 @@ impl ServerState {
             party_registry: PartyRegistry::default(),
             active_encounters: HashMap::new(),
             rooms: build_world(),
-            persistence: Box::new(InMemoryPersistence::default()),
+            persistence,
             active_campaign,
             turn_timer_config: TurnTimerConfig::from_env(),
             timeout_fallback_action: TimeoutFallbackAction::from_env(),
         }
+    }
+
+    #[cfg(test)]
+    fn new_for_tests(active_campaign: CampaignManifestEntry) -> Self {
+        Self::new_with_persistence(active_campaign, Box::new(InMemoryPersistence::default()))
     }
 }
 
@@ -117,7 +157,7 @@ async fn main() -> io::Result<()> {
         campaign_catalog.resolve_active_campaign(startup_config.campaign_id.as_deref())?;
 
     let listener = TcpListener::bind(&startup_config.addr).await?;
-    let state = Arc::new(Mutex::new(ServerState::new(active_campaign.clone())));
+    let state = Arc::new(Mutex::new(ServerState::new(active_campaign.clone())?));
     let (turn_timeout, fallback_action) = {
         let locked = state.lock().await;
         (
@@ -442,6 +482,15 @@ async fn handle_create_character(
                 );
                 return;
             }
+            Err(CreateCharacterError::PersistFailed(details)) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: format!("Character could not be saved safely: {}", details),
+                    },
+                );
+                return;
+            }
         };
 
         player_id = locked.next_player_id;
@@ -671,6 +720,15 @@ async fn handle_select_character(
                             "Character is locked to campaign '{}'. Ask an admin to unlock.",
                             locked_campaign_id
                         ),
+                    },
+                );
+                return;
+            }
+            Err(JoinCampaignError::PersistFailed(details)) => {
+                send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: format!("Campaign join could not be persisted safely: {}", details),
                     },
                 );
                 return;
@@ -1843,7 +1901,7 @@ mod tests {
 
     #[tokio::test]
     async fn scene_action_emits_delta_to_players_in_room() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_actor, mut rx_actor) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_peer, mut rx_peer) = mpsc::unbounded_channel::<ServerMessage>();
 
@@ -1930,7 +1988,7 @@ mod tests {
 
     #[tokio::test]
     async fn encounter_start_captures_only_party_members_plus_relevant_npcs() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_bravo, _rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_charlie, _rx_charlie) = mpsc::unbounded_channel::<ServerMessage>();
@@ -2026,7 +2084,7 @@ mod tests {
 
     #[tokio::test]
     async fn scene_action_is_rejected_when_actor_is_out_of_turn() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
 
@@ -2109,7 +2167,7 @@ mod tests {
 
     #[tokio::test]
     async fn end_turn_advances_to_next_actor() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
 
@@ -2191,7 +2249,7 @@ mod tests {
 
     #[tokio::test]
     async fn timeout_fallback_advances_turn_when_actor_does_not_end_turn() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
 
@@ -2277,7 +2335,7 @@ mod tests {
 
     #[tokio::test]
     async fn timeout_fallback_does_not_double_advance_after_manual_end_turn() {
-        let state = Arc::new(Mutex::new(ServerState::new(test_campaign())));
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
         let (tx_alpha, mut rx_alpha) = mpsc::unbounded_channel::<ServerMessage>();
         let (tx_bravo, mut rx_bravo) = mpsc::unbounded_channel::<ServerMessage>();
 

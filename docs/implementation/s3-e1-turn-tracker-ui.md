@@ -65,6 +65,7 @@
 ### Negative Paths
 
 - Negative-path tests: `turn_ui::tests::tracker_ignores_unrelated_info_lines` validates that unrelated `Info` text does not emit false tracker output; `turn_ui::tests::tracker_can_sync_from_out_of_turn_error` validates error-path turn ownership sync.
+- Skipped tests: none
 
 ### Manual Validation
 

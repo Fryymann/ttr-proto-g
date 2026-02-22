@@ -531,3 +531,14 @@
   - Synced `PROJECT_PROGRESS.md` from current backlog/roadmap state.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Latest IAN intake formalized into V2 concept spec
+- Scope:
+  - Review latest `IAN.md` entry and integrate ideas into durable, dispatch-ready project specs.
+- Changes:
+  - Added `BL-027` (spell capability staging + dependency gates) to V2 backlog intake.
+  - Added branch-split execution plan: keep PM/backlog/risk continuity on `koad-os`; route `docs/design/**` concept spec formalization to a dedicated `v1` specs lane.
+  - Updated risk register with V2 movement/auto-walk parser-desync risk (`R-015`).
+  - Updated PM continuity artifacts (decision log + working memory + learnings) for durable context.
+- Evidence:
+  - Updated `.agents/backlog.md`, `.agents/risk-register.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `PROJECT_PROGRESS.md`.

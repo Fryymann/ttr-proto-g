@@ -21,7 +21,7 @@ Last updated: 2026-02-22
 - PR merge-finalization is now scriptable via `.koad/scripts/koad pr-finish` (gate validation + strategy auto-selection + merge).
 - Non-`koad-os` source PRs now require implementation docs plus tightened test/coverage evidence via `validate-implementation-doc` and `validate-test-evidence`.
 - V1 status dashboard publishing is merge-driven via `.github/workflows/update-v1-dashboard.yml` (managed issue `V1 Project Dashboard`) to avoid per-change status commit overhead.
-- Latest `IAN.md` gameplay/system intake (2026-02-22 11:42pm entry) is now captured as V2 backlog/spec parking-lot scope (`BL-021` to `BL-026`) without altering active S3 lane priorities.
+- Latest `IAN.md` gameplay/system intake (2026-02-22 11:42pm entry) is now captured as V2 backlog/spec parking-lot scope (`BL-021` to `BL-027`) on PM artifacts; docs/design spec formalization is routed through a dedicated `v1` specs lane because `koad-os` scope excludes `docs/design/**`.
 - `S4-P1` is merged to `v1` (PR #34); `BL-013` is done and queue is advanced to `S4-P2` (`BL-018`, Platform) as active next dispatch.
 
 ## Open Unknowns
@@ -34,3 +34,4 @@ Last updated: 2026-02-22
 - Campaign-lock admin unlock guardrails and audit requirements.
 - SRD-only compliance drift in V1 content implementation.
 - Advisory DM-agent boundary leakage into authoritative NPC actions.
+- V2 movement-chain and auto-walk grammar complexity causing parser ambiguity or desync.

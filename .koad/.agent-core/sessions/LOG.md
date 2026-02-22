@@ -170,3 +170,21 @@
   - `https://github.com/Fryymann/ttr-proto-g/pull/28`
 - Risks/Unknowns:
   - monitor workflow-run churn caused by PR body checkbox edits retriggering checks
+
+## 2026-02-22 - 2026-02-22 - post-PR36 IAN intake scope split checkpoint
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Preserve continuity after PR36 merge and latest IAN intake integration while handling koad-os scope constraints.
+- Actions:
+  - Verified PR36 merged and synced local v1/koad-os state.
+  - Integrated latest IAN intake into PM backlog/risk continuity and identified docs/design scope-gate conflict on PR37.
+  - Applied scope-safe split: kept support artifacts on koad-os and prepared v1 docs lane branch lane/PM/ian-v2-spec-intake (commit 29cc878).
+  - Retried lane push and PR creation; blocked by unresolved github.com DNS in environment.
+- Artifacts:
+  - `https://github.com/Fryymann/ttr-proto-g/pull/37`
+  - `.koad/.agent-core/memory/LEARNINGS.md`
+  - `.koad/.agent-core/memory/PATTERNS.md`
+  - `.koad/.agent-core/memory/FACTS_LEDGER.md`
+  - `/tmp/ttrpg-v1-spec-wt (lane/PM/ian-v2-spec-intake @ 29cc878)`
+- Risks/Unknowns:
+  - Network/DNS instability is currently blocking push of lane/PM/ian-v2-spec-intake and opening its v1 PR.

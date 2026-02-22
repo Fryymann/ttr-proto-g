@@ -8,10 +8,11 @@ Track recurring workflows and known effective approaches.
 - Steps:
   - Read newest section in `IAN.md`.
   - Extract decisions, implementation impacts, open questions.
-  - Update design docs + `.agents/backlog.md` + `.agents/risk-register.md`.
+  - Update `.agents/backlog.md` + `.agents/risk-register.md` on `koad-os`.
+  - If design/spec docs are required under `docs/design/**`, ship them via a dedicated `v1` docs lane PR (not `koad-os` promotion).
   - Return concise summary with unresolved choices.
 - Validation:
-  - Changes present in all three layers: design, backlog, risk.
+  - Changes present in backlog/risk continuity artifacts and the appropriate design-doc lane PR when spec updates are needed.
 
 ## Pattern: PM Koad Sync Pass
 - Trigger:

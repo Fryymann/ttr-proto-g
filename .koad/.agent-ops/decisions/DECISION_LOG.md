@@ -562,3 +562,19 @@
   - Sprint status notes now capture post-PR34 queue transition.
 - Revisit trigger:
   - If post-merge regressions from PR #34 require immediate snapshot/recovery hotfix before `S4-P2` starts.
+
+## 2026-02-22 - Formalize latest IAN intake into dedicated V2 concept spec
+- Decision:
+  - Add `BL-027` for spell capability staging and dependency gating to capture previously implicit spell-system dependency constraints.
+  - Split latest-IAN integration by branch scope:
+    - `koad-os`: backlog/risk/PM continuity artifacts.
+    - `v1` specs lane: `docs/design/**` concept spec and roadmap/sprint cross-links.
+- Why:
+  - Existing `BL-021` to `BL-026` rows captured intent but lacked dispatch-level grammar/contracts.
+  - `koad-os` scope gates block `docs/design/**`, so spec documentation must be routed through a release-line specs PR.
+- Impact:
+  - PM artifacts now include `BL-027` and `R-015` to keep V2 intake visible in queue/risk tracking.
+  - Full V2 concept specification is delivered through a dedicated `v1` docs lane without violating scope policy.
+  - Risk register now tracks a V2 parser/desync risk for chained movement and auto-walk (`R-015`).
+- Revisit trigger:
+  - When V2 planning is promoted from parking-lot status into active lane packets.

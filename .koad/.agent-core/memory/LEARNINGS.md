@@ -133,3 +133,8 @@ Append-only record of durable lessons.
 - Observation: PRs auto-created by workflows may not immediately trigger required `pull_request` checks when created via `GITHUB_TOKEN`.
 - Why it matters: Required checks can remain missing, leaving merge state blocked until an extra push occurs.
 - Behavior update: Seed required check-runs directly from the promotion workflow on managed PR create/update outcomes.
+
+### Operational
+- Observation: PM review loops still spend time manually polling check status while waiting to run Koad gate approval.
+- Why it matters: Manual polling adds repetitive overhead and slows review throughput without adding quality.
+- Behavior update: Use `koad pr-gate --watch` to wait for check settlement and apply Koad approval flow in one command.

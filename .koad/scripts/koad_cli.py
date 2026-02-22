@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 
@@ -703,35 +704,40 @@ def patch_pr_body(root: Path, pr_number: int, body: str) -> None:
         payload_path.unlink(missing_ok=True)
 
 
-def cmd_pr_gate(args: argparse.Namespace) -> int:
-    root = repo_root()
-    payload = gh_json(
+def fetch_pr_gate_payload(root: Path, pr_number: int) -> dict:
+    return gh_json(
         root,
         [
             "pr",
             "view",
-            str(args.pr),
+            str(pr_number),
             "--json",
             "number,title,url,state,isDraft,baseRefName,headRefName,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup,files,body",
         ],
     )
 
+
+def evaluate_pr_gate_payload(payload: dict) -> dict:
     files = [f.get("path", "") for f in (payload.get("files") or [])]
     checks = payload.get("statusCheckRollup") or []
     body = payload.get("body") or ""
 
     merge_blockers: list[str] = []
-    if payload.get("state") != "OPEN":
-        merge_blockers.append(f"PR state is `{payload.get('state')}` (must be OPEN)")
-    if payload.get("isDraft"):
+    state = str(payload.get("state"))
+    is_draft = bool(payload.get("isDraft"))
+    mergeable = str(payload.get("mergeable"))
+    merge_state_status = str(payload.get("mergeStateStatus"))
+    if state != "OPEN":
+        merge_blockers.append(f"PR state is `{state}` (must be OPEN)")
+    if is_draft:
         merge_blockers.append("PR is draft")
-    if payload.get("mergeable") != "MERGEABLE":
-        merge_blockers.append(f"mergeable=`{payload.get('mergeable')}`")
-    if str(payload.get("mergeStateStatus")) in {"BLOCKED", "DIRTY", "UNKNOWN"}:
-        merge_blockers.append(f"mergeStateStatus=`{payload.get('mergeStateStatus')}`")
+    if mergeable != "MERGEABLE":
+        merge_blockers.append(f"mergeable=`{mergeable}`")
+    if merge_state_status in {"BLOCKED", "DIRTY", "UNKNOWN"}:
+        merge_blockers.append(f"mergeStateStatus=`{merge_state_status}`")
 
-    check_blockers = required_check_blockers(checks, REQUIRED_PR_GATE_CHECKS)
-    scope_blockers = scope_violations(payload.get("baseRefName", ""), payload.get("headRefName", ""), files)
+    check_blockers = required_check_blockers(list(checks), REQUIRED_PR_GATE_CHECKS)
+    scope_blockers = scope_violations(str(payload.get("baseRefName", "")), str(payload.get("headRefName", "")), files)
     evidence_blockers = missing_evidence_sections(body)
 
     blockers: list[str] = []
@@ -747,6 +753,70 @@ def cmd_pr_gate(args: argparse.Namespace) -> int:
     for marker in evidence_blockers:
         findings.append(("medium", f"Missing PR evidence marker: `{marker}`"))
 
+    return {
+        "files": files,
+        "checks": checks,
+        "body": body,
+        "merge_blockers": merge_blockers,
+        "check_blockers": check_blockers,
+        "scope_blockers": scope_blockers,
+        "evidence_blockers": evidence_blockers,
+        "blockers": blockers,
+        "findings": findings,
+        "verdict": verdict,
+    }
+
+
+def blocker_is_transient_for_watch(message: str) -> bool:
+    if message.startswith("`") and (" pending" in message or " missing" in message):
+        return True
+    return message in {
+        "mergeable=`UNKNOWN`",
+        "mergeStateStatus=`BLOCKED`",
+        "mergeStateStatus=`UNKNOWN`",
+    }
+
+
+def cmd_pr_gate(args: argparse.Namespace) -> int:
+    root = repo_root()
+    if args.watch_timeout_seconds < 1:
+        raise ValueError("--watch-timeout-seconds must be >= 1")
+    if args.poll_seconds < 1:
+        raise ValueError("--poll-seconds must be >= 1")
+
+    start = time.monotonic()
+    deadline = start + float(args.watch_timeout_seconds)
+    payload = fetch_pr_gate_payload(root, args.pr)
+    evaluation = evaluate_pr_gate_payload(payload)
+    watch_used = False
+
+    while args.watch and evaluation["verdict"] != "approve":
+        blockers = list(evaluation["blockers"])
+        if blockers and not all(blocker_is_transient_for_watch(b) for b in blockers):
+            break
+
+        now = time.monotonic()
+        if now >= deadline:
+            break
+
+        watch_used = True
+        remaining = int(deadline - now)
+        blocker_text = "; ".join(blockers) if blockers else "pending state reconciliation"
+        print(
+            f"[pr-gate watch] waiting ({remaining}s remaining): {blocker_text}",
+            file=sys.stderr,
+        )
+        time.sleep(max(1.0, float(args.poll_seconds)))
+        payload = fetch_pr_gate_payload(root, args.pr)
+        evaluation = evaluate_pr_gate_payload(payload)
+
+    if watch_used:
+        elapsed = int(time.monotonic() - start)
+        print(f"[pr-gate watch] final evaluation after {elapsed}s.", file=sys.stderr)
+
+    findings = list(evaluation["findings"])
+    verdict = str(evaluation["verdict"])
+
     print("Findings:")
     if findings:
         for idx, (severity, text) in enumerate(findings, start=1):
@@ -757,6 +827,7 @@ def cmd_pr_gate(args: argparse.Namespace) -> int:
     print("\nMerge gate verdict:")
     print(f"- {verdict}")
 
+    blockers = list(evaluation["blockers"])
     if blockers:
         print("\nRequired fixes:")
         for idx, item in enumerate(blockers, start=1):
@@ -770,6 +841,7 @@ def cmd_pr_gate(args: argparse.Namespace) -> int:
             print("\nCannot auto-apply Koad approval checkbox because gate verdict is not approve.", file=sys.stderr)
             return 2
 
+        body = str(evaluation["body"])
         updated_body, changed, found = set_checkbox_line(body, "Koad git review approved", checked=True)
         if not found:
             print("\nCannot find `Koad git review approved` checkbox line in PR body.", file=sys.stderr)
@@ -1087,6 +1159,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--comment",
         action="store_true",
         help="When used with --apply-koad-approved, post a Koad PM approval comment",
+    )
+    gate.add_argument(
+        "--watch",
+        action="store_true",
+        help="Poll until required checks settle or timeout before final verdict",
+    )
+    gate.add_argument(
+        "--watch-timeout-seconds",
+        type=int,
+        default=600,
+        help="Max watch duration in seconds (default: 600)",
+    )
+    gate.add_argument(
+        "--poll-seconds",
+        type=int,
+        default=8,
+        help="Polling interval in seconds when --watch is enabled (default: 8)",
     )
     gate.add_argument("--dry-run", action="store_true", help="Do not write PR body/comment changes")
     gate.set_defaults(func=cmd_pr_gate)

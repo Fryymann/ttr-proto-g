@@ -25,7 +25,7 @@ Use `.koad/scripts/koad` for common workflow actions:
 
 - `lane-start`: create lane branch + worktree and print onboarding evidence.
 - `pr-open`: open a governance-template PR with lane metadata.
-- `pr-gate`: run PM PR gate review checks and optionally auto-mark `Koad git review approved`.
+- `pr-gate`: run PM PR gate review checks, optional check-waiting (`--watch`), and optional auto-mark of `Koad git review approved`.
 - `saveup`: append role-aware saveup records (lane-isolated journaling for team-role lane contexts by default).
 - `progress-sync`: generate a local `PROJECT_PROGRESS.md` snapshot from current backlog/roadmap/sprint sources.
 - `status`: print compact current progress summary in terminal (`--refresh` to regenerate first).

@@ -55,10 +55,16 @@ Example:
 .koad/scripts/koad pr-gate --pr 25
 ```
 
+Wait for checks to settle (up to 10 minutes) before final verdict:
+
+```bash
+.koad/scripts/koad pr-gate --pr 25 --watch
+```
+
 If all gates pass, auto-check `Koad git review approved` in PR body and add a Koad PM approval comment:
 
 ```bash
-.koad/scripts/koad pr-gate --pr 25 --apply-koad-approved --comment
+.koad/scripts/koad pr-gate --pr 25 --watch --apply-koad-approved --comment
 ```
 
 ### `saveup`

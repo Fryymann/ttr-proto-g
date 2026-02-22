@@ -487,3 +487,14 @@
   - Seeded checks run the same governance marker and scope-policy logic used by PM review tooling/workflows.
 - Revisit trigger:
   - If repository policy changes to use reusable workflows/workflow_call for canonical gate execution across all PR creation paths.
+
+## 2026-02-22 - Add `pr-gate --watch` for check-settle automation
+- Decision:
+  - Extend `koad pr-gate` with `--watch` polling mode and timeout controls so PM review can wait for required checks automatically.
+- Why:
+  - PM gate reviews still required manual polling loops while checks were pending immediately after PR creation/body edits.
+- Impact:
+  - One command now handles wait + evaluate + optional Koad checkbox/comment application.
+  - Reduces repeated terminal polling commands during Koad review flow.
+- Revisit trigger:
+  - If repository adopts merge queue or a centralized CI gate API that provides built-in readiness wait semantics.

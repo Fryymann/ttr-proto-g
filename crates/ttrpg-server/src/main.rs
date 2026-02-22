@@ -1,4 +1,5 @@
 mod account;
+mod admin;
 mod campaign;
 mod encounter;
 mod party;
@@ -17,6 +18,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{error, info};
 
+use admin::{AdminCommandError, AdminPolicy, AdminUnlockCommand};
 use campaign::{CampaignCatalog, CampaignManifestEntry};
 use encounter::{
     capture_participants, deterministic_initiative_for_actor, resolve_timeout_fallback,
@@ -26,7 +28,8 @@ use party::PartyRegistry;
 #[cfg(test)]
 use persistence::InMemoryPersistence;
 use persistence::{
-    CreateCharacterError, FilePersistence, JoinCampaignError, Persistence, SnapshotLoadStatus,
+    CampaignUnlockAuditOutcome, CampaignUnlockError, CreateCharacterError, FilePersistence,
+    JoinCampaignError, Persistence, SnapshotLoadStatus,
 };
 use scene::queue::CommandEnvelope;
 use scene::runtime::SceneRuntime;
@@ -48,6 +51,7 @@ struct Room {
 #[derive(Clone)]
 struct Player {
     id: u64,
+    account_handle: String,
     account_id: String,
     character: CharacterDraft,
     room_id: String,
@@ -72,6 +76,7 @@ struct ServerState {
     active_campaign: CampaignManifestEntry,
     turn_timer_config: TurnTimerConfig,
     timeout_fallback_action: TimeoutFallbackAction,
+    admin_policy: AdminPolicy,
 }
 
 impl ServerState {
@@ -120,12 +125,16 @@ impl ServerState {
             active_campaign,
             turn_timer_config: TurnTimerConfig::from_env(),
             timeout_fallback_action: TimeoutFallbackAction::from_env(),
+            admin_policy: AdminPolicy::from_env(),
         }
     }
 
     #[cfg(test)]
     fn new_for_tests(active_campaign: CampaignManifestEntry) -> Self {
-        Self::new_with_persistence(active_campaign, Box::new(InMemoryPersistence::default()))
+        let mut state =
+            Self::new_with_persistence(active_campaign, Box::new(InMemoryPersistence::default()));
+        state.admin_policy = AdminPolicy::for_tests(&["acct:admin_ops"], "test-admin-token");
+        state
     }
 }
 
@@ -501,6 +510,7 @@ async fn handle_create_character(
 
         let player = Player {
             id: player_id,
+            account_handle: account_handle.to_owned(),
             account_id: persisted.account_id,
             character: persisted.character,
             room_id: room_id.clone(),
@@ -762,10 +772,12 @@ async fn handle_select_character(
         let default_room_id = resolve_entry_room_id(&locked.rooms, &entry_scene_id);
         let player = locked.players.entry(player_id).or_insert_with(|| Player {
             id: player_id,
+            account_handle: account_handle.clone(),
             account_id: persisted.account_id.clone(),
             character: persisted.character.clone(),
             room_id: default_room_id.clone(),
         });
+        player.account_handle = account_handle.clone();
 
         room_id = player.room_id.clone();
         player_name = player.display_name().to_owned();
@@ -911,11 +923,15 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
         "sheet" => {
             show_sheet(player_id, tx, state).await;
         }
+        "admin" => {
+            let args = parts.collect::<Vec<_>>();
+            run_admin_command(args, player_id, tx, state).await;
+        }
         "help" => {
             send_to_client(
                 tx,
                 ServerMessage::Info {
-                    text: "Commands: look, encounter <start|end|status>, end_turn, go <dir>, say <msg>, who, sheet, help".to_owned(),
+                    text: "Commands: look, encounter <start|end|status>, end_turn, go <dir>, say <msg>, who, sheet, admin unlock <character> <campaign> --token <token> --reason <text>, help".to_owned(),
                 },
             );
         }
@@ -927,6 +943,147 @@ async fn run_command(command: String, player_id: u64, tx: &ClientTx, state: &Sha
                 },
             );
         }
+    }
+}
+
+async fn run_admin_command(args: Vec<&str>, player_id: u64, tx: &ClientTx, state: &SharedState) {
+    if args.is_empty() || args[0] != "unlock" {
+        send_to_client(
+            tx,
+            ServerMessage::Error {
+                text: "Usage: admin unlock <character> <campaign> --token <token> --reason <text>"
+                    .to_owned(),
+            },
+        );
+        return;
+    }
+
+    let unlock = match AdminUnlockCommand::parse(&args[1..]) {
+        Ok(parsed) => parsed,
+        Err(AdminCommandError::Usage) => {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text:
+                        "Usage: admin unlock <character> <campaign> --token <token> --reason <text>"
+                            .to_owned(),
+                },
+            );
+            return;
+        }
+        Err(AdminCommandError::TokenRequired) => {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Admin unlock requires a non-empty --token value.".to_owned(),
+                },
+            );
+            return;
+        }
+        Err(AdminCommandError::ReasonRequired) => {
+            send_to_client(
+                tx,
+                ServerMessage::Error {
+                    text: "Admin unlock requires a non-empty --reason value.".to_owned(),
+                },
+            );
+            return;
+        }
+    };
+
+    let (message, is_error) = {
+        let mut locked = state.lock().await;
+        let actor_handle = match locked.players.get(&player_id) {
+            Some(actor) => actor.account_handle.clone(),
+            None => {
+                return send_to_client(
+                    tx,
+                    ServerMessage::Error {
+                        text: "Unknown player session.".to_owned(),
+                    },
+                );
+            }
+        };
+
+        if !locked
+            .admin_policy
+            .is_authorized(&actor_handle, &unlock.token)
+        {
+            match locked.persistence.record_campaign_unlock_attempt(
+                &unlock.character_name_key,
+                &unlock.target_campaign_id,
+                &actor_handle,
+                &unlock.reason,
+                CampaignUnlockAuditOutcome::DeniedUnauthorized,
+                "account is not authorized for admin unlock",
+            ) {
+                Err(err) => (
+                    format!("Admin unlock failed: audit write failed: {}", err),
+                    true,
+                ),
+                Ok(_) => (
+                    "Admin unlock denied: authenticated account is not authorized.".to_owned(),
+                    true,
+                ),
+            }
+        } else {
+            match locked.persistence.admin_override_campaign_lock(
+                &unlock.character_name_key,
+                &unlock.target_campaign_id,
+                &actor_handle,
+                &unlock.reason,
+            ) {
+                Ok(record) => (
+                    format!(
+                        "Admin unlock succeeded: '{}' now bound to campaign '{}'.",
+                        record.character.name, unlock.target_campaign_id
+                    ),
+                    false,
+                ),
+                Err(CampaignUnlockError::CharacterNotFound) => {
+                    if let Err(err) = locked.persistence.record_campaign_unlock_attempt(
+                        &unlock.character_name_key,
+                        &unlock.target_campaign_id,
+                        &actor_handle,
+                        &unlock.reason,
+                        CampaignUnlockAuditOutcome::DeniedCharacterNotFound,
+                        "character does not exist",
+                    ) {
+                        (
+                            format!("Admin unlock failed: audit write failed: {}", err),
+                            true,
+                        )
+                    } else {
+                        (
+                            "Admin unlock failed: character does not exist.".to_owned(),
+                            true,
+                        )
+                    }
+                }
+                Err(CampaignUnlockError::ActorRequired) => (
+                    "Admin unlock failed: actor identity is required.".to_owned(),
+                    true,
+                ),
+                Err(CampaignUnlockError::ReasonRequired) => (
+                    "Admin unlock failed: reason text is required.".to_owned(),
+                    true,
+                ),
+                Err(CampaignUnlockError::TargetCampaignRequired) => (
+                    "Admin unlock failed: target campaign is required.".to_owned(),
+                    true,
+                ),
+                Err(CampaignUnlockError::PersistFailed(details)) => (
+                    format!("Admin unlock failed: persistence error: {}", details),
+                    true,
+                ),
+            }
+        }
+    };
+
+    if is_error {
+        send_to_client(tx, ServerMessage::Error { text: message });
+    } else {
+        send_to_client(tx, ServerMessage::Info { text: message });
     }
 }
 
@@ -1882,6 +2039,7 @@ mod tests {
             player_id,
             Player {
                 id: player_id,
+                account_handle: account_id.to_owned(),
                 account_id: account_id.to_owned(),
                 character: test_character(name),
                 room_id: room_id.to_owned(),
@@ -1911,6 +2069,7 @@ mod tests {
                 1,
                 Player {
                     id: 1,
+                    account_handle: "acct:alpha".to_owned(),
                     account_id: "acct:alpha".to_owned(),
                     character: test_character("Alpha"),
                     room_id: "town_square".to_owned(),
@@ -1920,6 +2079,7 @@ mod tests {
                 2,
                 Player {
                     id: 2,
+                    account_handle: "acct:bravo".to_owned(),
                     account_id: "acct:bravo".to_owned(),
                     character: test_character("Bravo"),
                     room_id: "town_square".to_owned(),
@@ -2426,5 +2586,114 @@ mod tests {
         }
 
         assert_ne!(active_actor_after_timer, active_actor_after_manual_end);
+    }
+
+    #[tokio::test]
+    async fn admin_unlock_denied_for_non_admin_and_attempt_is_audited() {
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
+        let (tx_actor, mut rx_actor) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:player",
+            "Player",
+            "town_square",
+            &tx_actor,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            locked
+                .persistence
+                .create_character(
+                    "acct:target",
+                    test_character("Target"),
+                    "target",
+                    "greenhollow",
+                )
+                .expect("target character should exist");
+        }
+
+        run_command(
+            "admin unlock target ashfall --token test-admin-token --reason ticket-77".to_owned(),
+            1,
+            &tx_actor,
+            &state,
+        )
+        .await;
+
+        let messages = collect_messages(&mut rx_actor);
+        assert!(has_error_message_containing(&messages, "not authorized"));
+
+        let mut locked = state.lock().await;
+        let join =
+            locked
+                .persistence
+                .validate_character_join("acct:target", "target", "greenhollow");
+        assert!(join.is_ok());
+
+        let audits = locked.persistence.audit_events();
+        assert!(audits.iter().any(|event| event
+            .payload
+            .contains("\"outcome\":\"denied_unauthorized\"")));
+    }
+
+    #[tokio::test]
+    async fn admin_unlock_succeeds_for_authorized_admin_and_is_audited() {
+        let state = Arc::new(Mutex::new(ServerState::new_for_tests(test_campaign())));
+        let (tx_actor, mut rx_actor) = mpsc::unbounded_channel::<ServerMessage>();
+
+        seed_player(
+            &state,
+            1,
+            "acct:admin_ops",
+            "Admin",
+            "town_square",
+            &tx_actor,
+            Position { x: 0, y: 0 },
+        )
+        .await;
+
+        {
+            let mut locked = state.lock().await;
+            locked
+                .persistence
+                .create_character(
+                    "acct:target",
+                    test_character("Target"),
+                    "target",
+                    "greenhollow",
+                )
+                .expect("target character should exist");
+        }
+
+        run_command(
+            "admin unlock target ashfall --token test-admin-token --reason support-ticket-91"
+                .to_owned(),
+            1,
+            &tx_actor,
+            &state,
+        )
+        .await;
+
+        let messages = collect_messages(&mut rx_actor);
+        assert!(has_info_message_containing(
+            &messages,
+            "Admin unlock succeeded"
+        ));
+
+        let mut locked = state.lock().await;
+        let join = locked
+            .persistence
+            .validate_character_join("acct:target", "target", "ashfall");
+        assert!(join.is_ok());
+
+        let audits = locked.persistence.audit_events();
+        assert!(audits
+            .iter()
+            .any(|event| event.payload.contains("\"outcome\":\"success\"")));
     }
 }

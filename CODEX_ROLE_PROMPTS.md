@@ -92,11 +92,12 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | `S3-G1` | Gameplay | `BL-005`, `BL-015` | Done (merged to `v1`, PR #13) | `S2-E1` merged to `v1` | `lane/Gameplay/s3-g1-encounter-skeleton-party-capture` |
 | `S3-P1` | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | `lane/Platform/s3-p1-turn-timer-fallback` |
 | `S3-E1` | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
-| `S4-P1` | Platform | `BL-013` | Active Next (dispatch now) | `S3-E1` merged to `v1` | `lane/Platform/s4-p1-single-save-snapshot-recovery` |
+| `S4-P1` | Platform | `BL-013` | Done (merged to `v1`, PR #34) | `S3-E1` merged to `v1` | `lane/Platform/s4-p1-single-save-snapshot-recovery` |
+| `S4-P2` | Platform | `BL-018` | Active Next (dispatch now) | `S4-P1` merged to `v1` | `lane/Platform/s4-p2-admin-unlock-guardrails` |
 
 ### Operator Dispatch Shortcut
 
-- Platform Agent: `Your next task is S4-P1.`
+- Platform Agent: `Your next task is S4-P2.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
@@ -402,6 +403,53 @@ Handoff requirements:
 - Include acceptance checklist with PASS/FAIL + evidence lines.
 - Provide crash/recovery reproduction steps and results.
 - Provide PR URL targeting v1, latest commit SHA, and risks/deferred items.
+```
+
+### Task Packet `S4-P2` (Platform: Admin Unlock Guardrails + Audit Path)
+
+```text
+You are Codex acting as the Platform Team instance for /mnt/c/data/ttrpg.
+
+Task packet id: S4-P2
+Backlog scope: BL-018
+Milestone/Sprint: S4
+Dependency: start only after S4-P1 is merged to v1.
+Branch policy: create branch from v1 and target PR to v1.
+
+Objective:
+- Implement admin campaign-unlock tooling guardrails with explicit reason/permission checks and immutable audit recording.
+
+In scope:
+- Add explicit admin unlock command/path enforcement with required reason text.
+- Enforce permission boundary checks before unlock mutation.
+- Emit immutable audit entries for every unlock attempt/outcome.
+- Add deterministic tests for allowed/denied unlock paths.
+
+Suggested file targets:
+- crates/ttrpg-server/src/admin/mod.rs
+- crates/ttrpg-server/src/account/mod.rs
+- crates/ttrpg-server/src/persistence/mod.rs
+- crates/ttrpg-server/src/main.rs
+
+Out of scope:
+- Gameplay disconnect fallback policy work (BL-014)
+- DM-agent advisory channel behavior (BL-020)
+- Client UI enhancements unrelated to unlock workflows
+
+Acceptance criteria:
+1) Unlock operation requires explicit reason and authorized actor identity (BL-018).
+2) Unauthorized unlock attempts are rejected deterministically and audited.
+3) Successful unlock emits immutable audit record with reason/actor metadata.
+
+Minimum verification:
+- cargo test -p ttrpg-server
+- cargo check
+- Targeted unlock/audit tests with pass/fail evidence in implementation doc.
+
+Handoff requirements:
+- Include acceptance checklist with PASS/FAIL + evidence.
+- Include sample audit event payloads for success and denied paths.
+- Provide PR URL targeting v1, latest commit SHA, and deferred-risk notes.
 ```
 
 ## Role Prompt: Gameplay Instance

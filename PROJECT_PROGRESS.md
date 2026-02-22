@@ -2,7 +2,7 @@
 
 Auto-generated snapshot aligned to roadmap and backlog.
 
-- Generated (UTC): 2026-02-22 08:04:45Z
+- Generated (UTC): 2026-02-22 08:52:13Z
 - Source files:
   - `.agents/backlog.md`
   - `docs/design/game-system-roadmap.md`
@@ -13,24 +13,24 @@ Auto-generated snapshot aligned to roadmap and backlog.
 
 - Active release branch: `v1`
 - Total backlog items: `26`
-- Done: `10`
+- Done: `11`
 - In progress: `1`
 - Blocked: `0`
-- Todo: `15`
-- Open items remaining: `16`
+- Todo: `14`
+- Open items remaining: `15`
 
 ## Roadmap Alignment
 
 | Milestone | Backlog Items | Done | In Progress | Todo | Blocked | Completion | Status |
 |---|---:|---:|---:|---:|---:|---:|---|
 | M2 | 7 | 6 | 1 | 0 | 0 | 86% | In Progress |
-| M3 | 9 | 4 | 0 | 5 | 0 | 44% | Queued |
+| M3 | 9 | 5 | 0 | 4 | 0 | 56% | Queued |
 | M4 | 4 | 0 | 0 | 4 | 0 | 0% | Queued |
 
 ## Active Focus Window
 
-- Now: `BL-012`, `BL-013`, `BL-018`
-- Next: `BL-008`, `BL-014`, `BL-020`
+- Now: `BL-012`, `BL-018`, `BL-014`
+- Next: `BL-008`, `BL-020`, `BL-010`
 
 ## Active Task Packet Queue
 
@@ -42,7 +42,8 @@ Auto-generated snapshot aligned to roadmap and backlog.
 | S3-G1 | Gameplay | `BL-005`, `BL-015` | Done (merged to `v1`, PR #13) | `S2-E1` merged to `v1` | lane/Gameplay/s3-g1-encounter-skeleton-party-capture |
 | S3-P1 | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | lane/Platform/s3-p1-turn-timer-fallback |
 | S3-E1 | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | lane/Experience/s3-e1-turn-tracker-ui |
-| S4-P1 | Platform | `BL-013` | Active Next (dispatch now) | `S3-E1` merged to `v1` | lane/Platform/s4-p1-single-save-snapshot-recovery |
+| S4-P1 | Platform | `BL-013` | Done (merged to `v1`, PR #34) | `S3-E1` merged to `v1` | lane/Platform/s4-p1-single-save-snapshot-recovery |
+| S4-P2 | Platform | `BL-018` | Active Next (dispatch now) | `S4-P1` merged to `v1` | lane/Platform/s4-p2-admin-unlock-guardrails |
 
 ## In-Progress / Blocked Items
 
@@ -52,7 +53,6 @@ Auto-generated snapshot aligned to roadmap and backlog.
 
 ## Recent Sprint Status Notes
 
-- 2026-02-21: Added root `PROJECT_PROGRESS.md` dashboard sync workflow with `koad progress-sync` and default `saveup` refresh path (`STD-012`).
 - 2026-02-21: Post-merge queue advance set `S2-P1` as active next dispatch (Platform), with `S2-E1` held until `S2-P1` merges to `v1`.
 - 2026-02-21: `S2-P1` merged to `v1` with deterministic queue + scene protocol evidence; queue advanced to `S2-E1` as active next dispatch (Experience).
 - 2026-02-22: `S2-E1` merged to `v1`; M2 scene-render baseline landed and queue advanced to S3 entry (`S3-G1` active next).
@@ -60,6 +60,7 @@ Auto-generated snapshot aligned to roadmap and backlog.
 - 2026-02-22: `S3-G1` merged to `v1` (PR #13); `BL-005` + `BL-015` marked done and queue advanced to `S3-P1` as active next dispatch (Platform).
 - 2026-02-22: `S3-P1` merged to `v1` (PR #17); `BL-006` marked done and queue advanced to `S3-E1` as active next dispatch (Experience).
 - 2026-02-22: `S3-E1` merged to `v1` (PR #32); `BL-007` marked done and queue advanced to `S4-P1` as active next dispatch (Platform, `BL-013`).
+- 2026-02-22: `S4-P1` merged to `v1` (PR #34); `BL-013` marked done and queue advanced to `S4-P2` as active next dispatch (Platform, `BL-018`).
 
 ## Update Command
 

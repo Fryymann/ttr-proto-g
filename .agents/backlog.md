@@ -19,8 +19,8 @@ Owner: Project Manager
 
 ## Active Focus Window
 
-- `Now` (M3 closeout + S4 Platform entry): `BL-012`, `BL-013`, `BL-018`
-- `Next` (S4 follow-on): `BL-008`, `BL-014`, `BL-020`
+- `Now` (S4 stability + governance hardening): `BL-012`, `BL-018`, `BL-014`
+- `Next` (S4 follow-on): `BL-008`, `BL-020`, `BL-010`
 - `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
@@ -40,7 +40,7 @@ Owner: Project Manager
 | BL-010 | P2 | Platform | todo | M4 | Add combat replay event logging | Replay log reconstructs encounter timeline |
 | BL-011 | P0 | Platform | done | M2 | Implement campaign manifest and startup campaign selection flow | Server boots with explicit campaign selection and loads active campaign config |
 | BL-012 | P0 | Platform | in_progress | M2 | Implement account + character persistence model with account-authenticated login and campaign lock metadata | User logs into an account session first, character create/login is scoped to authenticated account ownership, campaign lock is enforced on join, and admin unlock events are audited |
-| BL-013 | P1 | Platform | todo | M3 | Implement single-save campaign storage with rollback-safe snapshot strategy | Campaign progress persists and recovery test passes after simulated crash |
+| BL-013 | P1 | Platform | done | M3 | Implement single-save campaign storage with rollback-safe snapshot strategy | Campaign progress persists and recovery test passes after simulated crash |
 | BL-014 | P1 | Gameplay | todo | M3 | Define and implement staged quit/disconnect in encounter rules | Defensive-only fallback for configured rounds then limited AI behavior is deterministic and covered by integration tests |
 | BL-015 | P1 | Gameplay | done | M3 | Implement V1 party-based encounter participation rules | Non-party players in the scene are not auto-pulled, party members are included deterministically, and tests cover join edge cases |
 | BL-016 | P2 | Experience | todo | M4 | Design split-feed client mode (map/combat/chat panels) while preserving terminal-first mode | Optional multi-panel view works without breaking baseline CLI flow |

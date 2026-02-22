@@ -158,3 +158,8 @@ Append-only record of durable lessons.
 - Observation: Queue state drifts quickly after lane merges unless backlog, prompt-pack packet table, and sprint status notes are advanced in the same PM checkpoint.
 - Why it matters: Unsynced queue artifacts create dispatch ambiguity for the next agent lane.
 - Behavior update: After each merged lane PR, update backlog focus/state and prompt-pack active packet in the same koad-os change set.
+
+### Operational
+- Observation: PR checks on dependent lane PRs can remain stale/failing after governance hotfixes until those checks are explicitly rerun.
+- Why it matters: A PR may look blocked even after the underlying gate logic has been fixed and merged.
+- Behavior update: Merge governance hotfixes first, then rerun affected PR checks (or push a no-op) before final PM gate disposition.

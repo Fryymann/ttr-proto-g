@@ -59,15 +59,46 @@ pub struct PartyRegistry {
 }
 
 impl PartyRegistry {
+    fn detach_actor_from_party(&mut self, party_id: &str, actor_id: &str) {
+        let mut should_remove_party = false;
+
+        if let Some(previous_party) = self.parties.get_mut(party_id) {
+            previous_party.member_actor_ids.retain(|member| member != actor_id);
+
+            if previous_party.member_actor_ids.is_empty() {
+                should_remove_party = true;
+            } else if !previous_party
+                .member_actor_ids
+                .contains(&previous_party.leader_actor_id)
+            {
+                previous_party.leader_actor_id = previous_party.member_actor_ids[0].clone();
+            }
+        }
+
+        if should_remove_party {
+            self.parties.remove(party_id);
+        }
+    }
+
     pub fn upsert_party(&mut self, party: Party) {
-        if let Some(existing) = self.parties.get(&party.party_id) {
+        let party_id = party.party_id.clone();
+        let incoming_members = party.members().to_vec();
+
+        if let Some(existing) = self.parties.get(&party_id) {
             for actor_id in existing.members() {
                 self.actor_to_party.remove(actor_id);
             }
         }
 
-        let party_id = party.party_id.clone();
-        for actor_id in party.members() {
+        for actor_id in &incoming_members {
+            if let Some(previous_party_id) = self.actor_to_party.get(actor_id).cloned() {
+                if previous_party_id != party_id {
+                    self.detach_actor_from_party(&previous_party_id, actor_id);
+                }
+            }
+        }
+
+        for actor_id in &incoming_members {
             self.actor_to_party
                 .insert(actor_id.clone(), party_id.clone());
         }
@@ -143,6 +174,84 @@ mod tests {
                 .expect("party should exist")
                 .members(),
             &vec!["Alpha".to_owned()]
+        );
+    }
+
+    #[test]
+    fn upsert_party_reassigns_actor_without_stale_membership() {
+        let mut registry = PartyRegistry::default();
+        registry.upsert_party(
+            Party::new(
+                "party:1",
+                "campaign-a",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid"),
+        );
+
+        registry.upsert_party(
+            Party::new(
+                "party:2",
+                "campaign-a",
+                "Charlie",
+                vec![
+                    "Charlie".to_owned(),
+                    "Alpha".to_owned(),
+                    "Charlie".to_owned(),
+                ],
+            )
+            .expect("party should be valid"),
+        );
+
+        let alpha_party = registry
+            .party_for_actor("Alpha")
+            .expect("alpha should resolve to a party");
+        assert_eq!(alpha_party.party_id, "party:2");
+
+        let bravo_party = registry
+            .party_for_actor("Bravo")
+            .expect("bravo should resolve to a party");
+        assert_eq!(bravo_party.party_id, "party:1");
+
+        let party_one = registry
+            .parties
+            .get("party:1")
+            .expect("party 1 should still exist");
+        assert_eq!(party_one.members(), &vec!["Bravo".to_owned()]);
+        assert_eq!(party_one.leader_actor_id, "Bravo");
+    }
+
+    #[test]
+    fn empty_previous_party_is_removed_when_actor_reassigned() {
+        let mut registry = PartyRegistry::default();
+        registry.upsert_party(
+            Party::new(
+                "party:solo",
+                "campaign-a",
+                "Alpha",
+                vec!["Alpha".to_owned()],
+            )
+            .expect("party should be valid"),
+        );
+
+        registry.upsert_party(
+            Party::new(
+                "party:duo",
+                "campaign-a",
+                "Alpha",
+                vec!["Alpha".to_owned(), "Bravo".to_owned()],
+            )
+            .expect("party should be valid"),
+        );
+
+        assert!(!registry.parties.contains_key("party:solo"));
+        assert_eq!(
+            registry
+                .party_for_actor("Alpha")
+                .expect("alpha should resolve to a party")
+                .party_id,
+            "party:duo"
         );
     }
 }

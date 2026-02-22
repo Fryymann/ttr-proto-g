@@ -26,3 +26,4 @@ Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups 
 | SAVEUP-20260222-042201Z | Koad (PM) | koad-os | post-review-flow-main-savepoint | completed | 0 | 0 | main savepoint after PR #18/#19 merge and branch/worktree cleanup |
 | SAVEUP-20260222-044326Z | Koad (PM) | koad-os | post-pr20-automation-baseline | completed | 0 | 1 | savepoint after PR #20 merge; automation baseline active |
 | SAVEUP-20260222-071006Z | Koad (PM) | koad-os | post-pr28-merge-automation-offload | completed | 0 | 3 | automation-offload checkpoint complete after PR #27/#28 merges; no open blockers |
+| SAVEUP-20260222-091019Z | Koad (PM) | koad-os | post-pr36-ian-intake-scope-split | partial | 1 | 1 | PR #37 is Koad-approved; dedicated v1 docs lane branch is prepared but push is blocked by intermittent DNS resolution to github.com. |

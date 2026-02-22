@@ -168,3 +168,8 @@ Append-only record of durable lessons.
 - Observation: V2 intake captured only as backlog rows is not specific enough for later lane dispatch without re-interpretation.
 - Why it matters: Missing command grammar and dependency contracts creates avoidable ambiguity when V2 work starts.
 - Behavior update: For major IAN concept drops, create a dedicated design spec linked from roadmap/sprint artifacts in the same PM update.
+
+### Operational
+- Observation: `koad-os` promotion PRs fail scope checks when PM tries to include `docs/design/**` spec changes in the same support sync.
+- Why it matters: Mixed-scope IAN integration causes avoidable rework and delays promotion PR approval.
+- Behavior update: Split IAN/spec integrations by branch scope: keep PM/support artifacts on `koad-os`, and ship design-spec docs through a dedicated `v1` docs lane PR.

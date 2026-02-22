@@ -52,3 +52,7 @@ Append-only record of confirmed durable facts.
 ## 2026-02-22 (governance automation update)
 - `koad-os` now auto-syncs from `v1` via `.github/workflows/sync-koad-os-from-v1.yml`.
 - PR governance gate validates review-gate line presence, while checkbox states are informational (GitHub approvals + required checks remain authoritative merge gates).
+
+## 2026-02-22 (branch-scope enforcement update)
+- `koad-os` promotion scope excludes `docs/design/**` artifacts.
+- PM/spec integrations that require `docs/design/**` updates must ship those files through a `v1`-targeted docs lane PR.

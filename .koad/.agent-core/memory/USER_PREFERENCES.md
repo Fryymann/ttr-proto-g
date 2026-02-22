@@ -14,6 +14,7 @@
 - Use PR-gated lane closure: coding agent self-review first, Koad git review second, Ian final GitHub review third, then merge.
 - Use standardized PR bodies and enforce governance through required `validate-pr-governance` check.
 - Use `v1` as the active base branch for agent lanes; cut lane branches from `v1` and merge back into `v1` until the release line is complete.
+- Keep team-role development edits strictly on dedicated lane worktrees/branches; do not perform feature/runtime edits directly on `v1` or `koad-os`.
 - Roll out workflow policy changes across all coder-agent operating docs, not only a single prompt or role file.
 - Require Codex boot to run Koad OS first, then ask which role to personify.
 - Keep Koad/agent support and workflow-governance edits on `koad-os`; keep feature/runtime development edits on release-lane branches.

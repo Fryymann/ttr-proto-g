@@ -68,6 +68,8 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - Active release base branch is `v1`; coder lanes branch from `v1` and target PRs to `v1` unless PM declares a replacement base branch.
   - Require one coding lane per dedicated git worktree and lane branch (`lane/<ROLE>/<task-slug>`).
+  - Prohibit team-role development edits on `v1` and `koad-os`; treat those branches as integration/support-only contexts.
+  - If a team-role instance boots on `v1`/`koad-os` or any non-lane branch, stop and relocate to the assigned lane worktree before editing files.
   - Require onboarding evidence to include worktree path, branch, and base commit before edits.
   - Require lane handoff to include PR metadata (URL, base/head, title, latest commit, merge dependency order).
   - Default to one PR per lane; allow docs/chore batching and post-lane integration PR only when scope risk is low.

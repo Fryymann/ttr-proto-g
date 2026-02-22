@@ -30,6 +30,8 @@ Each Codex instance must:
 - Branch naming pattern: `lane/<ROLE>/<task-slug>`.
 - Active release base branch is `v1` until Koad declares otherwise.
 - Lane branches must be cut from `v1` and PRs must target `v1`.
+- Hard gate: team-role development edits are forbidden on `v1` and `koad-os`; those branches are integration/support contexts only.
+- If current branch is not `lane/<ROLE>/<task-slug>`, stop and relocate to the assigned lane worktree before editing any files.
 - `koad-os` is reserved for Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, PR-governance workflows/templates, and PM workflow runbooks).
 - Do not mix runtime/gameplay/platform feature code with `koad-os` support-only updates.
 - Sync path:
@@ -66,7 +68,8 @@ Each Codex instance must:
 3. `git rev-parse --abbrev-ref HEAD`
 4. `git rev-parse --short HEAD`
 5. `git status --short`
-6. Role selected + task packet id + acceptance criteria copied from backlog/plan
+6. Branch assertion: for team-role lanes, branch must match `lane/<ROLE>/<task-slug>` (not `v1`/`koad-os`) before edits.
+7. Role selected + task packet id + acceptance criteria copied from backlog/plan
 
 ## Required Handoff Format
 

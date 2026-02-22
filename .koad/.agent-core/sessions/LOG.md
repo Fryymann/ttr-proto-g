@@ -202,3 +202,15 @@
   - `.github/workflows/*.yml`
 - Risks/Unknowns:
   - none
+
+## 2026-02-22 - pm-workflow-automation
+- Role: `Koad (PM)`
+- Context ref: `gemini`
+- Objective: Persist PM automation upgrades.
+- Actions:
+  - Added koad dispatch command
+  - Added koad task-complete command
+- Artifacts:
+  - `.koad/scripts/koad_cli.py`
+- Risks/Unknowns:
+  - none

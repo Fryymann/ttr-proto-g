@@ -21,7 +21,7 @@ Owner: Project Manager
 
 - `Now` (S4 stability + governance hardening): `BL-012`, `BL-018`, `BL-014`
 - `Next` (S4 follow-on): `BL-008`, `BL-020`, `BL-010`
-- `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`
+- `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`, `BL-027`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
 ## Backlog Items
@@ -54,6 +54,7 @@ Owner: Project Manager
 | BL-024 | P2 | Gameplay | todo | V2 | Define spell-targeting syntax and resolver for location and actor targets | Commands like `cast web location 10e,2s` and `cast web target bandit_1` resolve to valid target intents with legality checks |
 | BL-025 | P2 | Platform | todo | V2 | Implement NPC promotion tiers to upgrade low-detail NPCs into story-critical actors | NPC lifecycle supports tier promotion with schema-safe attribute expansion and migration/audit coverage |
 | BL-026 | P2 | Gameplay | todo | V2 | Add PC relationship and faction reputation systems for non-combat progression | Character state tracks NPC/faction standing changes and gameplay systems can gate quests/resources on those standings |
+| BL-027 | P2 | Gameplay | todo | V2 | Define spell capability staging + dependency gates for broad spell coverage | Spell catalog includes dependency/context tags, unsupported effects fail with explicit reasons, and gating is deterministic under test |
 
 ## Intake Template
 

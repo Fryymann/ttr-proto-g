@@ -1,7 +1,7 @@
 # Risk Register
 
 Status: Active
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 Owner: Project Manager
 
 ## Scale
@@ -27,6 +27,7 @@ Owner: Project Manager
 | R-012 | Party membership/rule errors cause wrong encounter participants | Medium | Medium | Gameplay | Implement deterministic party-based encounter inclusion rules, membership validation, and encounter-start diagnostics | Unexpected participant lists in combat start events | Open |
 | R-013 | Non-SRD mechanics/content enters V1 and creates licensing risk | Medium | High | PM | Maintain SRD-only compliance checklist and require source mapping in design/code reviews | V1 features ship with rules/content lacking SRD or original-source mapping | Open |
 | R-014 | DM-agent advice is executed as authoritative behavior and breaks intended control boundaries | Medium | High | Gameplay | Enforce advisory-only AI interface with explicit script/human acceptance and audit traces | NPC behavior changes occur directly from AI output without authoritative policy approval | Open |
+| R-015 | V2 movement-chain/auto-walk complexity introduces parser ambiguity or client/server desync | Medium | Medium | Gameplay | Define strict command grammar, normalize all paths server-side, and require deterministic replay tests for chained movement + interruption paths | Same command chain yields divergent outcomes across clients or replay mismatches during interruption/resume | Open |
 
 ## Closed Risks
 

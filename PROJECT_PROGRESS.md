@@ -2,7 +2,7 @@
 
 Auto-generated snapshot aligned to roadmap and backlog.
 
-- Generated (UTC): 2026-02-22 08:52:13Z
+- Generated (UTC): 2026-02-22 09:01:06Z
 - Source files:
   - `.agents/backlog.md`
   - `docs/design/game-system-roadmap.md`
@@ -12,12 +12,12 @@ Auto-generated snapshot aligned to roadmap and backlog.
 ## Snapshot
 
 - Active release branch: `v1`
-- Total backlog items: `26`
+- Total backlog items: `27`
 - Done: `11`
 - In progress: `1`
 - Blocked: `0`
-- Todo: `14`
-- Open items remaining: `15`
+- Todo: `15`
+- Open items remaining: `16`
 
 ## Roadmap Alignment
 

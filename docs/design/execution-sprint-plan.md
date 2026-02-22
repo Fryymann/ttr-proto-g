@@ -201,6 +201,7 @@ Source intake: `IAN.md` latest entry (`2026-02-22 - 11:42pm`).
 
 - Keep these items out of active `S3`/`S4` lane scope unless Koad explicitly re-prioritizes.
 - Treat these as V2 spec starters and backlog-anchored design tasks.
+- Detailed V2 concept spec: `docs/design/v2-world-interaction-spec.md`.
 
 | Backlog ID | Theme | Initial spec direction |
 | --- | --- | --- |
@@ -210,6 +211,7 @@ Source intake: `IAN.md` latest entry (`2026-02-22 - 11:42pm`).
 | `BL-024` | Spell targeting grammar | Support actor-target and coordinate-target spell syntax with shared legality and AOE center resolution. |
 | `BL-025` | NPC promotion lifecycle | Add tiered NPC detail/promotion path so low-interaction NPCs can be upgraded into story-critical actors. |
 | `BL-026` | Relationship/reputation progression | Track PC relationship/faction standings and expose gating hooks for quests, shops, and social outcomes. |
+| `BL-027` | Spell capability staging | Add spell dependency tagging and explicit runtime gating for effects that rely on V2 social/NPC systems. |
 
 ## Cross-Sprint Definition of Done
 

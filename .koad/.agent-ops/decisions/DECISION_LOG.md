@@ -562,3 +562,16 @@
   - Sprint status notes now capture post-PR34 queue transition.
 - Revisit trigger:
   - If post-merge regressions from PR #34 require immediate snapshot/recovery hotfix before `S4-P2` starts.
+
+## 2026-02-22 - Formalize latest IAN intake into dedicated V2 concept spec
+- Decision:
+  - Convert `IAN.md` latest entry (`2026-02-22 - 11:42pm`) from backlog-only capture into a dedicated design spec (`docs/design/v2-world-interaction-spec.md`) and cross-link it in roadmap/sprint artifacts.
+  - Add `BL-027` for spell capability staging and dependency gating to capture the previously implicit spell-system dependency constraints.
+- Why:
+  - Existing `BL-021` to `BL-026` rows captured intent, but lacked dispatch-level grammar/contracts for movement chaining, auto-walk interruption behavior, targeting normalization, and V2 spell dependency gating.
+- Impact:
+  - Roadmap now includes explicit V2 concept anchors and linked design spec reference.
+  - Sprint plan V2 parking lot now points to the new spec and includes `BL-027`.
+  - Risk register now tracks a V2 parser/desync risk for chained movement and auto-walk (`R-015`).
+- Revisit trigger:
+  - When V2 planning is promoted from parking-lot status into active lane packets.

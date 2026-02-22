@@ -1,7 +1,7 @@
 # Game System Roadmap and Execution Outline
 
 Status: Active (living document)  
-Last updated: 2026-02-21  
+Last updated: 2026-02-22  
 Owner: Project Manager (Koad) + team leads
 
 ## Purpose
@@ -255,6 +255,20 @@ Exit criteria:
 
 - Vertical slice is stable enough for repeated multi-session playtests.
 
+## V2 Concept Anchors (IAN Intake)
+
+Primary concept spec:
+- `docs/design/v2-world-interaction-spec.md` (source intake `IAN.md` dated `2026-02-22 - 11:42pm`)
+
+Backlog anchors:
+- `BL-021`: chained movement grammar
+- `BL-022`: terrain movement cost + spell-driven revert
+- `BL-023`: auto-walk queueing + interruption handling
+- `BL-024`: spell targeting grammar (actor + coordinate forms)
+- `BL-025`: NPC promotion lifecycle
+- `BL-026`: relationship/faction progression
+- `BL-027`: spell capability staging and dependency gating
+
 ## Focus Board (Update Weekly)
 
 - `Now`: M2 data contracts, campaign persistence, scene foundation.
@@ -268,7 +282,11 @@ Exit criteria:
 - Party edge rules (temporary allies, summons, assist across parties).
 - Minimum snapshot cadence and retention policy for single-save protection.
 - Exact V1 SRD compliance checklist structure and review gate.
+- V2 movement grammar: cardinal-only baseline first, or include diagonals in first implementation slice?
+- V2 spell targeting: relative vectors only at first, or support absolute coordinates in same slice?
+- V2 reputation dynamics: should relationship/faction standings decay automatically over time?
 
 ## Update Log
 
 - 2026-02-21: Initial roadmap created as primary project focus reference.
+- 2026-02-22: Added V2 concept-anchor section and linked spec for latest IAN intake (`docs/design/v2-world-interaction-spec.md`).

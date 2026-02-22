@@ -498,3 +498,13 @@
   - Updated standards registries with `STD-014` and adjusted `STD-009` required checks list.
 - Evidence:
   - Updated `.github/workflows/implementation-doc-gate.yml`, `.github/workflows/test-evidence-gate.yml`, `.github/workflows/pr-template-gate.yml`, `.github/workflows/koad-os-scope-gate.yml`, `.github/workflows/promote-koad-os-to-v1.yml`, `.github/pull_request_template.md`, `.koad/scripts/koad_cli.py`, `.koad/scripts/README.md`, `.koad/README.md`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.agents/roles/gameplay-lead.md`, `.agents/roles/platform-lead.md`, `.agents/roles/experience-lead.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-22 - IAN latest-entry review integrated into V2 specs
+- Scope:
+  - Review latest `IAN.md` entry and convert ideas into durable project spec artifacts while active S3 work continues.
+- Changes:
+  - Added V2 backlog items `BL-021` through `BL-026` for chained movement, terrain/reversion, auto-walk, spell targeting grammar, NPC promotion tiers, and relationship/faction progression.
+  - Added V2 concept intake parking-lot section in sprint spec with backlog-linked design direction.
+  - Logged durable PM decision to keep these concepts V2-scoped and out of active M3 lane scope.
+- Evidence:
+  - Updated `.agents/backlog.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

@@ -26,6 +26,7 @@
 - Keep project status dashboard updates lightweight: refresh after roadmap PR merges to `v1` via automation, not as per-change manual commits.
 - Continue offloading repeatable PM/review orchestration overhead to GitHub Actions/scripts when it does not reduce delivery quality.
 - Tighten non-`koad-os` developer-lane documentation and test evidence requirements, including changed-line coverage floor and explicit negative/regression test evidence.
+- Integrate new `IAN.md` idea intake into V2-oriented specs by default unless explicitly requested for active V1 lane scope.
 
 ## Working Style Notes
 - User accepts rough/brain-dump inputs and expects conversion into actionable specs/tasks/risks.

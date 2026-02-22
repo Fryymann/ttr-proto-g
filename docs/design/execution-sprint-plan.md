@@ -195,6 +195,22 @@ Target files/modules:
 - Disconnect policy behaves deterministically over defensive rounds + AI-limited phase.
 - Advisory output cannot mutate authoritative state without script/rules acceptance.
 
+## V2 Concept Intake Parking Lot (Not Scheduled in M2-M3)
+
+Source intake: `IAN.md` latest entry (`2026-02-22 - 11:42pm`).
+
+- Keep these items out of active `S3`/`S4` lane scope unless Koad explicitly re-prioritizes.
+- Treat these as V2 spec starters and backlog-anchored design tasks.
+
+| Backlog ID | Theme | Initial spec direction |
+| --- | --- | --- |
+| `BL-021` | Chained movement commands | Support vector-segment movement (`go e 3, s 3`) with deterministic segment-by-segment cost and encounter budget gating. |
+| `BL-022` | Terrain movement costs | Add terrain tags + temporary spell-driven terrain modifiers with explicit revert rules when effects expire. |
+| `BL-023` | Auto-walk | Provide long-route travel queueing, interruption handling, and safe cancel/resume behavior. |
+| `BL-024` | Spell targeting grammar | Support actor-target and coordinate-target spell syntax with shared legality and AOE center resolution. |
+| `BL-025` | NPC promotion lifecycle | Add tiered NPC detail/promotion path so low-interaction NPCs can be upgraded into story-critical actors. |
+| `BL-026` | Relationship/reputation progression | Track PC relationship/faction standings and expose gating hooks for quests, shops, and social outcomes. |
+
 ## Cross-Sprint Definition of Done
 
 For each backlog item completed:

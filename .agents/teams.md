@@ -75,13 +75,13 @@ Every handoff must include:
 7. PR URL/id + base/head + latest commit + merge dependency notes
 8. Review state for both gates:
    - Koad git review status
-   - User GitHub review status
+   - Ian review status
    - Merge status
 
 ## Task Closure Gate
 
 - A lane task is not complete until its PR is merged.
-- Required approvals: Koad git review + user GitHub review.
+- Required approvals: Koad git review + Ian review.
 - If either review requests changes, task state returns to `in_progress` until updated and re-approved.
 
 ## Current Near-Term Focus

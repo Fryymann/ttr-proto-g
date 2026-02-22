@@ -51,7 +51,7 @@ Koad (PM) owns sprint orchestration and publishes starter prompts in `CODEX_ROLE
   - known risks/deferred items
   - role instance + task packet id
   - branch/worktree evidence and PR metadata (URL, base/head, latest commit, dependency order)
-  - review state for Koad git review and user GitHub review
+  - review state for Koad git review and Ian review
 
 ### Suggested parallel role lanes by sprint
 
@@ -201,7 +201,7 @@ For each backlog item completed:
 
 1. Acceptance criteria in `.agents/backlog.md` are met.
 2. Verification evidence (test or manual) is recorded in PR/handoff notes.
-3. Koad git review and user GitHub review are both approved on the lane PR.
+3. Koad git review and Ian review are both approved on the lane PR.
 4. Lane PR is merged to the target branch.
 5. Relevant design docs are updated if behavior/contract changed.
 6. `.agents/risk-register.md` is updated for new or retired risks.
@@ -219,7 +219,7 @@ For each backlog item completed:
 - 2026-02-21: `S1-P1` completed. Campaign manifest selection flow and account/character campaign-lock scaffolding landed (`BL-011` done; `BL-012` remains in progress pending durable persistence and audited admin unlock integration).
 - 2026-02-21: `S1-G1` completed. Scene contract/occupancy module and SRD compliance checklist + source mapping pass landed (`BL-001` and `BL-019` done).
 - 2026-02-21: Execution model pivoted from Antigravity to Codex multi-instance role lanes (`Koad PM` + Gameplay/Platform/Experience agents). Antigravity prompts paused.
-- 2026-02-21: Workflow updated to PR-required merge gating with dual approval lanes (Koad git review + user GitHub review) before task closure.
+- 2026-02-21: Workflow updated to PR-required merge gating with dual approval lanes (Koad git review + Ian review) before task closure.
 - 2026-02-21: Active release branch updated to `v1`; coder lanes now branch from `v1` and PR back into `v1`.
 - 2026-02-21: Active Codex task packets published in `CODEX_ROLE_PROMPTS.md` for immediate queue (`S1-P2`, `S2-P1`, `S2-E1`) with dependency order on `v1`.
 - 2026-02-21: `BL-012` scope clarified: login must authenticate account first; character operations are account-scoped rather than name-derived.

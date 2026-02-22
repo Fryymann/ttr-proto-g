@@ -31,8 +31,9 @@
 - PR dependency order / blocked-by:
 
 ## Review Gates
+- [ ] Coding agent self-review completed
 - [ ] Koad git review approved
-- [ ] User GitHub review approved
+- [ ] Ian review approved
 
 ## Risks / Deferred Work
 - Risks:

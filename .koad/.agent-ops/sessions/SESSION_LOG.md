@@ -384,3 +384,16 @@
   - Logged durable PM decision for WSL path standardization.
 - Evidence:
   - Updated `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-core/memory/FACTS_LEDGER.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+
+## 2026-02-22 - Review workflow update (self-review -> Koad -> Ian)
+- Scope:
+  - Apply user-requested PR review sequence and approval-label updates across governance enforcement and PM/team operating docs.
+- Changes:
+  - Updated PR template review gates to include `Coding agent self-review completed` and renamed final gate to `Ian review approved`.
+  - Updated `validate-pr-governance` workflow requirements to enforce the new checkbox set.
+  - Updated PM/team governance docs and standards to replace `user GitHub review` language with `Ian review` and describe ordered review flow.
+  - Updated `koad pr-open` body generator to emit self-review as checked and support `--ian-approved` (retaining `--user-approved` alias).
+  - Updated user preference memory to reflect the new review sequence.
+- Evidence:
+  - Updated `.github/pull_request_template.md`, `.github/workflows/pr-template-gate.yml`, `docs/ops/github-branch-protection.md`, `CODEX_ROLE_PROMPTS.md`, `.agents/roles/project-manager.md`, `.agents/roles/platform-lead.md`, `.agents/roles/gameplay-lead.md`, `.agents/roles/experience-lead.md`, `.agents/teams.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/scripts/koad_cli.py`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.
+  - Verified CLI syntax with `python3 -m py_compile .koad/scripts/koad_cli.py`.

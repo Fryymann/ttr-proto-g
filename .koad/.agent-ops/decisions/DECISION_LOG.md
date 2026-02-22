@@ -395,3 +395,17 @@
   - Updated memory/preferences/facts to preserve the environment assumption for future sessions.
 - Revisit trigger:
   - If execution moves from WSL2 to a Windows-native shell environment.
+
+## 2026-02-22 - Formalize review sequence and rename final approval gate
+- Decision:
+  - Standardize lane review sequence as: coding agent self-review, Koad git review, Ian GitHub review, then merge.
+  - Rename final PR-body review gate checkbox from `User GitHub review approved` to `Ian review approved`.
+  - Enforce self-review evidence in governance checks via `Coding agent self-review completed`.
+- Why:
+  - User requested explicit reviewer ownership and ordered gate progression for PR closure.
+- Impact:
+  - PR template + governance workflow now require the updated review-gate labels and self-review checkbox.
+  - PM/team operating docs now align on `Koad git review + Ian review` terminology and ordered review flow.
+  - `koad pr-open` now emits the self-review checkbox as checked and supports `--ian-approved` (with `--user-approved` alias retained for compatibility).
+- Revisit trigger:
+  - If final approver identity or review sequencing policy changes again.

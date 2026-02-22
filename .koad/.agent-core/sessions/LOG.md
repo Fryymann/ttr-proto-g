@@ -137,3 +137,20 @@
   - `PROJECT_PROGRESS.md`
 - Risks/Unknowns:
   - no open blocking risks; governance flow now uses Ian final approval gate
+
+## 2026-02-22 - post-PR20 automation baseline saveup
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Capture continuity after friction-reduction workflow merge and branch sync
+- Actions:
+  - verified PR #20 merged to v1
+  - synced local v1 and koad-os worktrees to origin
+  - confirmed clean branch state before saveup
+- Artifacts:
+  - `https://github.com/Fryymann/ttr-proto-g/pull/20`
+  - `.github/workflows/sync-koad-os-from-v1.yml`
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/sessions/LOG.md`
+  - `PROJECT_PROGRESS.md`
+- Risks/Unknowns:
+  - no open blockers; monitor sync workflow conflict frequency

@@ -2,6 +2,8 @@
 
 Tracks every explicit `saveup` invocation for auditability and duplicate-control.
 
+Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups are recorded in local gitignored journals under `.koad/.agent-core/sessions/lane-saveups/`.
+
 ## Fields
 - `call_id`: `SAVEUP-YYYYMMDD-HHMMSSZ`
 - `role`: `Koad (PM)` | `Gameplay` | `Platform` | `Experience`

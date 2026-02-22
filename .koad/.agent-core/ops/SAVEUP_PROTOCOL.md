@@ -8,20 +8,26 @@ Preserve continuity with two outputs:
 1. Work record
 2. Learning record
 3. Role-scoped operating record
+4. Conflict-resistant lane saveup record for team-role execution lanes
 
 ## Preconditions
 - Role must already be resolved via `.koad/.agent-core/ops/ROLE_BOOT_PROTOCOL.md`.
 - If role is unresolved, run role routing before continuing.
 - Record one role label for this call: `Koad (PM)` | `Gameplay` | `Platform` | `Experience`.
 - Capture a `context_ref` for the call (`task packet id`, `lane branch`, or `n/a`).
+- Determine saveup mode before writes:
+  - `global-ledger` (default for `Koad (PM)` and non-lane contexts)
+  - `lane-isolated` (default for team-role calls where `context_ref` starts with `lane/`)
 
 ## Steps
 1. Call Registration
 - Create call id: `SAVEUP-YYYYMMDD-HHMMSSZ` (UTC).
-- Append row to `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with:
+- If mode is `global-ledger`, append row to `.koad/.agent-core/sessions/SAVEUP_CALLS.md` with:
   - `role`
   - `context_ref`
   - `result=partial`
+- If mode is `lane-isolated`, append entry to lane journal:
+  - `.koad/.agent-core/sessions/lane-saveups/<context-ref>.md`
 
 2. Duplicate Pre-Check
 - Review:
@@ -33,10 +39,12 @@ Preserve continuity with two outputs:
 - Reuse existing role-tagged learnings/patterns when the same lesson already exists.
 
 3. Session Summary
-- Append concise entry to `.koad/.agent-core/sessions/LOG.md` with:
+- If mode is `global-ledger`, append concise entry to `.koad/.agent-core/sessions/LOG.md` with:
   - role
   - context reference
   - objective, actions, artifacts, and risks
+- If mode is `lane-isolated`, append the same fields to lane journal entry in:
+  - `.koad/.agent-core/sessions/lane-saveups/<context-ref>.md`
 
 4. Learning Extraction
 - Add durable lessons to `.koad/.agent-core/memory/LEARNINGS.md` under:
@@ -69,12 +77,21 @@ Preserve continuity with two outputs:
 - For non-PM team-role scope:
   - Do not reprioritize `.agents/backlog.md` or `.agents/risk-register.md` directly unless user/Koad explicitly asks.
   - Record proposed backlog/risk updates in ops logs for PM review.
+- Merge-conflict guardrail:
+  - Team-role developer lanes should prefer `lane-isolated` saveup mode to avoid touching shared saveup ledgers on feature branches.
+  - Lane journals under `.koad/.agent-core/sessions/lane-saveups/` are local continuity artifacts and should not be included in feature-lane PRs.
+  - Reconcile lane saveup records into PM/global artifacts on `koad-os` during support sync.
 
 7. Finalize Call
-- Update saveup row with:
+- If mode is `global-ledger`, update saveup row with:
   - `role`
   - `context_ref`
   - `result` (`completed|partial|blocked`)
+  - `new_learnings`
+  - `duplicates_skipped`
+  - notes/blockers
+- If mode is `lane-isolated`, finalize lane journal entry with:
+  - `result`
   - `new_learnings`
   - `duplicates_skipped`
   - notes/blockers
@@ -94,4 +111,4 @@ Preserve continuity with two outputs:
 - No duplicate memory entries
 - Explicit uncertainty where needed
 - Never store secrets
-- Role + context metadata must be present in the saveup ledger entry.
+- Role + context metadata must be present in the saveup record (`global ledger` or `lane journal`).

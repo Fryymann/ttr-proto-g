@@ -1,7 +1,7 @@
 # Execution Sprint Plan (M2-M3)
 
 Status: Active (living)  
-Last updated: 2026-02-21  
+Last updated: 2026-02-22  
 Owner: Project Manager (Koad)
 
 ## Purpose
@@ -22,7 +22,7 @@ Primary references:
 
 ## Current Standards and Risk Posture
 
-- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`, `STD-012`
+- Applicable standards: `STD-001`, `STD-002`, `STD-003`, `STD-004`, `STD-005`, `STD-006`, `STD-007`, `STD-008`, `STD-009`, `STD-010`, `STD-011`, `STD-012`, `STD-013`
 - Planning risk level: `Medium` (cross-system architecture and persistence decisions)
 
 ## Focus Horizon
@@ -228,3 +228,5 @@ For each backlog item completed:
 - 2026-02-21: Added root `PROJECT_PROGRESS.md` dashboard sync workflow with `koad progress-sync` and default `saveup` refresh path (`STD-012`).
 - 2026-02-21: Post-merge queue advance set `S2-P1` as active next dispatch (Platform), with `S2-E1` held until `S2-P1` merges to `v1`.
 - 2026-02-21: `S2-P1` merged to `v1` with deterministic queue + scene protocol evidence; queue advanced to `S2-E1` as active next dispatch (Experience).
+- 2026-02-22: `S2-E1` merged to `v1`; M2 scene-render baseline landed and queue advanced to S3 entry (`S3-G1` active next).
+- 2026-02-22: Saveup process updated for lane-isolated developer journaling to reduce cross-lane merge conflicts (`STD-013`).

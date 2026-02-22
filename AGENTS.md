@@ -42,5 +42,5 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 - For Codex team-role delegation, use `CODEX_ROLE_PROMPTS.md` and its worktree/branch/PR policy.
 - Treat lane tasks as complete only after dual review approval (Koad git review + user GitHub review) and merged PR.
 - Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
-- Use role-aware `saveup` continuity entries (`role` + `context_ref`) for every saveup call.
+- Use role-aware `saveup` continuity entries (`role` + `context_ref`) for every saveup call, and use lane-isolated journals for team-role lane contexts to reduce merge conflicts (keep these journals out of feature-lane PR scope).
 - Maintain root `PROJECT_PROGRESS.md` as a continuously refreshed roadmap-vs-progress dashboard (via `.koad/scripts/koad progress-sync` or default `saveup` sync).

@@ -38,3 +38,7 @@ Append-only record of confirmed durable facts.
 - `koad-os` may remain lightly protected to allow occasional direct maintainer commits.
 - Support updates are promoted into the active release line via `koad-os` -> `v1` PRs constrained to support-scope files.
 - PR governance now includes a required `Persona signature` line for authorship clarity.
+
+## 2026-02-22 (queue/process update)
+- `S2-E1` is merged to `v1`; M2 scene-render baseline is complete and queue entry has moved into S3.
+- Saveup flow now supports lane-isolated journals under `.koad/.agent-core/sessions/lane-saveups/` (local gitignored artifacts) to reduce cross-lane merge conflicts.

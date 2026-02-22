@@ -121,3 +121,13 @@ Purpose: codable representation of standards for this workspace.
   - Maintain root `PROJECT_PROGRESS.md` as generated artifact (not ad hoc notes).
   - Regenerate dashboard via `koad progress-sync` after meaningful scope/status changes.
   - Default `koad saveup` path should refresh `PROJECT_PROGRESS.md` unless explicitly skipped.
+
+### STD-013 - Lane-Isolated Saveup Journaling
+- Status: Active
+- Source: `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`
+- Intent: Reduce merge conflicts caused by concurrent saveup writes from multiple developer lanes.
+- Local interpretation:
+  - For team-role saveups on lane contexts (`context_ref` starts with `lane/`), default to lane-isolated journaling under `.koad/.agent-core/sessions/lane-saveups/`.
+  - Treat lane journals as local continuity artifacts; do not include them in feature-lane PR scope.
+  - Avoid writing shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) from feature-lane saveup calls unless explicitly forced.
+  - Keep role/context metadata in lane journals and reconcile durable PM/global entries on `koad-os`.

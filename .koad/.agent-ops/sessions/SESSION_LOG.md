@@ -542,3 +542,14 @@
   - Updated PM continuity artifacts (decision log + working memory + learnings) for durable context.
 - Evidence:
   - Updated `.agents/backlog.md`, `.agents/risk-register.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Team-role lane isolation hard gate enforcement
+- Scope:
+  - Enforce strict policy that developer/team-role edits occur only in dedicated lane worktrees, never directly on `v1`/`koad-os`.
+- Changes:
+  - Added explicit hard-gate wording to repository/bootstrap and Koad bootstrap docs.
+  - Updated startup checklist and standards registry (`STD-007`) to require branch/worktree verification and relocation before edits when not on a lane branch.
+  - Updated `CODEX_ROLE_PROMPTS.md` onboarding requirements with branch assertion gate.
+  - Updated user preference memory with strict lane-isolation preference.
+- Evidence:
+  - Updated `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.agent-core/ops/STARTUP_CHECKLIST.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`.

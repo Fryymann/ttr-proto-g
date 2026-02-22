@@ -43,6 +43,7 @@ A skill is a set of local instructions to follow that is stored in a `SKILL.md` 
 - Treat lane tasks as complete only after dual review approval (Koad git review + Ian review) and merged PR.
 - Enforce review sequence: coding agent self-review before PR creation, Koad review/approval next, Ian final review/approval last.
 - Enforce branch-scope separation: Koad/agent support artifacts (`.koad/**`, `.agents/**`, `AGENTS.md`, `CODEX_ROLE_PROMPTS.md`, `PROJECT_PROGRESS.md`, PR-governance workflows/templates, and PM workflow runbooks) are committed via `koad-os`, then promoted through `koad-os` -> release-line PRs; feature/runtime development changes stay on release-line lane branches.
+- Enforce lane isolation hard gate: team-role development edits are forbidden on `v1`/`koad-os` branches and must occur only from dedicated lane worktrees/branches (`lane/<ROLE>/<task-slug>`); if boot context is not a lane branch, stop and relocate before editing files.
 - Keep `koad-os` synchronized from `v1` using `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual branch-maintenance overhead.
 - Keep support promotion low-friction by auto-managing `koad-os` -> `v1` PR lifecycle via `.github/workflows/promote-koad-os-to-v1.yml`.
 - Enforce saveup branch scope: any saveup execution that writes tracked `.koad/**` artifacts or `PROJECT_PROGRESS.md` must be checked in via `koad-os`; team-role lane branches should use lane-isolated journals only.

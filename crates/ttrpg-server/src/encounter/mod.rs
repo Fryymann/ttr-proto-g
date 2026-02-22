@@ -1,6 +1,10 @@
+pub mod fallback;
 pub mod state;
+pub mod timer;
 
+pub use fallback::{resolve_timeout_fallback, TimeoutFallbackAction, TimeoutFallbackError};
 pub use state::{capture_participants, EncounterState, InitiativeScore};
+pub use timer::{TurnTimerConfig, TurnTimerMarker};
 
 pub fn deterministic_initiative_for_actor(actor_id: &str) -> InitiativeScore {
     let checksum = actor_id.bytes().fold(0_u32, |acc, byte| {

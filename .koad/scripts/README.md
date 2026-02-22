@@ -70,8 +70,9 @@ Example:
   --artifact ".koad/.agent-core/sessions/LOG.md"
 ```
 
-By default, `saveup` also refreshes `PROJECT_PROGRESS.md`. Use `--no-progress-sync` to skip.
-In lane-isolated mode, dashboard refresh is skipped by default; use `--sync-progress-in-lane` to force it.
+By default, `saveup` skips `PROJECT_PROGRESS.md` refresh to avoid status-only churn.
+Use `--sync-progress` to refresh in global-ledger mode, or `--sync-progress-in-lane` in lane-isolated mode.
+Use `--no-progress-sync` to force-disable refresh even when sync flags are set.
 
 Force global ledger for a lane context:
 
@@ -88,6 +89,9 @@ Example:
 ```bash
 .koad/scripts/koad progress-sync
 ```
+
+Operational note:
+- `.github/workflows/update-v1-dashboard.yml` runs this command after merges to `v1` and publishes the dashboard to the managed `V1 Project Dashboard` issue.
 
 ### `status`
 

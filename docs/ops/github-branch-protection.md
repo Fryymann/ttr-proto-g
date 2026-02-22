@@ -24,6 +24,7 @@ Use split governance:
 - `.github/workflows/pr-template-gate.yml`
 - `.github/workflows/koad-os-scope-gate.yml`
 - `.github/workflows/sync-koad-os-from-v1.yml`
+- `.github/workflows/update-v1-dashboard.yml`
 
 ## Branch Protection Settings (GitHub UI)
 
@@ -75,6 +76,16 @@ For `koad-os`:
   - Attempts to merge `origin/v1` into `koad-os` and push the updated `koad-os` head.
   - If merge conflicts occur, opens (or reuses) a `v1` -> `koad-os` sync PR for manual resolution.
 - This keeps `koad-os` near-current with `v1` and reduces manual sync maintenance between development merges.
+
+## V1 Dashboard Automation
+
+- Workflow: `.github/workflows/update-v1-dashboard.yml`
+- Trigger: every push to `v1` (and manual `workflow_dispatch`).
+- Behavior:
+  - Regenerates dashboard markdown from canonical planning artifacts using `bash .koad/scripts/koad progress-sync`.
+  - Upserts a managed issue titled `V1 Project Dashboard` with the latest status snapshot.
+- Outcome:
+  - Dashboard visibility stays current after merges without requiring separate status-only commits in development lanes.
 
 ## Notes
 

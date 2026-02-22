@@ -718,6 +718,7 @@ def cmd_saveup(args: argparse.Namespace) -> int:
         and args.context_ref.startswith("lane/")
     )
     lane_progress_sync = lane_isolated and (not args.no_progress_sync) and args.sync_progress_in_lane
+    global_progress_sync = (not lane_isolated) and args.sync_progress and (not args.no_progress_sync)
     global_ledger_mode = not lane_isolated
 
     if global_ledger_mode and branch != KOAD_OS_BRANCH:
@@ -790,7 +791,7 @@ def cmd_saveup(args: argparse.Namespace) -> int:
         risks=args.risk or [],
     )
 
-    if not args.no_progress_sync:
+    if global_progress_sync:
         dashboard = build_progress_dashboard(root)
         progress_path = root / args.progress_file
         progress_path.write_text(dashboard, encoding="utf-8")
@@ -799,8 +800,10 @@ def cmd_saveup(args: argparse.Namespace) -> int:
     print("mode: global-ledger")
     print(f"ledger: .koad/.agent-core/sessions/SAVEUP_CALLS.md")
     print(f"session log: .koad/.agent-core/sessions/LOG.md")
-    if not args.no_progress_sync:
+    if global_progress_sync:
         print(f"progress: {args.progress_file}")
+    else:
+        print("progress: skipped (global default; use --sync-progress to refresh)")
     return 0
 
 
@@ -877,8 +880,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Allow PROJECT_PROGRESS.md refresh in lane-isolated mode (requires koad-os branch)",
     )
+    save.add_argument(
+        "--sync-progress",
+        action="store_true",
+        help="Refresh PROJECT_PROGRESS.md in global-ledger mode (disabled by default)",
+    )
     save.add_argument("--progress-file", default="PROJECT_PROGRESS.md")
-    save.add_argument("--no-progress-sync", action="store_true")
+    save.add_argument(
+        "--no-progress-sync",
+        action="store_true",
+        help="Force-disable PROJECT_PROGRESS.md refresh even if sync flags are set",
+    )
     save.add_argument("--dry-run", action="store_true")
     save.set_defaults(func=cmd_saveup)
 

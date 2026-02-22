@@ -421,3 +421,14 @@
   - Logged durable queue decision and refreshed standards sync manifest timestamp.
 - Evidence:
   - Updated `.agents/backlog.md`, `CODEX_ROLE_PROMPTS.md`, `docs/design/execution-sprint-plan.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`, `.koad/.standards/sync_manifest.json`, `PROJECT_PROGRESS.md`.
+
+## 2026-02-22 - Merge-driven dashboard automation rollout
+- Scope:
+  - Replace per-change dashboard maintenance with post-merge automation on `v1`.
+- Changes:
+  - Added `.github/workflows/update-v1-dashboard.yml` to regenerate dashboard content and upsert managed issue `V1 Project Dashboard` after every push to `v1`.
+  - Added new workflow to scope-gate allowlist and updated branch-protection runbook docs.
+  - Updated standards/startup/saveup/docs so dashboard publishing is merge-driven and `saveup` progress sync is opt-in.
+  - Updated memory to capture new user preference and operating model.
+- Evidence:
+  - Updated `.github/workflows/update-v1-dashboard.yml`, `.github/workflows/koad-os-scope-gate.yml`, `docs/ops/github-branch-protection.md`, `.koad/scripts/koad_cli.py`, `.koad/.agent-core/ops/SAVEUP_PROTOCOL.md`, `.koad/scripts/README.md`, `.koad/README.md`, `AGENTS.md`, `.koad/AGENTS.md`, `.koad/.standards/standards_registry.md`, `.koad/.agent-ops/STANDARDS_REGISTRY.md`, `CODEX_ROLE_PROMPTS.md`, `.koad/.agent-core/memory/USER_PREFERENCES.md`, `.koad/.agent-core/memory/WORKING_MEMORY.md`, `.koad/.agent-core/memory/LEARNINGS.md`, `.koad/.agent-ops/decisions/DECISION_LOG.md`.

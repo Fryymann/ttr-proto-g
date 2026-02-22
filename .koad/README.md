@@ -26,5 +26,7 @@ Use `.koad/scripts/koad` for common workflow actions:
 - `lane-start`: create lane branch + worktree and print onboarding evidence.
 - `pr-open`: open a governance-template PR with lane metadata.
 - `saveup`: append role-aware saveup records (lane-isolated journaling for team-role lane contexts by default).
-- `progress-sync`: regenerate root `PROJECT_PROGRESS.md` dashboard from current backlog/roadmap/sprint sources.
+- `progress-sync`: generate a local `PROJECT_PROGRESS.md` snapshot from current backlog/roadmap/sprint sources.
 - `status`: print compact current progress summary in terminal (`--refresh` to regenerate first).
+
+`v1` merges also refresh the managed `V1 Project Dashboard` issue automatically via `.github/workflows/update-v1-dashboard.yml`.

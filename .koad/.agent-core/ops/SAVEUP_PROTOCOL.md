@@ -21,6 +21,7 @@ Preserve continuity with two outputs:
 - Branch-scope guardrail:
   - Any saveup mode that writes tracked support artifacts (`.koad/.agent-core/sessions/SAVEUP_CALLS.md`, `.koad/.agent-core/sessions/LOG.md`, `PROJECT_PROGRESS.md`) must run on `koad-os`.
   - Team-role developer lanes on feature branches should use `lane-isolated` mode without progress sync.
+  - Progress dashboard sync is opt-in during saveup (`--sync-progress` or `--sync-progress-in-lane`); default flow keeps dashboard publishing merge-driven via `.github/workflows/update-v1-dashboard.yml`.
 
 ## Steps
 1. Call Registration

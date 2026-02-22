@@ -121,11 +121,11 @@ Purpose: codable representation of standards for this workspace.
 ### STD-012 - Project Progress Dashboard Continuity
 - Status: Active
 - Source: `.koad/scripts/koad_cli.py`
-- Intent: Keep one root-level progress view continuously aligned with roadmap + backlog execution state.
+- Intent: Keep one easy-to-read progress dashboard aligned with roadmap + backlog state, refreshed after release-line merges without per-change commit overhead.
 - Local interpretation:
-  - Maintain root `PROJECT_PROGRESS.md` as generated artifact (not ad hoc notes).
-  - Regenerate dashboard via `koad progress-sync` after meaningful scope/status changes.
-  - Default `koad saveup` path should refresh `PROJECT_PROGRESS.md` unless explicitly skipped.
+  - Use `.github/workflows/update-v1-dashboard.yml` on pushes to `v1` to regenerate/publish the managed `V1 Project Dashboard` issue.
+  - Keep `PROJECT_PROGRESS.md` as generated local artifact (`koad progress-sync`) for ad hoc terminal/reference usage.
+  - `koad saveup` does not refresh `PROJECT_PROGRESS.md` by default; use explicit sync flags when needed.
 
 ### STD-013 - Lane-Isolated Saveup Journaling
 - Status: Active

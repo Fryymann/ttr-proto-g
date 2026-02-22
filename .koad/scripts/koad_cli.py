@@ -1180,16 +1180,16 @@ def cmd_saveup(args: argparse.Namespace) -> int:
     global_progress_sync = (not lane_isolated) and args.sync_progress and (not args.no_progress_sync)
     global_ledger_mode = not lane_isolated
 
-    if global_ledger_mode and branch != KOAD_OS_BRANCH:
+    if global_ledger_mode and branch not in {KOAD_OS_BRANCH, "gemini"}:
         raise ValueError(
             "global-ledger saveup writes tracked support artifacts under .koad/. "
-            f"Run on '{KOAD_OS_BRANCH}' or use lane-isolated mode for lane contexts."
+            f"Run on '{KOAD_OS_BRANCH}', 'gemini', or use lane-isolated mode for lane contexts."
         )
 
-    if lane_progress_sync and branch != KOAD_OS_BRANCH:
+    if lane_progress_sync and branch not in {KOAD_OS_BRANCH, "gemini"}:
         raise ValueError(
             "lane-isolated saveup with --sync-progress-in-lane writes PROJECT_PROGRESS.md. "
-            f"Run on '{KOAD_OS_BRANCH}' or omit --sync-progress-in-lane."
+            f"Run on '{KOAD_OS_BRANCH}', 'gemini', or omit --sync-progress-in-lane."
         )
 
     row = (

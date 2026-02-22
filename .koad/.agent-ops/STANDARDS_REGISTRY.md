@@ -110,6 +110,7 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - Require every saveup call row to include `role` (`Koad (PM)|Gameplay|Platform|Experience`) and `context_ref`.
   - Require saveup session summaries to include role + context metadata.
+  - Any saveup mode that writes tracked support artifacts (`.koad/**` saveup ledgers/logs or `PROJECT_PROGRESS.md`) must run on `koad-os`.
   - For `Koad (PM)` saveup scope, allow `.agents/*` mirrors when relevant.
   - For non-PM saveup scope, do not reprioritize PM artifacts directly; log proposed PM deltas in ops logs for PM review.
 
@@ -129,5 +130,6 @@ Purpose: codable representation of standards for this workspace.
 - Local interpretation:
   - For team-role saveups on lane contexts (`context_ref` starts with `lane/`), default to lane-isolated journaling under `.koad/.agent-core/sessions/lane-saveups/`.
   - Treat lane journals as local continuity artifacts; do not include them in feature-lane PR scope.
+  - Team-role lanes on non-`koad-os` branches should not force global-ledger saveup writes.
   - Avoid writing shared global saveup ledgers (`SAVEUP_CALLS.md`, `LOG.md`) from feature-lane saveup calls unless explicitly forced.
   - Keep role/context metadata in lane journals and reconcile durable PM/global entries on `koad-os`.

@@ -42,3 +42,5 @@ Append-only record of confirmed durable facts.
 ## 2026-02-22 (queue/process update)
 - `S2-E1` is merged to `v1`; M2 scene-render baseline is complete and queue entry has moved into S3.
 - Saveup flow now supports lane-isolated journals under `.koad/.agent-core/sessions/lane-saveups/` (local gitignored artifacts) to reduce cross-lane merge conflicts.
+- `S3-G1` is merged to `v1` (PR #13); backlog items `BL-005` and `BL-015` are complete.
+- Active next task packet is `S3-P1` (Platform), with `S3-E1` queued after protocol/interface confirmation.

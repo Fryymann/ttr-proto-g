@@ -355,3 +355,31 @@
   - Standards/startup/agent docs now include lane-isolated saveup expectations (`STD-013`).
 - Revisit trigger:
   - If saveup reconciliation is fully automated and global ledgers can be updated conflict-free from all lanes.
+
+## 2026-02-22 - Advance queue to S3-P1 after S3-G1 merge
+- Decision:
+  - Mark `S3-G1` complete and merged to `v1` (PR #13).
+  - Promote `S3-P1` to active next dispatch packet.
+  - Keep `S3-E1` queued pending `S3-P1` protocol/interface confirmation.
+- Why:
+  - S3 Gameplay foundation is landed (`BL-005`, `BL-015`), so the critical path now moves to deterministic timeout/fallback infrastructure (`BL-006`).
+- Impact:
+  - Operator dispatch shortcut is now:
+    - `Your next task is S3-P1.`
+  - Backlog/progress artifacts now reflect `BL-005` and `BL-015` as `done`.
+- Revisit trigger:
+  - If merge follow-up defects from S3-G1 require temporary Gameplay hotfix prioritization ahead of S3-P1.
+
+## 2026-02-22 - Enforce saveup tracked-artifact branch scope on `koad-os`
+- Decision:
+  - Treat tracked saveup artifacts (`.koad/**` saveup ledgers/logs and `PROJECT_PROGRESS.md`) as `koad-os`-only commit scope.
+  - Enforce this at tooling level by blocking global-ledger saveup writes outside `koad-os`.
+- Why:
+  - Team-role developer lanes should not carry tracked `.koad/**` continuity artifacts in feature branches.
+  - Policy-only guidance is insufficient; CLI enforcement prevents accidental branch-scope drift.
+- Impact:
+  - `koad saveup` now errors when global-ledger mode is invoked off `koad-os`.
+  - `koad saveup --sync-progress-in-lane` now requires `koad-os` because it writes `PROJECT_PROGRESS.md`.
+  - Saveup/standards/agent prompt docs now explicitly direct developer lanes to lane-isolated journals and `koad-os` reconciliation for tracked artifacts.
+- Revisit trigger:
+  - If saveup artifacts are migrated to an external continuity store and no longer tracked in git.

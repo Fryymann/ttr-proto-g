@@ -462,3 +462,17 @@
   - Manual promotion PRs remain supported; automation avoids overriding non-managed PR bodies.
 - Revisit trigger:
   - If future release-line branching adds multiple active release branches and promotion target routing must become dynamic.
+
+## 2026-02-22 - Add scripted PM PR gate review command (`koad pr-gate`)
+- Decision:
+  - Add `koad pr-gate` command to automate PM review preflight for lane/support PRs.
+  - Include optional action to mark `Koad git review approved` in PR body (plus optional approval comment) when all gates pass.
+- Why:
+  - PM review repeatedly requires the same mergeability/check/scope/evidence verification and manual checkbox edits.
+  - A single command reduces review overhead and keeps Koad approval handling consistent with branch-scope policy.
+- Impact:
+  - `koad pr-gate` now checks merge state, required checks (`validate-pr-governance`, `validate-koad-os-scope`), scope policy (including `koad-os` sync exceptions), and required PR evidence markers.
+  - The command can patch PR body checkbox state via GitHub API without relying on flaky `gh pr edit` behavior.
+  - Script docs now include `pr-gate` usage for operator/agent review flow.
+- Revisit trigger:
+  - If PR gate policy adds new required checks or review authority shifts away from checkbox/callout audit trail.

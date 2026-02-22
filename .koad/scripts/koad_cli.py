@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import re
 import shlex
 import subprocess
@@ -16,6 +17,21 @@ from pathlib import Path
 ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience", "User")
 SAVEUP_ROLE_VALUES = ("Koad (PM)", "Gameplay", "Platform", "Experience")
 KOAD_OS_BRANCH = "koad-os"
+REQUIRED_PR_GATE_CHECKS = ("validate-pr-governance", "validate-koad-os-scope")
+KOAD_OS_EXACT_FILES = {
+    "AGENTS.md",
+    "CODEX_ROLE_PROMPTS.md",
+    "ANTIGRAVITY_SPRINT_PROMPTS.md",
+    "PROJECT_PROGRESS.md",
+    "docs/ops/github-branch-protection.md",
+    "docs/design/execution-sprint-plan.md",
+    ".github/pull_request_template.md",
+    ".github/workflows/pr-template-gate.yml",
+    ".github/workflows/koad-os-scope-gate.yml",
+    ".github/workflows/sync-koad-os-from-v1.yml",
+    ".github/workflows/update-v1-dashboard.yml",
+    ".github/workflows/promote-koad-os-to-v1.yml",
+}
 
 
 def run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -574,6 +590,218 @@ def cmd_pr_open(args: argparse.Namespace) -> int:
     return 0
 
 
+def gh_json(root: Path, args: list[str]) -> dict:
+    cp = run(["gh", *args], cwd=root, check=False)
+    if cp.returncode != 0:
+        raise ValueError(cp.stderr.strip() or cp.stdout.strip() or "gh command failed")
+    try:
+        return json.loads(cp.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Failed to parse gh JSON output: {exc}") from exc
+
+
+def is_koad_os_file(path: str) -> bool:
+    return path.startswith(".koad/") or path.startswith(".agents/") or path in KOAD_OS_EXACT_FILES
+
+
+def scope_violations(base_ref: str, head_ref: str, files: list[str]) -> list[str]:
+    violations: list[str] = []
+    if base_ref == KOAD_OS_BRANCH and head_ref == "v1":
+        return violations
+
+    if base_ref == KOAD_OS_BRANCH:
+        for path in files:
+            if not is_koad_os_file(path):
+                violations.append(f"Out-of-scope file for koad-os PR: `{path}`")
+        return violations
+
+    if head_ref == KOAD_OS_BRANCH:
+        for path in files:
+            if not is_koad_os_file(path):
+                violations.append(f"Out-of-scope file in koad-os sync PR: `{path}`")
+        return violations
+
+    for path in files:
+        if is_koad_os_file(path):
+            violations.append(f"Koad/agent support file blocked on non-koad-os PR: `{path}`")
+    return violations
+
+
+def required_check_blockers(checks: list[dict], required: tuple[str, ...]) -> list[str]:
+    blockers: list[str] = []
+    for name in required:
+        matching = [c for c in checks if c.get("name") == name]
+        if not matching:
+            blockers.append(f"`{name}` missing")
+            continue
+
+        success = any(
+            c.get("status") == "COMPLETED" and str(c.get("conclusion")).upper() in {"SUCCESS", "NEUTRAL", "SKIPPED"}
+            for c in matching
+        )
+        if success:
+            continue
+
+        pending = any(c.get("status") != "COMPLETED" for c in matching)
+        if pending:
+            blockers.append(f"`{name}` pending")
+            continue
+
+        conclusions = sorted({str(c.get("conclusion") or "UNKNOWN").lower() for c in matching})
+        blockers.append(f"`{name}` not passing ({', '.join(conclusions)})")
+    return blockers
+
+
+def missing_evidence_sections(body: str) -> list[str]:
+    required_markers = (
+        "## Scope + Acceptance Criteria",
+        "## Verification",
+        "## Files Changed",
+        "## Risks / Deferred Work",
+        "AC-1 `PASS`/`FAIL` + evidence:",
+        "AC-2 `PASS`/`FAIL` + evidence:",
+        "Out-of-scope files touched (`none` if none):",
+        "Coding agent self-review completed",
+        "Koad git review approved",
+        "Ian review approved",
+    )
+    return [marker for marker in required_markers if marker not in body]
+
+
+def set_checkbox_line(body: str, label: str, checked: bool) -> tuple[str, bool, bool]:
+    pattern = re.compile(rf"^- \[[ xX]\] {re.escape(label)}\s*$", flags=re.MULTILINE)
+    match = pattern.search(body)
+    if not match:
+        return body, False, False
+    replacement = f"- [{'x' if checked else ' '}] {label}"
+    current = match.group(0)
+    if current == replacement:
+        return body, False, True
+    new_body = body[: match.start()] + replacement + body[match.end() :]
+    return new_body, True, True
+
+
+def patch_pr_body(root: Path, pr_number: int, body: str) -> None:
+    name_with_owner = run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], cwd=root).stdout.strip()
+    payload_path = Path(tempfile.gettempdir()) / f"koad-pr-{pr_number}-body-patch.json"
+    payload_path.write_text(json.dumps({"body": body}), encoding="utf-8")
+    try:
+        run(
+            [
+                "gh",
+                "api",
+                f"repos/{name_with_owner}/pulls/{pr_number}",
+                "--method",
+                "PATCH",
+                "--input",
+                str(payload_path),
+                "--silent",
+            ],
+            cwd=root,
+        )
+    finally:
+        payload_path.unlink(missing_ok=True)
+
+
+def cmd_pr_gate(args: argparse.Namespace) -> int:
+    root = repo_root()
+    payload = gh_json(
+        root,
+        [
+            "pr",
+            "view",
+            str(args.pr),
+            "--json",
+            "number,title,url,state,isDraft,baseRefName,headRefName,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup,files,body",
+        ],
+    )
+
+    files = [f.get("path", "") for f in (payload.get("files") or [])]
+    checks = payload.get("statusCheckRollup") or []
+    body = payload.get("body") or ""
+
+    merge_blockers: list[str] = []
+    if payload.get("state") != "OPEN":
+        merge_blockers.append(f"PR state is `{payload.get('state')}` (must be OPEN)")
+    if payload.get("isDraft"):
+        merge_blockers.append("PR is draft")
+    if payload.get("mergeable") != "MERGEABLE":
+        merge_blockers.append(f"mergeable=`{payload.get('mergeable')}`")
+    if str(payload.get("mergeStateStatus")) in {"BLOCKED", "DIRTY", "UNKNOWN"}:
+        merge_blockers.append(f"mergeStateStatus=`{payload.get('mergeStateStatus')}`")
+
+    check_blockers = required_check_blockers(checks, REQUIRED_PR_GATE_CHECKS)
+    scope_blockers = scope_violations(payload.get("baseRefName", ""), payload.get("headRefName", ""), files)
+    evidence_blockers = missing_evidence_sections(body)
+
+    blockers: list[str] = []
+    blockers.extend(merge_blockers)
+    blockers.extend(check_blockers)
+    blockers.extend(scope_blockers)
+    blockers.extend([f"Missing PR evidence marker: `{m}`" for m in evidence_blockers])
+    verdict = "approve" if not blockers else "changes requested"
+
+    findings: list[tuple[str, str]] = []
+    for item in merge_blockers + check_blockers + scope_blockers:
+        findings.append(("high", item))
+    for marker in evidence_blockers:
+        findings.append(("medium", f"Missing PR evidence marker: `{marker}`"))
+
+    print("Findings:")
+    if findings:
+        for idx, (severity, text) in enumerate(findings, start=1):
+            print(f"{idx}. [{severity}] {text}")
+    else:
+        print("1. [none] No blocking findings.")
+
+    print("\nMerge gate verdict:")
+    print(f"- {verdict}")
+
+    if blockers:
+        print("\nRequired fixes:")
+        for idx, item in enumerate(blockers, start=1):
+            print(f"{idx}. {item}")
+    else:
+        print("\nRequired fixes:")
+        print("1. none")
+
+    if args.apply_koad_approved:
+        if verdict != "approve":
+            print("\nCannot auto-apply Koad approval checkbox because gate verdict is not approve.", file=sys.stderr)
+            return 2
+
+        updated_body, changed, found = set_checkbox_line(body, "Koad git review approved", checked=True)
+        if not found:
+            print("\nCannot find `Koad git review approved` checkbox line in PR body.", file=sys.stderr)
+            return 2
+
+        if args.dry_run:
+            if changed:
+                print("\nDry run: would update `Koad git review approved` to checked.")
+            else:
+                print("\nDry run: `Koad git review approved` already checked.")
+            if args.comment:
+                print("Dry run: would post Koad PM approval comment.")
+            return 0
+
+        if changed:
+            patch_pr_body(root, int(payload["number"]), updated_body)
+            print("\nUpdated PR body: checked `Koad git review approved`.")
+        else:
+            print("\nPR body already had `Koad git review approved` checked.")
+
+        if args.comment:
+            comment = (
+                "Koad PM gate review: approved. "
+                "Required checks pass (validate-pr-governance, validate-koad-os-scope), "
+                "scope is policy-compliant, and mergeability is clean."
+            )
+            run(["gh", "pr", "comment", str(payload["number"]), "--body", comment], cwd=root)
+            print("Posted Koad PM approval comment.")
+
+    return 0
+
+
 def append_line(path: Path, line: str) -> None:
     with path.open("a", encoding="utf-8") as f:
         f.write(line + "\n")
@@ -847,6 +1075,21 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--draft", action="store_true")
     pr.add_argument("--dry-run", action="store_true")
     pr.set_defaults(func=cmd_pr_open)
+
+    gate = sub.add_parser("pr-gate", help="Run PM PR gate checks; optionally apply Koad approval checkbox")
+    gate.add_argument("--pr", required=True, type=int, help="PR number to review")
+    gate.add_argument(
+        "--apply-koad-approved",
+        action="store_true",
+        help="If verdict is approve, mark `Koad git review approved` checkbox in PR body",
+    )
+    gate.add_argument(
+        "--comment",
+        action="store_true",
+        help="When used with --apply-koad-approved, post a Koad PM approval comment",
+    )
+    gate.add_argument("--dry-run", action="store_true", help="Do not write PR body/comment changes")
+    gate.set_defaults(func=cmd_pr_gate)
 
     save = sub.add_parser("saveup", help="Append role-aware saveup ledger/session entries")
     save.add_argument("--role", required=True, choices=SAVEUP_ROLE_VALUES)

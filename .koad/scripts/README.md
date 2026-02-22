@@ -45,6 +45,22 @@ Example:
   --ac2 "PASS - snapshot/delta protocol types compile"
 ```
 
+### `pr-gate`
+
+Run PM merge-gate checks against a PR (`validate-pr-governance`, `validate-koad-os-scope`, mergeability, scope policy, and required evidence markers).
+
+Example:
+
+```bash
+.koad/scripts/koad pr-gate --pr 25
+```
+
+If all gates pass, auto-check `Koad git review approved` in PR body and add a Koad PM approval comment:
+
+```bash
+.koad/scripts/koad pr-gate --pr 25 --apply-koad-approved --comment
+```
+
 ### `saveup`
 
 Append a role-aware saveup record.
@@ -112,4 +128,5 @@ Refresh dashboard first:
 ## Notes
 
 - `pr-open` uses `gh pr create`; ensure GitHub CLI is authenticated.
+- `pr-gate` reads GitHub PR metadata and can patch PR body/comments via `gh api`/`gh pr comment`.
 - Use `--dry-run` on each command to preview actions without writing.

@@ -1,0 +1,251 @@
+name: Promote koad-os to v1
+
+on:
+  push:
+    branches:
+      - koad-os
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: promote-koad-os-to-v1
+  cancel-in-progress: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute koad-os delta against v1
+        id: delta
+        run: |
+          set -euo pipefail
+
+          git fetch origin v1 koad-os
+
+          mapfile -t changed_files < <(git diff --name-only origin/v1...origin/koad-os)
+          changed_count="${#changed_files[@]}"
+
+          if [ "$changed_count" -gt 0 ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "changed_count=$changed_count" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse origin/koad-os)" >> "$GITHUB_OUTPUT"
+          echo "ahead_count=$(git rev-list --count origin/v1..origin/koad-os)" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "files_md<<EOF"
+            if [ "$changed_count" -eq 0 ]; then
+              echo "- none"
+            else
+              limit=50
+              idx=0
+              for path in "${changed_files[@]}"; do
+                echo "- \`$path\`"
+                idx=$((idx + 1))
+                if [ "$idx" -ge "$limit" ]; then
+                  remaining=$((changed_count - idx))
+                  if [ "$remaining" -gt 0 ]; then
+                    echo "- ... and ${remaining} more"
+                  fi
+                  break
+                fi
+              done
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upsert managed promotion PR
+        id: upsert
+        uses: actions/github-script@v7
+        env:
+          HAS_CHANGES: ${{ steps.delta.outputs.has_changes }}
+          CHANGED_COUNT: ${{ steps.delta.outputs.changed_count }}
+          FILES_MD: ${{ steps.delta.outputs.files_md }}
+          HEAD_SHA: ${{ steps.delta.outputs.head_sha }}
+          AHEAD_COUNT: ${{ steps.delta.outputs.ahead_count }}
+          MANAGED_TAG: "<!-- koad:auto-promotion -->"
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const hasChanges = process.env.HAS_CHANGES === "true";
+            const changedCount = process.env.CHANGED_COUNT || "0";
+            const filesMd = process.env.FILES_MD || "- none";
+            const headSha = process.env.HEAD_SHA || "unknown";
+            const aheadCount = process.env.AHEAD_COUNT || "0";
+            const managedTag = process.env.MANAGED_TAG;
+            const blockedMessage = "GitHub Actions is not permitted to create or approve pull requests";
+            const isBlocked = (err) =>
+              err &&
+              err.status === 403 &&
+              String(err.message || "").includes(blockedMessage);
+
+            const prs = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              base: "v1",
+              head: `${owner}:koad-os`,
+              per_page: 10,
+            });
+
+            const existing = prs.data[0];
+            const isManaged = existing && (existing.body || "").includes(managedTag);
+            const emit = (result, prNumber = "", prUrl = "") => ({
+              result,
+              pr_number: prNumber ? String(prNumber) : "",
+              pr_url: prUrl || "",
+            });
+
+            try {
+              if (!hasChanges) {
+                if (existing && isManaged) {
+                  await github.rest.pulls.update({
+                    owner,
+                    repo,
+                    pull_number: existing.number,
+                    state: "closed",
+                  });
+                  core.info(`Closed managed promotion PR #${existing.number} (no deltas).`);
+                  return emit("closed", existing.number, existing.html_url);
+                }
+
+                core.info("No promotion PR action needed (no deltas).");
+                return emit("noop");
+              }
+
+              const title = "koad-os promotion: sync support/process updates into v1";
+              const body = [
+                managedTag,
+                "",
+                "## Summary",
+                "- What changed:",
+                "  - Auto-managed promotion PR from `koad-os` to `v1` for support/process artifacts.",
+                "- Why:",
+                "  - Keep release-line support governance updates flowing without manual PR creation overhead.",
+                "",
+                "## Role + Task Packet",
+                "- Role: Koad (PM)",
+                "- Persona signature (`Koad (PM)|Gameplay|Platform|Experience|User`): Koad (PM)",
+                "- Task packet id: AUTO-KOAD-OS-PROMOTION",
+                "- Backlog item(s): n/a",
+                "",
+                "## Scope + Acceptance Criteria",
+                "- In scope:",
+                "  - Promotion of `koad-os` support/process artifacts into `v1`.",
+                "- Out of scope:",
+                "  - Runtime gameplay/platform/client code changes.",
+                "- Acceptance criteria evidence:",
+                `  - [x] AC-1 \`PASS\`/\`FAIL\` + evidence: \`${changedCount}\` changed file(s) detected versus \`v1\`; ahead commits=\`${aheadCount}\`.`,
+                "  - [x] AC-2 `PASS`/`FAIL` + evidence: PR is auto-managed and refreshed on `koad-os` pushes.",
+                "",
+                "## Verification",
+                "- Tests run:",
+                "  - `validate-pr-governance`, `validate-koad-os-scope`.",
+                "- Manual checks:",
+                "  - Review file list and merge intent before approval.",
+                "",
+                "## Files Changed",
+                "- Primary files:",
+                filesMd,
+                "- Out-of-scope files touched (`none` if none): none",
+                "",
+                "## Lane Metadata",
+                "- Worktree path: `github-actions`",
+                "- Branch (head): `koad-os`",
+                "- Base branch (`v1` unless explicitly overridden by Koad): `v1`",
+                `- Latest commit SHA: \`${headSha}\``,
+                "- PR dependency order / blocked-by: none",
+                "",
+                "## Review Gates",
+                "- [x] Coding agent self-review completed",
+                "- [ ] Koad git review approved",
+                "- [ ] Ian review approved",
+                "",
+                "## Risks / Deferred Work",
+                "- Risks:",
+                "  - Low: support/process promotion only.",
+                "- Deferred follow-ups:",
+                "  - none",
+                "",
+                "Task completion gate: this task is complete only after this PR is merged.",
+              ].join("\n");
+
+              if (existing) {
+                if (isManaged) {
+                  await github.rest.pulls.update({
+                    owner,
+                    repo,
+                    pull_number: existing.number,
+                    title,
+                    body,
+                  });
+                  core.info(`Updated managed promotion PR #${existing.number}.`);
+                  return emit("updated", existing.number, existing.html_url);
+                } else {
+                  core.info(`Found non-managed open promotion PR #${existing.number}; leaving unchanged.`);
+                  return emit("existing_non_managed", existing.number, existing.html_url);
+                }
+              }
+
+              const created = await github.rest.pulls.create({
+                owner,
+                repo,
+                base: "v1",
+                head: "koad-os",
+                title,
+                body,
+              });
+              core.info(`Created managed promotion PR #${created.data.number}.`);
+              return emit("created", created.data.number, created.data.html_url);
+            } catch (err) {
+              if (isBlocked(err)) {
+                core.warning(
+                  "GitHub Actions cannot create/update PRs in this repository. " +
+                  "Enable repository setting: Settings > Actions > General > Workflow permissions > " +
+                  "\"Allow GitHub Actions to create and approve pull requests\"."
+                );
+                return emit(
+                  "blocked_actions_pr_creation",
+                  existing ? existing.number : "",
+                  existing ? existing.html_url : ""
+                );
+              }
+              throw err;
+            }
+
+      - name: Write workflow summary
+        run: |
+          OUTCOME='${{ steps.upsert.outputs.result }}'
+          RESULT="$(printf '%s' "$OUTCOME" | jq -r '.result // empty' 2>/dev/null || true)"
+          PR_NUMBER="$(printf '%s' "$OUTCOME" | jq -r '.pr_number // empty' 2>/dev/null || true)"
+          PR_URL="$(printf '%s' "$OUTCOME" | jq -r '.pr_url // empty' 2>/dev/null || true)"
+          if [ -z "$RESULT" ] && [ -n "$OUTCOME" ]; then
+            RESULT="$OUTCOME"
+          fi
+
+          {
+            echo "## koad-os Promotion PR"
+            echo ""
+            echo "- Result: ${RESULT:-unknown}"
+            if [ "$RESULT" = "blocked_actions_pr_creation" ]; then
+              echo "- Action required: enable GitHub Actions PR creation in repository settings."
+            fi
+            if [ -n "$PR_NUMBER" ]; then
+              echo "- PR: #$PR_NUMBER"
+            fi
+            if [ -n "$PR_URL" ]; then
+              echo "- URL: $PR_URL"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

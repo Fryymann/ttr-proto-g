@@ -43,6 +43,7 @@ Last updated: 2026-02-21
   - Koad/agent support artifacts are committed through `koad-os` (including root `PROJECT_PROGRESS.md` dashboard).
   - Runtime/feature delivery lanes targeting `v1` (or replacement release branch) must not include Koad/agent support files unless the source branch is `koad-os` (support sync PR).
   - `koad-os` is auto-synced from `v1` via `.github/workflows/sync-koad-os-from-v1.yml` to reduce manual drift.
+  - `koad-os` promotion to `v1` is auto-managed via `.github/workflows/promote-koad-os-to-v1.yml` when effective support deltas exist.
   - Scope-gate exception allows `v1` -> `koad-os` sync PRs when automatic sync hits merge conflicts.
   - Required status check `validate-koad-os-scope` enforces the boundary on PRs.
 

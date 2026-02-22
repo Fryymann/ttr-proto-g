@@ -24,6 +24,7 @@ Use split governance:
 - `.github/workflows/pr-template-gate.yml`
 - `.github/workflows/koad-os-scope-gate.yml`
 - `.github/workflows/sync-koad-os-from-v1.yml`
+- `.github/workflows/promote-koad-os-to-v1.yml`
 - `.github/workflows/update-v1-dashboard.yml`
 
 ## Branch Protection Settings (GitHub UI)
@@ -76,6 +77,17 @@ For `koad-os`:
   - Attempts to merge `origin/v1` into `koad-os` and push the updated `koad-os` head.
   - If merge conflicts occur, opens (or reuses) a `v1` -> `koad-os` sync PR for manual resolution.
 - This keeps `koad-os` near-current with `v1` and reduces manual sync maintenance between development merges.
+
+## koad-os Promotion PR Automation
+
+- Workflow: `.github/workflows/promote-koad-os-to-v1.yml`
+- Trigger: every push to `koad-os` (and manual `workflow_dispatch`).
+- Behavior:
+  - Compares effective support/process file deltas between `koad-os` and `v1`.
+  - Auto-creates or updates one managed PR from `koad-os` -> `v1` when deltas exist.
+  - Auto-closes managed promotion PR when no effective delta remains.
+- Outcome:
+  - PM no longer needs to manually open routine support-promotion PRs for `koad-os` updates.
 
 ## V1 Dashboard Automation
 

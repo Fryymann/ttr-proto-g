@@ -61,6 +61,13 @@ Each Codex instance must:
 12. Non-`koad-os` lane PRs with source changes must update `docs/implementation/<id>.md` with required headings and file-level change mapping.
 13. Non-`koad-os` lane PRs with source changes must include changed-line coverage evidence >=80% and explicit automated/negative-path/regression test evidence.
 
+## GitHub Operations Policy
+
+- For agent-run GitHub operations (PR read/check/comment/merge), prefer GitHub MCP per `.koad/.agent-ops/runbooks/github-mcp-workflow.md`.
+- Keep local repository operations (branch/worktree/status/diff/tests) in shell/git.
+- CLI fallback is allowed when MCP is unavailable: use existing `.koad/scripts/koad` (`pr-open`, `pr-gate`, `pr-finish`) backed by `gh`.
+- Governance authority remains unchanged: required checks + required approvals determine mergeability.
+
 ## Required Team-Agent Onboarding Evidence
 
 1. `pwd`
@@ -96,12 +103,11 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | `S3-P1` | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | `lane/Platform/s3-p1-turn-timer-fallback` |
 | `S3-E1` | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
 | `S4-P1` | Platform | `BL-013` | Done (merged to `v1`, PR #34) | `S3-E1` merged to `v1` | `lane/Platform/s4-p1-single-save-snapshot-recovery` |
-| `S4-P2` | Platform | `BL-018` | Done (merged to `v1`, PR #38) | `S4-P1` merged to `v1` | `lane/Platform/s4-p2-admin-unlock-guardrails` |
-| `S4-G1` | Gameplay | `BL-014` | Active Next (dispatch now) | `S4-P2` merged to `v1` | `lane/Gameplay/s4-g1-disconnect-fallback-policy` |
+| `S4-P2` | Platform | `BL-018` | Active Next (dispatch now) | `S4-P1` merged to `v1` | `lane/Platform/s4-p2-admin-unlock-guardrails` |
 
 ### Operator Dispatch Shortcut
 
-- Gameplay Agent: `Your next task is S4-G1.`
+- Platform Agent: `Your next task is S4-P2.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
@@ -453,53 +459,6 @@ Minimum verification:
 Handoff requirements:
 - Include acceptance checklist with PASS/FAIL + evidence.
 - Include sample audit event payloads for success and denied paths.
-- Provide PR URL targeting v1, latest commit SHA, and deferred-risk notes.
-```
-
-### Task Packet `S4-G1` (Gameplay: Staged Disconnect Fallback Policy)
-
-```text
-You are Codex acting as the Gameplay Team instance for /mnt/c/data/ttrpg.
-
-Task packet id: S4-G1
-Backlog scope: BL-014
-Milestone/Sprint: S4
-Dependency: start only after S4-P2 is merged to v1.
-Branch policy: create branch from v1 and target PR to v1.
-
-Objective:
-- Implement staged disconnect fallback behavior for encounters so disconnect handling is deterministic and resistant to abuse.
-
-In scope:
-- Implement deterministic staged fallback policy for disconnected encounter actors.
-- Apply defensive-only fallback for configured rounds before limited AI action phase.
-- Ensure reconnect behavior and turn progression remain deterministic under fallback state.
-- Add integration-focused tests covering staged fallback transitions and reconnect edge cases.
-
-Suggested file targets:
-- crates/ttrpg-server/src/encounter/disconnect.rs
-- crates/ttrpg-server/src/encounter/mod.rs
-- crates/ttrpg-server/src/encounter/state.rs
-- crates/ttrpg-server/src/main.rs (integration glue only as needed)
-
-Out of scope:
-- Admin unlock tooling and audit policy changes (BL-018 done)
-- DM-agent advisory channel behavior (BL-020)
-- Client UX changes unrelated to fallback-state visibility
-
-Acceptance criteria:
-1) Defensive-only fallback applies for configured rounds after disconnect (BL-014).
-2) Limited AI fallback behavior activates deterministically after defensive rounds and advances turns safely.
-3) Reconnect and fallback transitions are deterministic and covered by integration tests.
-
-Minimum verification:
-- cargo test -p ttrpg-server
-- cargo check
-- Targeted disconnect/fallback tests with pass/fail evidence in implementation doc.
-
-Handoff requirements:
-- Include acceptance checklist with PASS/FAIL + evidence.
-- Include fallback timeline evidence (defensive phase -> limited AI phase -> reconnect path).
 - Provide PR URL targeting v1, latest commit SHA, and deferred-risk notes.
 ```
 

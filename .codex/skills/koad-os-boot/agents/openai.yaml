@@ -1,0 +1,4 @@
+interface:
+  display_name: "KoadOS Boot"
+  short_description: "Boot and validate Koad OS PM context in /mnt/c/data/ttrpg."
+  default_prompt: "Run the Koad OS startup sequence, verify freshness, and resolve role to Koad (PM)."

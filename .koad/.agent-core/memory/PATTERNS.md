@@ -81,3 +81,13 @@ Track recurring workflows and known effective approaches.
   - Reconcile PM/global saveup summaries on `koad-os` during support sync.
 - Validation:
   - Feature-lane PRs avoid touching shared `SAVEUP_CALLS.md`/`LOG.md` while still preserving role/context continuity records.
+
+## Pattern: Post-Edit Worktree Verification
+- Trigger:
+  - After applying patches or scripted edits while multiple worktrees are active.
+- Steps:
+  - Run `git status --short --branch` in the intended worktree.
+  - Run `git status --short --branch` in `/mnt/c/data/ttrpg` primary workspace.
+  - If support/doc edits appear on `v1`, copy updated files into `koad-os` worktree and restore `v1` immediately.
+- Validation:
+  - Intended worktree shows expected edits; primary workspace remains free of accidental support/doc changes.

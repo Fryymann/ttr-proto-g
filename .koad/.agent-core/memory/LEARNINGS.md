@@ -173,3 +173,8 @@ Append-only record of durable lessons.
 - Observation: `koad-os` promotion PRs fail scope checks when PM tries to include `docs/design/**` spec changes in the same support sync.
 - Why it matters: Mixed-scope IAN integration causes avoidable rework and delays promotion PR approval.
 - Behavior update: Split IAN/spec integrations by branch scope: keep PM/support artifacts on `koad-os`, and ship design-spec docs through a dedicated `v1` docs lane PR.
+
+### Operational
+- Observation: In this multi-worktree setup, file-edit operations can accidentally land in the primary workspace instead of the intended support/worktree path if target context is not re-verified after edits.
+- Why it matters: Mis-targeted edits create branch-scope violations (`v1` vs `koad-os`) and require manual file shuttling/reverts, adding PM overhead and risk.
+- Behavior update: After any substantial edit batch, immediately verify modified paths with `git status --short --branch` in both the active worktree and primary workspace before continuing.

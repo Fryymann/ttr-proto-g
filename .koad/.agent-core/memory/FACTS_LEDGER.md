@@ -56,3 +56,8 @@ Append-only record of confirmed durable facts.
 ## 2026-02-22 (branch-scope enforcement update)
 - `koad-os` promotion scope excludes `docs/design/**` artifacts.
 - PM/spec integrations that require `docs/design/**` updates must ship those files through a `v1`-targeted docs lane PR.
+
+## 2026-02-22 (post-PR40 queue update)
+- `PR #38` (S4-P2 / BL-018) is merged to `v1` and `PR #40` promoted PM support updates from `koad-os` to `v1`.
+- `BL-018` is now complete in PM tracking artifacts.
+- Active next dispatch packet is `S4-G1` (Gameplay, `BL-014`) on branch `lane/Gameplay/s4-g1-disconnect-fallback-policy`.

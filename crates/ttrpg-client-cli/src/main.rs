@@ -5,6 +5,9 @@ use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::TcpStream;
 
+mod render_scene;
+
+use render_scene::SceneRenderer;
 use ttrpg_protocol::{to_json_line, CharacterDraft, ClientMessage, ServerMessage};
 
 type StdinLines = tokio::io::Lines<BufReader<io::Stdin>>;
@@ -22,6 +25,7 @@ async fn main() -> io::Result<()> {
     render_welcome_screen(&addr);
 
     let read_task = tokio::spawn(async move {
+        let mut scene_renderer = SceneRenderer::new();
         let mut lines = BufReader::new(reader).lines();
 
         while let Ok(Some(line)) = lines.next_line().await {
@@ -31,7 +35,7 @@ async fn main() -> io::Result<()> {
             }
 
             match serde_json::from_str::<ServerMessage>(line) {
-                Ok(message) => render_server_message(message),
+                Ok(message) => render_server_message(message, &mut scene_renderer),
                 Err(_) => println!("[raw] {}", line),
             }
         }
@@ -296,9 +300,10 @@ fn render_welcome_screen(addr: &str) {
     println!();
 }
 
-fn render_server_message(message: ServerMessage) {
+fn render_server_message(message: ServerMessage, scene_renderer: &mut SceneRenderer) {
     match message {
         ServerMessage::AuthOk { player_id, name } => {
+            scene_renderer.remember_local_player_name(&name);
             println!("✅ Logged in as {} (id {}).", name, player_id);
         }
         ServerMessage::RoomState {
@@ -308,6 +313,8 @@ fn render_server_message(message: ServerMessage) {
             exits,
             players,
         } => {
+            scene_renderer.update_room_players(&players);
+
             let exits_text = if exits.is_empty() {
                 "none".to_owned()
             } else {
@@ -333,6 +340,8 @@ fn render_server_message(message: ServerMessage) {
             println!("[{}] {}: {}", channel, from, text);
         }
         ServerMessage::WhoList { players } => {
+            scene_renderer.update_room_players(&players);
+
             if players.is_empty() {
                 println!("👥 No one is online.");
             } else {
@@ -353,11 +362,10 @@ fn render_server_message(message: ServerMessage) {
             println!("🏓 pong");
         }
         ServerMessage::SceneSnapshot { snapshot } => {
-            println!("\n🖼️ [Scene Snapshot] id={}, {}x{}", snapshot.scene_id, snapshot.width, snapshot.height);
-            println!("Occupants: {:?}", snapshot.occupants);
+            println!("{}", scene_renderer.apply_snapshot(snapshot));
         }
         ServerMessage::SceneDelta { deltas } => {
-            println!("\n✨ [Scene Delta] {} updates received", deltas.len());
+            println!("{}", scene_renderer.apply_deltas(deltas));
         }
     }
 }

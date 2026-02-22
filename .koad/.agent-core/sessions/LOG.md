@@ -154,3 +154,19 @@
   - `PROJECT_PROGRESS.md`
 - Risks/Unknowns:
   - no open blockers; monitor sync workflow conflict frequency
+
+## 2026-02-22 - post-PR28 automation offload saveup
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Capture durable continuity after automated promotion, PM gate, and merge-finalization rollout.
+- Actions:
+  - validated GitHub Actions permission-enabled promotion flow
+  - landed pr-gate watch mode and pr-finish merge finalization command
+  - completed PR #27 and PR #28 review/merge gates through automated flow
+- Artifacts:
+  - `.koad/.agent-core/sessions/SAVEUP_CALLS.md`
+  - `.koad/.agent-core/sessions/LOG.md`
+  - `https://github.com/Fryymann/ttr-proto-g/pull/27`
+  - `https://github.com/Fryymann/ttr-proto-g/pull/28`
+- Risks/Unknowns:
+  - monitor workflow-run churn caused by PR body checkbox edits retriggering checks

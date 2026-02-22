@@ -25,3 +25,4 @@ Note: this ledger is for global/PM saveup mode. Team-role lane-isolated saveups 
 | SAVEUP-20260222-024209Z | Experience | S2-E1/pr-11 | s2-e1-cli-scene-render | completed | 1 | 0 | S2-E1 delivered; PR #11 opened; sandbox blocked socket-based manual multiplayer run. |
 | SAVEUP-20260222-042201Z | Koad (PM) | koad-os | post-review-flow-main-savepoint | completed | 0 | 0 | main savepoint after PR #18/#19 merge and branch/worktree cleanup |
 | SAVEUP-20260222-044326Z | Koad (PM) | koad-os | post-pr20-automation-baseline | completed | 0 | 1 | savepoint after PR #20 merge; automation baseline active |
+| SAVEUP-20260222-071006Z | Koad (PM) | koad-os | post-pr28-merge-automation-offload | completed | 0 | 3 | automation-offload checkpoint complete after PR #27/#28 merges; no open blockers |

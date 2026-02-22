@@ -21,6 +21,7 @@ Owner: Project Manager
 
 - `Now` (M2 closeout + M3 execution): `BL-012`, `BL-007`, `BL-013`
 - `Next` (M3 follow-on): `BL-018`, `BL-008`, `BL-014`, `BL-020`
+- `V2 intake parking lot`: `BL-021`, `BL-022`, `BL-023`, `BL-024`, `BL-025`, `BL-026`
 - `Reference`: detailed sequencing in `docs/design/execution-sprint-plan.md`
 
 ## Backlog Items
@@ -47,6 +48,12 @@ Owner: Project Manager
 | BL-018 | P1 | Platform | todo | M3 | Implement admin campaign-unlock tooling with guardrails | Unlock requires explicit reason, is permission-gated, and emits immutable audit log entries |
 | BL-019 | P0 | Gameplay | done | M2 | Define and enforce SRD-only mechanics/content scope for V1 | V1 rules/content references map to SRD or original content only, with a committed compliance checklist |
 | BL-020 | P1 | Gameplay | todo | M3 | Implement DM-agent advisory channel for semi-scripted NPC behavior | AI output is suggestions-only, scripted policy remains authoritative, and acceptance/override behavior is covered by tests |
+| BL-021 | P2 | Gameplay | todo | V2 | Add chained movement grammar for free-roam and encounter-aware movement budgets (`go e 3`, `go e 3, s 3`) | Parser supports chained vectors, movement cost is validated per segment, and encounter turns enforce legal movement budget |
+| BL-022 | P2 | Gameplay | todo | V2 | Implement terrain movement-cost model with reversible spell-driven terrain overrides | Difficult terrain and temporary terrain effects modify movement cost deterministically and revert correctly when effects end |
+| BL-023 | P2 | Experience | todo | V2 | Add auto-walk UX for long-route exploration | Player can queue multi-step travel safely, receives clear interruption feedback, and can cancel or resume without desync |
+| BL-024 | P2 | Gameplay | todo | V2 | Define spell-targeting syntax and resolver for location and actor targets | Commands like `cast web location 10e,2s` and `cast web target bandit_1` resolve to valid target intents with legality checks |
+| BL-025 | P2 | Platform | todo | V2 | Implement NPC promotion tiers to upgrade low-detail NPCs into story-critical actors | NPC lifecycle supports tier promotion with schema-safe attribute expansion and migration/audit coverage |
+| BL-026 | P2 | Gameplay | todo | V2 | Add PC relationship and faction reputation systems for non-combat progression | Character state tracks NPC/faction standing changes and gameplay systems can gate quests/resources on those standings |
 
 ## Intake Template
 

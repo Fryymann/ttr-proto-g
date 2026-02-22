@@ -148,3 +148,8 @@ Append-only record of durable lessons.
 - Observation: Documentation guidance alone does not reliably produce consistent implementation notes and test evidence across developer lanes.
 - Why it matters: Missing or weak docs/test evidence slows PM review and increases merge risk on release-line PRs.
 - Behavior update: Enforce implementation-doc and test-evidence contracts through required CI gates with explicit heading/evidence validation and coverage threshold checks.
+
+### Planning
+- Observation: Late-stage idea spikes can be captured without disrupting active delivery lanes when converted immediately into explicit V2 backlog/spec entries.
+- Why it matters: Preserves momentum on in-flight sprint work while preventing idea loss or vague future-scope drift.
+- Behavior update: Default latest `IAN.md` concept intake to V2 parking-lot backlog items unless the user explicitly elevates ideas into active V1 scope.

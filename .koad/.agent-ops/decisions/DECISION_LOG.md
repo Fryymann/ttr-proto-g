@@ -523,3 +523,16 @@
   - Branch-protection runbook and role prompts now include the expanded required checks and handoff contract.
 - Revisit trigger:
   - If future CI introduces true changed-line coverage computation from test instrumentation, replace evidence-line validation with direct measured thresholds.
+
+## 2026-02-22 - Route latest IAN gameplay ideas into V2 backlog specs
+- Decision:
+  - Capture ideas from `IAN.md` entry `2026-02-22 - 11:42pm` as explicit V2 backlog/spec scope (`BL-021` through `BL-026`) instead of pulling them into active M3 delivery.
+  - Record V2 concept mapping in `docs/design/execution-sprint-plan.md` under a non-scheduled intake parking-lot section.
+- Why:
+  - User requested latest idea integration while S3-E1 is in flight, with preference to stage concepts for V2.
+  - Preserves S3 lane focus while making the new design intent durable and dispatch-ready for future planning.
+- Impact:
+  - Backlog now includes concrete V2 tasks for chained movement grammar, terrain costs/reversion, auto-walk UX, spell targeting syntax, NPC promotion tiers, and relationship/faction systems.
+  - Sprint spec artifacts now include an explicit V2 concept queue tied to backlog IDs for later dispatch.
+- Revisit trigger:
+  - When M3/M4 exit criteria are closed and Koad schedules the first V2 planning sprint.

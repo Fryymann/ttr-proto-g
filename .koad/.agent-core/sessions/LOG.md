@@ -188,3 +188,17 @@
   - `/tmp/ttrpg-v1-spec-wt (lane/PM/ian-v2-spec-intake @ 29cc878)`
 - Risks/Unknowns:
   - Network/DNS instability is currently blocking push of lane/PM/ian-v2-spec-intake and opening its v1 PR.
+
+## 2026-02-22 - koad-os-v2-upgrade
+- Role: `Koad (PM)`
+- Context ref: `gemini`
+- Objective: Persist KoadOS v2 upgrades and branch-exemption logic.
+- Actions:
+  - Implemented koad context, standards-check, and saveup-reconcile commands
+  - Excluded gemini branch from PR governance and scope-gate checks
+  - Updated startup checklist and README documentation
+- Artifacts:
+  - `.koad/scripts/koad_cli.py`
+  - `.github/workflows/*.yml`
+- Risks/Unknowns:
+  - none

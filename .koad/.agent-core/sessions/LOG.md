@@ -233,3 +233,17 @@
   - `.koad/scripts/koad_cli.py`
 - Risks/Unknowns:
   - none
+
+## 2026-02-23 - S4-G1 Dispatch Readiness
+- Role: `Koad (PM)`
+- Context ref: `koad-os`
+- Objective: Finalize S4 Gameplay dispatch and sync PM artifacts
+- Actions:
+  - Confirmed S4-P2 PR #38 merged to v1
+  - Updated CODEX_ROLE_PROMPTS.md with S4-G1 (BL-014, BL-020) packet
+  - Synchronized PROJECT_PROGRESS.md from backlog/roadmap state
+- Artifacts:
+  - `CODEX_ROLE_PROMPTS.md`
+  - `PROJECT_PROGRESS.md`
+- Risks/Unknowns:
+  - none

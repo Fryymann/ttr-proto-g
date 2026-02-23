@@ -2,7 +2,7 @@
 
 Auto-generated snapshot aligned to roadmap and backlog.
 
-- Generated (UTC): 2026-02-22 17:09:35Z
+- Generated (UTC): 2026-02-22 23:08:48Z
 - Source files:
   - `.agents/backlog.md`
   - `docs/design/game-system-roadmap.md`
@@ -13,23 +13,23 @@ Auto-generated snapshot aligned to roadmap and backlog.
 
 - Active release branch: `v1`
 - Total backlog items: `27`
-- Done: `12`
-- In progress: `1`
+- Done: `13`
+- In progress: `0`
 - Blocked: `0`
 - Todo: `14`
-- Open items remaining: `15`
+- Open items remaining: `14`
 
 ## Roadmap Alignment
 
 | Milestone | Backlog Items | Done | In Progress | Todo | Blocked | Completion | Status |
 |---|---:|---:|---:|---:|---:|---:|---|
-| M2 | 7 | 6 | 1 | 0 | 0 | 86% | In Progress |
+| M2 | 7 | 7 | 0 | 0 | 0 | 100% | Complete |
 | M3 | 9 | 6 | 0 | 3 | 0 | 67% | Queued |
 | M4 | 4 | 0 | 0 | 4 | 0 | 0% | Queued |
 
 ## Active Focus Window
 
-- Now: `BL-012`, `BL-014`
+- Now: `BL-014`
 - Next: `BL-008`, `BL-020`, `BL-010`
 
 ## Active Task Packet Queue
@@ -43,14 +43,14 @@ Auto-generated snapshot aligned to roadmap and backlog.
 | S3-P1 | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | lane/Platform/s3-p1-turn-timer-fallback |
 | S3-E1 | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | lane/Experience/s3-e1-turn-tracker-ui |
 | S4-P1 | Platform | `BL-013` | Done (merged to `v1`, PR #34) | `S3-E1` merged to `v1` | lane/Platform/s4-p1-single-save-snapshot-recovery |
-| S4-P2 | Platform | `BL-018` | Done (merged to `v1`, PR #38) | `S4-P1` merged to `v1` | lane/Platform/s4-p2-admin-unlock-guardrails |
-| S4-G1 | Gameplay | `BL-014` | Active Next (dispatch now) | `S4-P2` merged to `v1` | lane/Gameplay/s4-g1-disconnect-fallback-policy |
+| S4-P2 | Platform | `BL-018` | Done (merged to `v1`) | `S4-P1` merged to `v1` | lane/Platform/s4-p2-admin-unlock-guardrails |
+| S4-G1 | Gameplay | `BL-014` | Active Next (dispatch now) | `S4-P2` merged to `v1` | lane/Gameplay/s4-g1-encounter-disconnect-fallback |
 
 ## In-Progress / Blocked Items
 
 | Backlog ID | Team | State | Milestone | Task |
 |---|---|---|---|---|
-| BL-012 | Platform | in_progress | M2 | Implement account + character persistence model with account-authenticated login and campaign lock metadata |
+| none | n/a | n/a | n/a | n/a |
 
 ## Recent Sprint Status Notes
 

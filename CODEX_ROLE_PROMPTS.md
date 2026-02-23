@@ -103,11 +103,12 @@ Use these packets for the immediate development queue. Respect packet dependenci
 | `S3-P1` | Platform | `BL-006` | Done (merged to `v1`, PR #17) | `S3-G1` merged to `v1` | `lane/Platform/s3-p1-turn-timer-fallback` |
 | `S3-E1` | Experience | `BL-007` | Done (merged to `v1`, PR #32) | `S3-P1` merged to `v1` | `lane/Experience/s3-e1-turn-tracker-ui` |
 | `S4-P1` | Platform | `BL-013` | Done (merged to `v1`, PR #34) | `S3-E1` merged to `v1` | `lane/Platform/s4-p1-single-save-snapshot-recovery` |
-| `S4-P2` | Platform | `BL-018` | Active Next (dispatch now) | `S4-P1` merged to `v1` | `lane/Platform/s4-p2-admin-unlock-guardrails` |
+| `S4-P2` | Platform | `BL-018` | Done (merged to `v1`) | `S4-P1` merged to `v1` | `lane/Platform/s4-p2-admin-unlock-guardrails` |
+| `S4-G1` | Gameplay | `BL-014` | Active Next (dispatch now) | `S4-P2` merged to `v1` | `lane/Gameplay/s4-g1-encounter-disconnect-fallback` |
 
 ### Operator Dispatch Shortcut
 
-- Platform Agent: `Your next task is S4-P2.`
+- Gameplay Agent: `Your next task is S4-G1.`
 
 ### Task Packet `S1-P2` (Platform: Persistence + Campaign Lock Completion)
 
